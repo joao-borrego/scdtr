@@ -5,28 +5,30 @@
 * @author João Borrego
 */
 
-#define V_MAX 5.0 // Volt
-#define LUX_R 100.0 // Ohm      
-#define LUX_A 1.0
-#define LUX_B 1.0
+#define V_MAX (double) 5.0 // Volt
+#define LUX_R (double) 10000.0 // Ohm      
+#define LUX_A (double) -0.62995 // old version -0.75696
+#define LUX_B (double) 4.8487 // 4.2136
 
 #include <math.h>
+
+#include "lookup.hpp"
 
 namespace Utils {
 
     /**
-     * @brief      { function_description }
+     * @brief Converts the measured tension of an LDR to a LUX measurement
      *
      * r_ldr = r * ((v_max / v_in) - 1)
      * lux = 10 ^ ((log_10(r_ldr) - b) / a)
      *
-     * @param[in]  v_in   The v in
-     * @param[in]  v_max  The v maximum
-     * @param[in]  r      { parameter_description }
-     * @param[in]  a      { parameter_description }
-     * @param[in]  b      { parameter_description }
+     * @param[in] v_in The measured ldr tension (Volt)
+     * @param[in] v_max The maximum tension (Volt)
+     * @param[in] r The value of resistance in series with the LDR (Ohm)
+     * @param[in] a Parameter of ldr characteristic
+     * @param[in] b Parameter of ldr characteristic
      *
-     * @return     { description_of_the_return_value }
+     * @return The corresponding LUX value
      */
-    float convertToLux(float v_in, float v_max=V_MAX, float r=LUX_R, float a=LUX_A, float b = LUX_B);
+    float convertToLux(float v_in, float v_max=V_MAX, float r=LUX_R, float a=LUX_A, float b=LUX_B);
 }
