@@ -21,13 +21,14 @@ void setup() {
 }
 
 void loop() {
-
-    for (int out = 0; out <= 255; out++){
+    for (int out = 0; out <= 255; out += 10){
       analogWrite(11, out);
-      delay(50);
-      ldr_in =  analogRead(A0);
-      v_in = ldr_in * (5.0 / 1023.0);
-      lux_value = Utils::convertToLux(v_in);
-      Serial.println(lux_value);
+      for(int wait = 0; wait < 50; wait++){
+        ldr_in =  analogRead(A0);
+        v_in = ldr_in * (5.0 / 1023.0);
+        lux_value = Utils::convertToLux(v_in);
+        Serial.print(lux_value);
+        Serial.print(", ");
+      }
     }
 }
