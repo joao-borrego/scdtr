@@ -22,11 +22,11 @@ namespace Utils {
      * r_ldr = r * ((v_max / v_in) - 1)
      * lux = 10 ^ ((log_10(r_ldr) - b) / a)
      *
-     * @param[in] v_in The measured ldr tension (Volt)
-     * @param[in] v_max The maximum tension (Volt)
-     * @param[in] r The value of resistance in series with the LDR (Ohm)
-     * @param[in] a Parameter of ldr characteristic
-     * @param[in] b Parameter of ldr characteristic
+     * @param v_in  The measured ldr tension (Volt)
+     * @param v_max The maximum tension (Volt)
+     * @param r     The value of resistance in series with the LDR (Ohm)
+     * @param a     Parameter of ldr characteristic
+     * @param b     Parameter of ldr characteristic
      *
      * @return The corresponding LUX value
      */
