@@ -1,14 +1,14 @@
 /** 
- * @file pid.hpp
- * @brief PID Controller headers
+ * @file pi.hpp
+ * @brief PI Controller headers
  * 
- * Proportional Integral Derivative Controller
+ * Proportional Integral Controller
  * 
  * @author António Almeida
  * @author João Borrego
 */
 
-namespace PID {
+namespace PI {
 
     class Controller {
 
@@ -27,23 +27,17 @@ namespace PID {
         float k_p;
         /* @brief Coefficient for integral term */
         float k_i;
-        /* @brief Coefficient for derivative term */
-        float k_d;
 
         /* @brief Proportional term */
         float p;
         /* @brief Integral term */
         float i;
-        /* @brief Derivative term */
-        float d;
 
         /* @brief Input of the controller */
         float y;
         /* @brief Error with respect to the reference */
         float err;
 
-        /* @brief Constant between 3 and 20 (usually 10) */
-        float a;
         /* @brief Constant between 0 and 1 */
         float b;
         /* @brief Sampling time */
@@ -58,13 +52,6 @@ namespace PID {
         // i = i_old + (k_p * k_i * T / 2) * (err - err_old)
         /* @brief k_2 = k_p * k_i * T / 2 */
         float k_2;
-
-        // d = d_old * (k_d / (k_d + a / T)) -
-        //  - ((k_p * K_d * a)/(k_d + a * T)) * (y - y_old)  
-        /* @brief k_3 = k_d / (k_d + a / T) */
-        float k_3;
-        /* @brief k_4 = (k_p * k_d * a)/(k_d + a * T) */
-        float k_4;
 
         /* @brief Pointer to callback function to update output */
         void *(updateFcn)();
@@ -84,7 +71,6 @@ namespace PID {
          * @param      reference  The pointer to the reference var
          * @param      k_p        The proportional term coefficient
          * @param      k_i        The integral term coefficient
-         * @param      k_d        The derivative term coefficient
          * @param      T          The sampling time
          */
         inline Controller(
@@ -93,7 +79,6 @@ namespace PID {
             float *reference,
             float k_p,
             float k_i,
-            float k_d,
             float T
         );    
 
