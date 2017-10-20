@@ -14,11 +14,11 @@ namespace PID {
 
     private:
 
-        /* @brief Input */
+        /* @brief Pointer to input var */
         float *in;
-        /* @brief Output */
+        /* @brief Pointer to output var */
         float *out;
-        /* @brief Reference */
+        /* @brief Pointer to reference var */
         float *ref;
 
         /* Coefficients */
@@ -29,6 +29,18 @@ namespace PID {
         float k_i;
         /* @brief Coefficient for derivative term */
         float k_d;
+
+         /* @brief Proportional term */
+        float p;
+         /* @brief Integral term */
+        float i;
+         /* @brief Derivative term */
+        float d;
+
+        /* @brief Input of the controller */
+        float y;
+        /* @brief Error with respect to the reference */
+        float err;
 
         /* @brief ??? */
         float a;
@@ -65,15 +77,14 @@ namespace PID {
     public:
 
         /**
-         * @brief      Constructs the object.
+         * @brief      Constructor
          *
-         * @param      input       The input ptr
-         * @param      output      The output ptr
-         * @param      reference   The reference ptr
-         * @param      k_p         The k_p value
-         * @param      k_i         The k_i value
-         * @param      k_d         The k_d value
-         * @param      update_fcn  The update output function ptr
+         * @param      input      The pointer to the input var
+         * @param      output     The pointer to the output var
+         * @param      reference  The pointer to the reference var
+         * @param      k_p        The proportional term coefficient
+         * @param      k_i        The integral term coefficient
+         * @param      k_d        The derivative term coefficient
          */
         inline Controller(
             float *input,
@@ -81,14 +92,15 @@ namespace PID {
             float *reference,
             float k_p,
             float k_i,
-            float k_d,
-            void (*update_fcn)(void)
+            float k_d
         );    
 
         /**
          * @brief      Updates output
+         *
+         * @param	   updateFcn	The pointer to the output callback fuction
          */
-        void update();
+        void update(void (*updateFcn)(void));
 
         /* Getters and Setters */
         
