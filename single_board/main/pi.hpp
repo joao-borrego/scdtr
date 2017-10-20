@@ -8,7 +8,9 @@
  * @author João Borrego
 */
 
-namespace PI {
+#include "Arduino.h"
+
+namespace PIController {
 
     class Controller {
 
@@ -45,6 +47,9 @@ namespace PI {
 
         /* Numerical constants */
 
+        /* @brief Error deadzone threshold */
+        float err_deadzone = 3.0;
+
         // p = k_p * b - k_p * y
         /* @brief k_1 = k_p * b */
         float k_1;
@@ -55,11 +60,6 @@ namespace PI {
 
         /* @brief Pointer to callback function to update output */
         void *(updateFcn)();
-
-    private:
-
-        /* DEBUG Number of steps calculated */
-        int steps = 0;
 
     public:
 

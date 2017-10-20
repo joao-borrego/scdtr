@@ -10,7 +10,7 @@
 
 #include "pi.hpp"
 
-namespace PI {
+namespace PIController {
 
     inline Controller::Controller(
         float *input,
@@ -47,10 +47,15 @@ namespace PI {
         float y_new = *(in);
         float new_ref = *(ref);
 
-        /* TODO - Apply deadzone to reduce output jitter */
         float err_new = new_ref - y_new;
+        
+        /* Apply deadzone to reduce output jitter */
+        float err_diff = err_new - err;
+        if (abs(err_diff) < err_deadzone){
+            err_new = 0.0;
+        }
 
-        float p_new, i_new; // float d_new;
+        float p_new, i_new;
 
         p_new = k_1 * new_ref - k_p * y;
 
