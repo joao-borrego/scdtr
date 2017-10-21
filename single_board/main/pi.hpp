@@ -16,50 +16,51 @@ namespace PIController {
 
     private:
 
-        /* @brief Pointer to input var */
+        /** Pointer to input var */
         float *in;
-        /* @brief Pointer to output var */
+        /** Pointer to output var */
         float *out;
-        /* @brief Pointer to reference var */
+        /** Pointer to reference var */
         float *ref;
 
         /* Coefficients */
 
-        /* @brief Coefficient for proportional term */
+        /** Coefficient for proportional term */
         float k_p;
-        /* @brief Coefficient for integral term */
+        /** Coefficient for integral term */
         float k_i;
 
-        /* @brief Proportional term */
+        /** Proportional term */
         float p;
-        /* @brief Integral term */
+        /** Integral term */
         float i;
 
-        /* @brief Input of the controller */
+        /** Input of the controller */
         float y;
-        /* @brief Error with respect to the reference */
+        /** Error with respect to the reference */
         float err;
 
-        /* @brief Constant between 0 and 1 */
+        /** Constant between 0 and 1 */
         float b;
-        /* @brief Sampling time */
+        /** Sampling time */
         float T;
 
         /* Numerical constants */
 
-        /* @brief Error deadzone threshold */
+        /** Error deadzone threshold */
         float err_deadzone = 3.0;
 
-        // p = k_p * b - k_p * y
-        /* @brief k_1 = k_p * b */
+        /**
+         * k_1 = k_p * b
+         * p = k_p * b - k_p * y
+         */
         float k_1;
 
-        // i = i_old + (k_p * k_i * T / 2) * (err - err_old)
-        /* @brief k_2 = k_p * k_i * T / 2 */
+        /**
+         * k_2 = k_p * k_i * T / 2
+         * i = i_old + (k_p * k_i * T / 2) * (err - err_old)
+         */
         float k_2;
-
-        /* @brief Pointer to callback function to update output */
-        void *(updateFcn)();
 
     public:
 
@@ -71,9 +72,9 @@ namespace PIController {
          * @param      reference  The pointer to the reference var
          * @param      k_p        The proportional term coefficient
          * @param      k_i        The integral term coefficient
-         * @param      T          The sampling time
+         * @param      T          The sampling time in seconds
          */
-        inline Controller(
+        Controller(
             float *input,
             float *output,
             float *reference,
@@ -85,7 +86,7 @@ namespace PIController {
         /**
          * @brief      Updates output
          *
-         * @param	   updateFcn	The pointer to the output callback fuction
+         * @param      updateFcn    The pointer to the output callback fuction
          */
         void update(void (*updateFcn)(void));
     };

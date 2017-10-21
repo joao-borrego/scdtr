@@ -19,16 +19,15 @@
 /** Maximum value for the output */
 #define MAX_OUT 255
 
-
 /* Global variables */
 
 /** Reference lux value */
 float reference {0};
 /** PWM output to LED */
 float output {0};
-
+/** Command line buffer */
 char cmd_buffer[BUFFER_SIZE];
-
+/** Debug cycle counter */
 volatile int cycles = 0;
 
 /* Pinout */
