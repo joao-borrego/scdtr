@@ -10,6 +10,16 @@
 /** Size of buffer for Serial communication */
 #define BUFFER_SIZE 30
 
+/** Minimum value for the reference */
+#define MIN_REF 0
+/** Maximum value for the reference */
+#define MAX_REF 1000
+/** Minimum value for the output */
+#define MIN_OUT 0
+/** Maximum value for the output */
+#define MAX_OUT 255
+
+
 /* Global variables */
 
 /** Reference lux value */
@@ -18,6 +28,8 @@ float reference {0};
 float output {0};
 
 char cmd_buffer[BUFFER_SIZE];
+
+volatile int cycles = 0;
 
 /* Pinout */
 
@@ -32,16 +44,114 @@ void setup() {
 }
 
 void loop() {
-    // Low CPU usage
-    delay(1000000000);
-}
-
-bool readCommand(){
-
+    
+    if(readLine()){
+        processCommand();    
+    }
+    // Lower CPU usage
+    delayMicroseconds(1000000000000000);
 }
 
 /**
- * @brief      Setup timer interrupts
+ * @brief      Reads a line from Serial
+ *
+ * @return     Whether a line was read
+ */
+bool readLine(){
+
+    static uint8_t offset = 0;
+
+    while(Serial.available()){
+        char cur = Serial.read();
+        switch(cur) {
+            // Carriage return
+            case '\r':
+            // Line feed
+            case '\n':
+                // Terminate string
+                cmd_buffer[offset] = '\0';
+                if (offset > 0){
+                    offset = 0;
+                    printCommand();
+                    return true;
+                }
+                break;
+            default:
+                if (offset < BUFFER_SIZE - 1){
+                    cmd_buffer[offset] = cur;
+                    offset++;
+                    cmd_buffer[offset] = '\0';
+                }
+        }   
+    }
+    return false;
+}
+
+/**
+ * @brief      Prints a command to Serial
+ */
+void printCommand(){
+    Serial.print("> ");
+    Serial.println(cmd_buffer);
+}
+
+/**
+ * @brief      Processes a command read from Serial
+ */
+void processCommand(){
+
+    char *command = strtok(cmd_buffer, " \n");
+
+    if (!strcmp(command, "list")){
+        listVariables(); 
+    } else if (!strcmp(command, "set")){
+        char *params = strtok(NULL, " \n");
+        if (!strcmp(params, "reference")){
+            char *value_str = strtok(NULL, " \n");
+            if (value_str){
+                float new_reference = atof(value_str);
+                if (new_reference > MIN_REF && new_reference < MAX_REF){
+                    reference = new_reference;
+                    Serial.print("Reference set to ");
+                    Serial.println(reference);
+                    return;
+                }
+            }
+            Serial.println("Invalid value provided!");
+        } else if (!strcmp(params, "output")){
+            char *value_str = strtok(NULL, " \n");
+            if (value_str){
+                float new_output = atof(value_str);
+                if (new_output > MIN_OUT && new_output < MAX_OUT){
+                    output = new_output;
+                    Serial.print("Output set to ");
+                    Serial.println(output);
+                    return;
+                }
+            }
+            Serial.println("Invalid value provided!");
+        } else {
+            Serial.println("Invalid variable!");
+        }
+    } else {
+        Serial.println("Command not found!");
+    }
+}
+
+/**
+ * @brief      Lists important variables to Serial
+ */
+void listVariables(){
+    Serial.print("Reference is set to ");
+    Serial.println(reference);
+    Serial.print("Output is set to ");
+    Serial.println(output);
+    Serial.print("[DEBUG] Seconds since launch: ");
+    Serial.println(cycles);
+}
+
+/**
+ * @brief      Sets up timer interrupts
  * 
  * @note       The body of this funtion was generated automatically at
  *             <a href="http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html">
@@ -70,5 +180,5 @@ void setupTimerInt(){
  * @param[in]  <unnamed>    Timer/Counter1 Compare Match A
  */
 ISR(TIMER1_COMPA_vect){
-   Serial.println(++reference);
+   cycles++;
 }
