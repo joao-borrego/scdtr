@@ -5,14 +5,16 @@
 * @author João Borrego
 */
 
-#define V_MAX (double) 5.0 // Volt
-#define LUX_R (double) 10000.0 // Ohm      
-#define LUX_A (double) -0.62995 // old version -0.75696
-#define LUX_B (double) 4.8487 // 4.2136
+/** Supply voltage in Volt */
+#define V_MAX (float) 5.0 
+/** Value of resistance in series with the ldr in Ohm */
+#define LUX_R (float) 10000.0
+/** Parameter $a$ of the experimental characteristic of the ldr */    
+#define LUX_A (float) -0.62995  // -0.75696
+/** Parameter $b$ of the experimental characteristic of the ldr */    
+#define LUX_B (float) 4.8487    // 4.2136
 
 #include <math.h>
-
-#include "lookup.hpp"
 
 namespace Utils {
 

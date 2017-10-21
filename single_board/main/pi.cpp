@@ -12,7 +12,7 @@
 
 namespace PIController {
 
-    inline Controller::Controller(
+    Controller::Controller(
         float *input,
         float *output,
         float *reference,
