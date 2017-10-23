@@ -23,8 +23,11 @@ void setup() {
 
 void loop() {
 
-    //sweep(0, 255, 1, 100, 1, false);
-    sweep(0, 255, 1, 100, 1, true);
+    // min, max, step, sample_time, samples, convert 
+    //sweep(0, 255, 50, 1, 1, false);
+    sweep(0, 255, 1, 50, 1, true);
+    analogWrite(11, 0);
+    delay(5000);
     //feedForward();
 }
 

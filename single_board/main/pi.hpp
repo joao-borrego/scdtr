@@ -48,7 +48,7 @@ namespace PIController {
         /* Numerical constants */
 
         /** Error deadzone threshold */
-        float err_deadzone = 3.0;
+        float err_deadzone = 0.0;
 
         /**
          * k_1 = k_p * b

@@ -30,10 +30,10 @@ namespace PIController {
 
         this->i = 0.0;
 
-        this->err = 0.0;
+        this->err = 0.1;
         this->y = 0.0;
 
-        this->b = 0.5;
+        this->b = 6.5;
         this->T = T;
 
         this->k_1 = k_p * b;

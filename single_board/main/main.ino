@@ -16,7 +16,7 @@
 /** Minimum value for the reference */
 #define MIN_REF 0
 /** Maximum value for the reference */
-#define MAX_REF 1000
+#define MAX_REF 150
 /** Minimum value for the output */
 #define MIN_OUT 0
 /** Maximum value for the output */
@@ -51,9 +51,9 @@ PIController::Controller pi(
   &input,
   &output,
   &reference,
-  2.0,
-  3.0,
-  1.0);
+  0.4507,
+  0.1,
+  0.01);
 
 /**
  * @brief      Arduino setup
@@ -137,8 +137,13 @@ void processCommand(){
                 float new_reference = atof(value_str);
                 if (new_reference > MIN_REF && new_reference < MAX_REF){
                     reference = new_reference;
-                    Serial.print("Reference set to ");
-                    Serial.println(reference);
+                    for (int i = 0; i < 10000; i++){
+                        Serial.print(input);
+                        Serial.print(", ");
+                        delayMicroseconds(100);
+                    }
+                    //Serial.print("Reference set to ");
+                    //Serial.println(reference);
                     return;
                 }
             }
@@ -183,17 +188,17 @@ void listVariables(){
  *             Arduino Timer Interrupt Calculator</a> 
  */
 void setupTimerInt(){
-    // TIMER 1 for interrupt frequency 1 Hz:
+    // TIMER 1 for interrupt frequency 100 Hz:
     cli(); // stop interrupts
     TCCR1A = 0; // set entire TCCR1A register to 0
     TCCR1B = 0; // same for TCCR1B
     TCNT1  = 0; // initialize counter value to 0
-    // set compare match register for 1 Hz increments
-    OCR1A = 62499; // = 16000000 / (256 * 1) - 1 (must be <65536)
+    // set compare match register for 100 Hz increments
+    OCR1A = 19999; // = 16000000 / (8 * 100) - 1 (must be <65536)
     // turn on CTC mode
     TCCR1B |= (1 << WGM12);
-    // Set CS12, CS11 and CS10 bits for 256 prescaler
-    TCCR1B |= (1 << CS12) | (0 << CS11) | (0 << CS10);
+    // Set CS12, CS11 and CS10 bits for 8 prescaler
+    TCCR1B |= (0 << CS12) | (1 << CS11) | (0 << CS10);
     // enable timer compare interrupt
     TIMSK1 |= (1 << OCIE1A);
     sei(); // allow interrupts
@@ -203,7 +208,9 @@ void setupTimerInt(){
  * @brief      Writes to led.
  */
 void writeToLed(){
-  analogWrite(pin_led, output);
+  output = (output >= 0)? output : 0;
+  output = (output <= 255)? output : 255;
+  analogWrite(pin_led, (int) output);
 }
 
 /**
