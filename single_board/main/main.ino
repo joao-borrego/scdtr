@@ -1,5 +1,5 @@
 /** 
- * @main.ino
+ * @file main.ino
  * @brief Single board system main application
  * @author António Almeida
  * @author João Borrego
@@ -24,9 +24,9 @@
 
 /* Pinout */
 
-/* @brief LDR analog in pin */
+/** LDR analog in pin */
 int pin_ldr = A0;
-/* @brief LED PWM out pin */
+/** LED PWM out pin */
 int pin_led = 11;
 
 /* Global variables */

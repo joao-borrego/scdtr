@@ -1,10 +1,15 @@
-a = csvread('data/test.csv');
-b = mean(a);
-x = linspace(1, 256, 256);
+%% Open a file and plot
 
-p = polyfit(x, b, 1);
+a = csvread('data/fig_g_1.csv');
+x = linspace(1, 2000, 2000);
+plot(x, a);
 
-plot(x, b);
-hold on;
-y = p(1)*x + p(2);
-plot(x, y);
+%b = mean(a);
+%plot(x, b);
+
+%% Perform a linear regression
+
+%p = polyfit(x, b, 1);
+%hold on;
+%y = p(1)*x + p(2);
+%plot(x, y);
