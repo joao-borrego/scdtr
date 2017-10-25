@@ -1,11 +1,11 @@
 %% Open a file and plot
 
-a = csvread('data/fig_f_1_avg_10.csv');
-x = linspace(1, 13000, 13000);
-%plot(x, a);
+a = csvread('data/fig_g_1.csv');
+x = linspace(1, 2000, 2000);
+plot(x, a);
 
-b = mean(a);
-plot(x, b);
+%b = mean(a);
+%plot(x, b);
 
 %% Perform a linear regression
 

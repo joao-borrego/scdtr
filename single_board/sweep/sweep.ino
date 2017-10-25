@@ -72,6 +72,9 @@ void loop() {
     //sweep(0, 255, 10, 0.2, 500, LUX);
     //sweep(0, 255, 1, 50, 1, LUX);
 
+    /* Calculate time constant (impulse response w/ pwm at 128) */
+    sweep(0, 128, 128, 0.1, 1000, VOLT);
+    
     /* OLD */
     //sweep(0, 255, 50, 1, 1, false);
     //sweep(0, 255, 1, 50, 1, true);
