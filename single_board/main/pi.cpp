@@ -13,9 +13,9 @@
 namespace PIController {
 
     Controller::Controller(
-        float *input,
-        float *output,
-        float *reference,
+        volatile float *input,
+        volatile float *output,
+        volatile float *reference,
         float k_p,
         float k_i,
         float T

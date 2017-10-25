@@ -17,11 +17,11 @@ namespace PIController {
     private:
 
         /** Pointer to input var */
-        float *in;
+        volatile float *in;
         /** Pointer to output var */
-        float *out;
+        volatile float *out;
         /** Pointer to reference var */
-        float *ref;
+        volatile float *ref;
 
         /* Coefficients */
 
@@ -75,9 +75,9 @@ namespace PIController {
          * @param      T          The sampling time in seconds
          */
         Controller(
-            float *input,
-            float *output,
-            float *reference,
+            volatile float *input,
+            volatile float *output,
+            volatile float *reference,
             float k_p,
             float k_i,
             float T
