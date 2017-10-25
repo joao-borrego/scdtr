@@ -59,8 +59,12 @@ namespace PIController {
 
         p_new = k_1 * new_ref - k_p * y;
 
-        /* TODO - Apply threshold and saturate integrator term to avoid windup */
+        /* Apply threshold and saturate integrator term to avoid windup */
         i_new = i + k_2 * (err_new + err);
+        if (i_new < ANTI_WINDUP_SAT_MIN)
+            i_new = ANTI_WINDUP_SAT_MIN;
+        else if (i_new > ANTI_WINDUP_SAT_MAX)
+            i_new = ANTI_WINDUP_SAT_MAX;
 
         *(this->out) = p_new + i_new;
 
@@ -72,5 +76,30 @@ namespace PIController {
         this->err = err_new;
         this->p = p_new;
         this->i = i_new;
+    }
+
+    void Controller::updateCoefficients(
+        float k_p,
+        float k_i){
+
+        this->k_p = k_p;
+        this->k_i = k_i;
+        /* Update internal constants */
+        this->k_1 = k_p * b;
+        this->k_2 = k_p * k_i * T / 2.0;
+        /* Reset history */
+        this->y = 0;
+        this->err = 0;
+        this->p = 0;
+        this->i = 0;
+    }
+
+    void Controller::setErrorDeadzone(float deadzone){
+        this->err_deadzone = deadzone;
+    }
+
+    void Controller::setAntiWindupSat(float sat_min, float sat_max){
+        this->sat_min = sat_min;
+        this->sat_max = sat_max;
     }
 }

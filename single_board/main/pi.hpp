@@ -10,6 +10,10 @@
 
 #include "Arduino.h"
 
+#define ANTI_WINDUP_SAT_MIN -1.0
+#define ANTI_WINDUP_SAT_MAX  1.0
+#define ERROR_DEADZONE       0.0
+
 namespace PIController {
 
     class Controller {
@@ -48,7 +52,11 @@ namespace PIController {
         /* Numerical constants */
 
         /** Error deadzone threshold */
-        float err_deadzone = 0.0;
+        float err_deadzone = ERROR_DEADZONE;
+        /** Anti Windup negative saturation threshold */
+        float sat_min = ANTI_WINDUP_SAT_MIN;
+        /** Anti Windup positive saturation threshold */
+        float sat_max = ANTI_WINDUP_SAT_MAX;
 
         /**
          * k_1 = k_p * b
@@ -89,5 +97,28 @@ namespace PIController {
          * @param      updateFcn    The pointer to the output callback fuction
          */
         void update(void (*updateFcn)(void));
+
+        /**
+         * @brief      Updates internal coefficients
+         *
+         * @param      k_p   The k p
+         * @param      k_i   The k i
+         */
+        void updateCoefficients(float k_p, float k_i);
+
+        /**
+         * @brief      Sets the error deadzone.
+         *
+         * @param      deadzone  The deadzone
+         */
+        void setErrorDeadzone(float deadzone);
+
+        /**
+         * @brief      Sets the anti windup saturation parameters.
+         *
+         * @param      sat_min  The saturation minimum
+         * @param      sat_max  The saturation maximum
+         */
+        void setAntiWindupSat(float sat_min, float sat_max);
     };
 }

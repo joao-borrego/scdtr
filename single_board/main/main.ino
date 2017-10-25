@@ -1,5 +1,5 @@
 /** 
- * @main.ino
+ * @file main.ino
  * @brief Single board system main application
  * @author António Almeida
  * @author João Borrego

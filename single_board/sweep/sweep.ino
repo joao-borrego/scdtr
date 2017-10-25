@@ -1,5 +1,5 @@
 /** 
- * @sweep.ino
+ * @file sweep.ino
  * @brief System calibration tool
  * @author António Almeida
  * @author João Borrego
@@ -15,8 +15,13 @@
 /** Maximum value for the reference */
 #define MAX_reference 100
 
+/* Units */
+#define RAW   0
+#define VOLT  1
+#define LUX   2
+
 /** Whether to use lookup table or linear approximation */
-#define USE_LOOKUP true
+#define USE_LOOKUP false
 
 /** LDR analog in pin */
 int pin_ldr = A0;
@@ -53,10 +58,26 @@ void loop() {
 
     /* Calibration sampling routine */
 
-    // sweep(min, max, step, sample_time, samples, convert)
+    // sweep(min, max, step, sample_time, samples, unit)
 
+    /* d) v_ldr(pwm) T = 100 ms */
+    //sweep(0, 255, 1, 100, 1, VOLT);
+    //sweep(0, 255, 10, 100, 1, VOLT);
+    //sweep(0, 255, 10, 0.2, 500, VOLT);
+
+    /* e) Steady-state raw_in(pwm) T = 50 ms */
+    //sweep(0, 255, 1, 50, 1, RAW);
+
+    /* f) convert previous plotss to LUX */
+    //sweep(0, 255, 10, 0.2, 500, LUX);
+    //sweep(0, 255, 1, 50, 1, LUX);
+
+    /* OLD */
     //sweep(0, 255, 50, 1, 1, false);
-    sweep(0, 255, 1, 50, 1, true);
+    //sweep(0, 255, 1, 50, 1, true);
+    //sweep(0, 255, 10, 50, 1, false);
+
+    // Set led pin to 0 and wait enough time to discharge capacitor
     analogWrite(pin_led, 0);
     delay(5000);
 
@@ -96,16 +117,20 @@ void feedForward(){
         #if USE_LOOKUP == true
             new_output = findLookupTable(reference);
         #else
-            new_output = findLinReg(reference);
-               
+            new_output = findLineReg(reference);     
         #endif
+
         analogWrite(pin_led, new_output);
 
-        delay(500);
-        ldr_in =  analogRead(pin_ldr);
-        v_in = ldr_in * (5.0 / 1023.0);
-        lux_value = Utils::convertToLux(v_in);
-        Serial.println(lux_value);
+        for (int i = 0; i < 200; i++){
+            ldr_in =  analogRead(pin_ldr);
+            v_in = ldr_in * (5.0 / 1023.0);
+            lux_value = Utils::convertToLux(v_in);
+            Serial.print(lux_value);
+            Serial.print(", ");
+            delay(1);
+        }
+        Serial.println();
     }
 }
 
@@ -115,31 +140,37 @@ void feedForward(){
  * @param[in]  min          The minimum value
  * @param[in]  max          The maximum value
  * @param[in]  step         The step
- * @param[in]  sample_time  The sample time
+ * @param[in]  sample_time  The sample time [ms]
  * @param[in]  samples      The number of samples
- * @param[in]  convert      Whether to convert units to LUX
+ * @param[in]  unit         The unit of the output
  */
 void sweep(
     int min,
     int max,
     int step,
-    int sample_time,
+    float sample_time,
     int samples,
-    bool convert){
+    int unit){
 
     for (int out = min; out <= max; out += step){
         analogWrite(pin_led, out);
         for (int i = 0; i < samples; i++){
             ldr_in =  analogRead(pin_ldr);
-            if (convert){
-                v_in = ldr_in * (5.0 / 1023.0);
-                lux_value = Utils::convertToLux(v_in);
-                Serial.print(lux_value);
-            } else {
-                Serial.print(ldr_in);
+            switch (unit) {
+                case(RAW):
+                    Serial.print(ldr_in);
+                    break;  
+                case(VOLT):
+                    v_in = ldr_in * (5.0 / 1023.0);
+                    Serial.print(v_in);
+                    break;
+                case(LUX):
+                    v_in = ldr_in * (5.0 / 1023.0);
+                    lux_value = Utils::convertToLux(v_in);
+                    Serial.print(lux_value);
             }
             Serial.print(", ");
-            delay(sample_time);
+            delayMicroseconds(1000.0 * sample_time);
         }
     }
     Serial.println();
