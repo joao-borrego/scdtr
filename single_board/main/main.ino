@@ -160,8 +160,7 @@ void processCommand(){
                     reference = new_reference;
                     
                     if (use_feedforward){
-                    	pi.forceOutput(new_reference);
-                    	break;
+                        pi.forceOutput(new_reference);
                     }
 
                     /* DEBUG - Show input transition */
