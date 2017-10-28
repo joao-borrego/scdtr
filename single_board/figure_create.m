@@ -1,8 +1,8 @@
 %% Open a file and plot
 
-a = csvread('data/fig_g_1.csv');
+y = csvread('data/fig_g_1.csv');
 x = linspace(1, 2000, 2000);
-plot(x, a);
+plot(x, y);
 
 %b = mean(a);
 %plot(x, b);

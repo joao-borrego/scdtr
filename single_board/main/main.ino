@@ -22,6 +22,24 @@
 /** Maximum value for the output */
 #define MAX_OUT 255
 
+/* PI controller default paremeters */
+
+/** Proportional term coefficient */
+#define K_P 0.40291
+/** Integral term coefficient */
+#define K_I 26.8604
+/** Sampling time (s) */
+#define T 0.03
+
+/* System properties */
+
+/** Aproximate maximum measure for input */
+#define MAX_LUX 100.0
+/** Value for low illuminance setting */
+#define LOW_LUX (1.0 / 3.0) * MAX_LUX 
+/** Value for high illuminance setting */
+#define HIGH_LUX (2.0 / 3.0) * MAX_LUX
+
 /* Pinout */
 
 /** LDR analog in pin */
@@ -54,6 +72,9 @@ PIController::Controller pi(
   0.4507,
   0.1,
   0.01);
+
+/** Whether to use feedforward for initial estimate */
+bool use_feedforward {false};
 
 /**
  * @brief      Arduino setup
@@ -145,6 +166,14 @@ void processCommand(){
                     //Serial.print("Reference set to ");
                     //Serial.println(reference);
                     return;
+                } else if (!strcmp(value_str, "low")){
+                    reference = LOW_LUX;
+                } else if (!strcmp(value_str, "high")){
+                    reference  = HIGH_LUX;
+                } else if (!strcmp(value_str, "off")){
+                    reference = 0;
+                } else {
+                    Serial.println ("Valid options: {low, high, off, ]0, 150[}");
                 }
             }
             Serial.println("Invalid value provided!");
@@ -156,10 +185,36 @@ void processCommand(){
                     output = new_output;
                     Serial.print("Output set to ");
                     Serial.println(output);
-                    return;
                 }
             }
             Serial.println("Invalid value provided!");
+        } else if (!strcmp(params, "feedforward")){
+            char *value_str = strtok(NULL, " \n");
+            if (value_str){
+                if (!strcmp(value_str, "on")){
+                    use_feedforward = true;
+                } else if (!strcmp(value_str, "off")){
+                    use_feedforward = false;
+                }
+            }
+        } else if (!strcmp(params, "deadzone")){
+            char *value_str = strtok(NULL, " \n");
+            if (value_str){
+                if (!strcmp(value_str, "on")){
+                    pi.useErrorDeadzone(true);
+                } else if (!strcmp(value_str, "off")){
+                    pi.useErrorDeadzone(false);
+                }
+            }
+        } else if (!strcmp(params, "anti_windup")){
+            char *value_str = strtok(NULL, " \n");
+            if (value_str){
+                if (!strcmp(value_str, "on")){
+                    pi.useAntiWindup(true);
+                } else if (!strcmp(value_str, "off")){
+                    pi.useAntiWindup(false);
+                }
+            }
         } else {
             Serial.println("Invalid variable!");
         }
@@ -188,13 +243,13 @@ void listVariables(){
  *             Arduino Timer Interrupt Calculator</a> 
  */
 void setupTimerInt(){
-    // TIMER 1 for interrupt frequency 100 Hz:
+    // TIMER 1 for interrupt frequency 100/3 (33.(3)) Hz:
     cli(); // stop interrupts
     TCCR1A = 0; // set entire TCCR1A register to 0
     TCCR1B = 0; // same for TCCR1B
     TCNT1  = 0; // initialize counter value to 0
-    // set compare match register for 100 Hz increments
-    OCR1A = 19999; // = 16000000 / (8 * 100) - 1 (must be <65536)
+    // set compare match register for 100 / 3 Hz increments
+    OCR1A = 60000; // = 16000000 / (8 * (100 / 3)) - 1 (must be <65536)
     // turn on CTC mode
     TCCR1B |= (1 << WGM12);
     // Set CS12, CS11 and CS10 bits for 8 prescaler
@@ -208,9 +263,9 @@ void setupTimerInt(){
  * @brief      Writes to led.
  */
 void writeToLed(){
-  output = (output >= 0)? output : 0;
-  output = (output <= 255)? output : 255;
-  analogWrite(pin_led, (int) output);
+    output = (output >= 0)? output : 0;
+    output = (output <= 255)? output : 255;
+    analogWrite(pin_led, (int) output);
 }
 
 /**

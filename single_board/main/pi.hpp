@@ -10,9 +10,10 @@
 
 #include "Arduino.h"
 
+#define ERR_DEADZONE_MIN    -1.0
+#define ERR_DEADZONE_MAX     1.0
 #define ANTI_WINDUP_SAT_MIN -1.0
 #define ANTI_WINDUP_SAT_MAX  1.0
-#define ERROR_DEADZONE       0.0
 
 namespace PIController {
 
@@ -49,10 +50,21 @@ namespace PIController {
         /** Sampling time */
         float T;
 
+        /* Internal flags */
+
+        /** Whether to use deadzone */
+        bool use_deadzone;
+        /** Whether to use anti-windup */
+        bool use_anti_windup;
+        /** Force controller to update its output to a given value */
+        float force_y;
+
         /* Numerical constants */
 
-        /** Error deadzone threshold */
-        float err_deadzone = ERROR_DEADZONE;
+        /** Error deadzone minimum threshold */
+        float deadzone_min = ERR_DEADZONE_MIN;
+        /** Error deadzone maximum threshold */
+        float deadzone_max = ERR_DEADZONE_MAX;
         /** Anti Windup negative saturation threshold */
         float sat_min = ANTI_WINDUP_SAT_MIN;
         /** Anti Windup positive saturation threshold */
@@ -89,7 +101,7 @@ namespace PIController {
             float k_p,
             float k_i,
             float T
-        );    
+        );
 
         /**
          * @brief      Updates output
@@ -107,11 +119,19 @@ namespace PIController {
         void updateCoefficients(float k_p, float k_i);
 
         /**
+         * @brief      Resets controller history.
+         * 
+         * Resets the internal variables that account for the past.
+         */
+        inline void Controller::resetHistory();
+
+        /**
          * @brief      Sets the error deadzone.
          *
-         * @param      deadzone  The deadzone
+         * @param      deadzone_min  The deadzone minimum
+         * @param      deadzone_max  The deadzone maximum
          */
-        void setErrorDeadzone(float deadzone);
+        void Controller::setErrorDeadzone(float deadzone_min, float deadzone_max);
 
         /**
          * @brief      Sets the anti windup saturation parameters.
@@ -120,5 +140,19 @@ namespace PIController {
          * @param      sat_max  The saturation maximum
          */
         void setAntiWindupSat(float sat_min, float sat_max);
+
+        /**
+         * @brief      Sets whether the controller should use the error deadzone.
+         *
+         * @param      state  The desired state
+         */
+        void useErrorDeadzone(bool state);
+
+        /**
+         * @brief      Sets whether the controller should use the anti-windup mechanism.
+         *
+         * @param      state  The desired state
+         */
+        void useAntiWindup(bool state);
     };
 }
