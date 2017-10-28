@@ -154,5 +154,12 @@ namespace PIController {
          * @param      state  The desired state
          */
         void useAntiWindup(bool state);
+
+        /**
+         * @brief      Forces the output to a specific value
+         *
+         * @param      value  The forced value for the output
+         */
+        void forceOutput(float value);
     };
 }

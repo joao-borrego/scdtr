@@ -133,4 +133,8 @@ namespace PIController {
     void Controller::useAntiWindup(bool state){
         this->use_anti_windup = state;
     }
+
+    void Controller::forceOutput(float value){
+        this->force_y = value;
+    }
 }

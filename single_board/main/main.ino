@@ -22,12 +22,12 @@
 /** Maximum value for the output */
 #define MAX_OUT 255
 
-/* PI controller default paremeters */
+/* PI controller default parameters */
 
 /** Proportional term coefficient */
-#define K_P 0.40291
+#define K_P 0.40291 // 3.0622
 /** Integral term coefficient */
-#define K_I 26.8604
+#define K_I 26.8604 // 204.1445
 /** Sampling time (s) */
 #define T 0.03
 
@@ -156,8 +156,15 @@ void processCommand(){
             char *value_str = strtok(NULL, " \n");
             if (value_str){
                 float new_reference = atof(value_str);
-                if (new_reference > MIN_REF && new_reference < MAX_REF){
+                if (new_reference > MIN_REF && new_reference < MAX_REF){    
                     reference = new_reference;
+                    
+                    if (use_feedforward){
+                    	pi.forceOutput(new_reference);
+                    	break;
+                    }
+
+                    /* DEBUG - Show input transition */
                     for (int i = 0; i < 10000; i++){
                         Serial.print(input);
                         Serial.print(", ");
