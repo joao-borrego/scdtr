@@ -85,7 +85,7 @@ void setup() {
     /* Setup timer interrupt */
     setupTimerInt();
     /* Configure controller features */
-    pi.configureFeatures(false, false, false);
+    pi.configureFeatures(true, true, true);
 }
 
 /**

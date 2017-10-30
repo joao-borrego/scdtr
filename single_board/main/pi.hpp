@@ -11,7 +11,7 @@
 #include "Arduino.h"
 
 /** Default feedforward gain */
-#define K_FF                 (const float)  10.0
+#define K_FF                 (const float)  1.0
 /** Feedforward approximated linear characteristic m parameter */
 #define M_FF                 (const float)  0.4507
 /** Feedforward approximated linear characteristic b parameter */

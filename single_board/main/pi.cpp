@@ -130,7 +130,7 @@ namespace PIController {
 
     inline float Controller::getFeedforward(float y){
         // y = m * x + b
-        return (int) ((y - M_FF) / B_FF);
+        return (int) ((y - B_FF) / M_FF);
     }
 
     void Controller::updateCoefficients(
