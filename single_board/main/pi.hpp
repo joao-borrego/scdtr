@@ -10,13 +10,28 @@
 
 #include "Arduino.h"
 
-#define ERR_DEADZONE_MIN    -1.0
-#define ERR_DEADZONE_MAX     1.0
-#define ANTI_WINDUP_SAT_MIN -1.0
-#define ANTI_WINDUP_SAT_MAX  1.0
+/** Default feedforward gain */
+#define K_FF                 (const float)  10.0
+/** Feedforward approximated linear characteristic m parameter */
+#define M_FF                 (const float)  0.4507
+/** Feedforward approximated linear characteristic b parameter */
+#define B_FF                 (const float)  -5.2925
+/** Default anti-windup loop gain */
+#define K_SAT                (const float)  1.0
+/** Default anti-windup negative saturation threshold */
+#define ANTI_WINDUP_SAT_MIN  (const float)  0.0
+/** Default anti-windup positive saturation threshold */
+#define ANTI_WINDUP_SAT_MAX  (const float)  255.0
+/** Default error deadzone minimum threshold */
+#define ERR_DEADZONE_MIN     (const float)  -1.6
+/** Default error deadzone maximum threshold */
+#define ERR_DEADZONE_MAX     (const float)  1.6
 
 namespace PIController {
 
+    /**
+     * @brief      PI Controller class with additional features for smoother performance.
+     */
     class Controller {
 
     private:
@@ -35,46 +50,49 @@ namespace PIController {
         /** Coefficient for integral term */
         float k_i;
 
-        /** Proportional term */
-        float p;
-        /** Integral term */
-        float i;
-
-        /** Input of the controller */
-        float y;
         /** Error with respect to the reference */
         float err;
+        /** Integral term */
+        float i;
+        /** Output of the controller */
+        float u;
+        /** Saturated output of the controller */
+        float u_sat;
+        /** Input of the controller */
+        float y;
 
-        /** Constant between 0 and 1 */
-        float b;
         /** Sampling time */
         float T;
 
         /* Internal flags */
 
-        /** Whether to use deadzone */
-        bool use_deadzone;
+        /** Whether to use feedforward term */
+        bool use_feedforward;
         /** Whether to use anti-windup */
         bool use_anti_windup;
-        /** Force controller to update its output to a given value */
-        float force_y;
+        /** Whether to use deadzone */
+        bool use_deadzone;
 
         /* Numerical constants */
 
+        /** Feedforward weight gain */
+        float b;
+        /** Anti-windup loop gain */
+        float k_sat;
+        /** Anti-windup negative saturation threshold */
+        float sat_min;
+        /** Anti-windup positive saturation threshold */
+        float sat_max;
         /** Error deadzone minimum threshold */
-        float deadzone_min = ERR_DEADZONE_MIN;
+        float deadzone_min;
         /** Error deadzone maximum threshold */
-        float deadzone_max = ERR_DEADZONE_MAX;
-        /** Anti Windup negative saturation threshold */
-        float sat_min = ANTI_WINDUP_SAT_MIN;
-        /** Anti Windup positive saturation threshold */
-        float sat_max = ANTI_WINDUP_SAT_MAX;
+        float deadzone_max;
 
         /**
          * k_1 = k_p * b
          * p = k_p * b - k_p * y
          */
-        float k_1;
+        //float k_1;
 
         /**
          * k_2 = k_p * k_i * T / 2
@@ -85,23 +103,46 @@ namespace PIController {
     public:
 
         /**
-         * @brief      Constructor
+         * @brief      Constructs the PI controller object.
          *
-         * @param      input      The pointer to the input var
-         * @param      output     The pointer to the output var
-         * @param      reference  The pointer to the reference var
-         * @param      k_p        The proportional term coefficient
-         * @param      k_i        The integral term coefficient
-         * @param      T          The sampling time in seconds
+         * @param      input                The pointer to the input
+         * @param      output               The pointer to the output
+         * @param      reference            The pointer to the reference
+         * @param      k_p                  The coefficient for the proportional term
+         * @param      k_i                  The coefficient for the integral term
+         * @param      T                    Sapling time
+         * @param      b                    Feedforward controller gain
+         * @param      k_sat                The anti-windup loop gain
+         * @param      anti_windup_sat_min  The anti-windup sat minimum
+         * @param      anti_windup_sat_max  The anti-windup sat maximum
+         * @param      error_deadzone_min   The error deadzone minimum
+         * @param      error_deadzone_max   The error deadzone maximum
          */
         Controller(
             volatile float *input,
             volatile float *output,
             volatile float *reference,
-            float k_p,
-            float k_i,
-            float T
-        );
+            const float k_p,
+            const float k_i,
+            const float T,
+            const float b = K_FF,
+            const float k_sat = K_SAT,
+            const float anti_windup_sat_min = ANTI_WINDUP_SAT_MIN,
+            const float anti_windup_sat_max = ANTI_WINDUP_SAT_MAX,
+            const float error_deadzone_min = ERR_DEADZONE_MIN,
+            const float error_deadzone_max = ERR_DEADZONE_MAX);
+
+        /**
+         * @brief      Configures which controller features should be enabled
+         *
+         * @param      use_feedforward  Whether to use feedforward
+         * @param      use_anti_windup  Whether to use anti-windup
+         * @param      use_deadzone     Whether to use error deadzone
+         */
+        configureFeatures(
+            const bool use_feedforward,
+            const bool use_anti_windup,
+            const bool use_deadzone);
 
         /**
          * @brief      Updates output
@@ -109,6 +150,37 @@ namespace PIController {
          * @param      updateFcn    The pointer to the output callback fuction
          */
         void update(void (*updateFcn)(void));
+
+        /**
+         * @brief      Applies the anti-windup loop saturation
+         *
+         * @param[in]  output  The output before saturation
+         *
+         * @return     The saturated output
+         */
+        inline float Controller::applySaturation(float output);
+
+        /**
+         * @brief      Applies the error deadzone
+         *
+         * @param      error  The error
+         *
+         * @return     Returns the processed error
+         */
+        inline float applyDeadzone(float error);
+
+        /**
+         * @brief      Gets the feedforward estimate
+         *
+         * Uses an approximated linear characteristic to obtain
+         * the u output value corresponding to a given reference
+         * y value.
+         *
+         * @param      y     The desired reference value
+         *
+         * @return     The corresponding output value
+         */
+        inline float Controller::getFeedforward(float y);
 
         /**
          * @brief      Updates internal coefficients
@@ -142,6 +214,13 @@ namespace PIController {
         void setAntiWindupSat(float sat_min, float sat_max);
 
         /**
+         * @brief      Sets whether the controller should use the feedforward estimate.
+         *
+         * @param      state  The desired state
+         */
+        void Controller::useFeedForward(bool state);
+
+        /**
          * @brief      Sets whether the controller should use the error deadzone.
          *
          * @param      state  The desired state
@@ -154,12 +233,5 @@ namespace PIController {
          * @param      state  The desired state
          */
         void useAntiWindup(bool state);
-
-        /**
-         * @brief      Forces the output to a specific value
-         *
-         * @param      value  The forced value for the output
-         */
-        void forceOutput(float value);
     };
 }

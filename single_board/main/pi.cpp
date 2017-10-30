@@ -16,84 +16,121 @@ namespace PIController {
         volatile float *input,
         volatile float *output,
         volatile float *reference,
-        float k_p,
-        float k_i,
-        float T
-    ){
+        const float k_p,
+        const float k_i,
+        const float T,
+        const float b,
+        const float k_sat,
+        const float anti_windup_sat_min,
+        const float anti_windup_sat_max,
+        const float error_deadzone_min,
+        const float error_deadzone_max){
 
         this->in = input;
         this->out = output;
         this->ref = reference;
-
         this->k_p = k_p;
         this->k_i = k_i;
+        this->T = T;
+
+        this->b = b;
+        this->k_sat = k_sat;
+        this->sat_min = anti_windup_sat_min;
+        this->sat_max = anti_windup_sat_max;
+        this->deadzone_min = error_deadzone_min;
+        this->deadzone_max = error_deadzone_max;
+        
+        this->err = 0.0;
         this->i = 0.0;
-        this->err = 0.1;
+        this->u = 0.0;
+        this->u_sat = 0.0;
         this->y = 0.0;
 
-        this->b = 6.5;
-        this->T = T;
-        
-        this->force_y = -1;
-        this->use_deadzone = false;
+        this->use_feedforward = false;
         this->use_anti_windup = false;
+        this->use_deadzone = false;
 
-        this->k_1 = k_p * b;
+        //this->k_1 = k_p * b;
         this->k_2 = k_p * k_i * T / 2.0;
+    }
+
+    Controller::configureFeatures(
+        const bool use_feedforward,
+        const bool use_anti_windup,
+        const bool use_deadzone){
+
+        this->use_feedforward = use_feedforward;
+        this->use_anti_windup = use_anti_windup;
+        this->use_deadzone = use_deadzone;
     }
 
     void Controller::update(void (*updateFcn)(void)){
 
-        /* Check if an output value was forced */
-        if (force_y > 0){
-            *(this->out) = force_y;
-            updateFcn();
-            Controller::resetHistory();
-            this->y = force_y;
-            force_y = -1;
-            return;
-        }
-
-        /* Perform calculations */
-
-        float y_new = *(in);
-        float new_ref = *(ref);
-        float err_new = new_ref - y_new;
+        /* Sample input and reference */
+        float y_sampled = *(in);
+        float ref_sampled = *(ref);
+        float err_new = ref_sampled - y_sampled;
         
-        /* Apply (possibly asymmetric) deadzone to reduce output jitter */
+        /* Apply error deadzone to reduce output jitter */
         if (use_deadzone){
-            if (err_new >= deadzone_max){
-                err_new -= deadzone_max;
-            } else if (err_new <= deadzone_min){
-                err_new -= deadzone_min;
-            } else {
-                err_new = 0;
-            }
+            err_new = applyDeadzone(err_new);
         }
 
-        float p_new, i_new;
-        p_new = k_1 * new_ref - k_p * y;
+        float p_new, i_new, u_new, u_sat_new;
+        
+        p_new = k_p * err_new;
+        if (use_feedforward){
+            // Add feedforward term
+            p_new += b * getFeedforward(ref_sampled);
+        }
+
+        //p_new = k_1 * ref_sampled - k_p * y;
+
         i_new = i + k_2 * (err_new + err);
-
-        /* TODO Perform proper anti-windup */
         if (use_anti_windup){
-            if (i_new < ANTI_WINDUP_SAT_MIN){
-                i_new = ANTI_WINDUP_SAT_MIN;
-            } else if (i_new > ANTI_WINDUP_SAT_MAX){
-                i_new = ANTI_WINDUP_SAT_MAX;
-            }
+            i_new += k_sat * (u_sat - u);
+            u_new = p_new + i_new;
+            u_sat_new = applySaturation(u_new);
+            *(this->out) = u_sat_new;
+        } else {
+            u_new = p_new + i_new;
+            *(this->out) = u_new;
         }
-
-        *(this->out) = p_new + i_new;
 
         /* Update output using external callback function */
         updateFcn();
 
         /* Update old values */
-        this->y = y_new;
+        this->y = y_sampled;
         this->err = err_new;
-        this->p = p_new;
         this->i = i_new;
+        this->u = u_new;
+        if (use_anti_windup){
+            this->u_sat = u_sat_new;
+        }
+    }
+
+    inline float Controller::applySaturation(float output){
+        if (output > sat_max){
+            return sat_max;
+        } else if (output < sat_min){
+            return sat_min;
+        }
+        return output;
+     }
+
+    inline float Controller::applyDeadzone(float error){
+        if (error > deadzone_max){
+           return  error - deadzone_max;
+        } else if (error < deadzone_min){
+            return error - deadzone_min;
+        }
+        return 0.0;
+    }
+
+    inline float Controller::getFeedforward(float y){
+        // y = m * x + b
+        return (int) ((y - M_FF) / B_FF);
     }
 
     void Controller::updateCoefficients(
@@ -103,7 +140,7 @@ namespace PIController {
         this->k_p = k_p;
         this->k_i = k_i;
         /* Update internal constants */
-        this->k_1 = k_p * b;
+        //this->k_1 = k_p * b;
         this->k_2 = k_p * k_i * T / 2.0;
 
         Controller::resetHistory();
@@ -112,8 +149,14 @@ namespace PIController {
     inline void Controller::resetHistory(){
         this->y = 0;
         this->err = 0;
-        this->p = 0;
         this->i = 0;
+    }
+
+    /* Getters and setters */
+
+    void Controller::setAntiWindupSat(float sat_min, float sat_max){
+        this->sat_min = sat_min;
+        this->sat_max = sat_max;
     }
 
     void Controller::setErrorDeadzone(float deadzone_min, float deadzone_max){
@@ -121,20 +164,15 @@ namespace PIController {
         this->deadzone_max = deadzone_max;
     }
 
-    void Controller::setAntiWindupSat(float sat_min, float sat_max){
-        this->sat_min = sat_min;
-        this->sat_max = sat_max;
-    }
-
-    void Controller::useErrorDeadzone(bool state){
-        this->use_deadzone = state;
+    void Controller::useFeedForward(bool state){
+        this->use_feedforward = state;
     }
 
     void Controller::useAntiWindup(bool state){
         this->use_anti_windup = state;
     }
 
-    void Controller::forceOutput(float value){
-        this->force_y = value;
+    void Controller::useErrorDeadzone(bool state){
+        this->use_deadzone = state;
     }
 }
