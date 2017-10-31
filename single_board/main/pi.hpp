@@ -10,24 +10,24 @@
 
 #include "Arduino.h"
 
-/** Default feedforward gain */
-#define K_FF                 (const float)  1.0
-/** Feedforward approximated linear characteristic m parameter */
-#define M_FF                 (const float)  0.4507
-/** Feedforward approximated linear characteristic b parameter */
-#define B_FF                 (const float)  -5.2925
-/** Default anti-windup loop gain */
-#define K_SAT                (const float)  1.0
-/** Default anti-windup negative saturation threshold */
-#define ANTI_WINDUP_SAT_MIN  (const float)  0.0
-/** Default anti-windup positive saturation threshold */
-#define ANTI_WINDUP_SAT_MAX  (const float)  255.0
-/** Default error deadzone minimum threshold */
-#define ERR_DEADZONE_MIN     (const float)  -1.6
-/** Default error deadzone maximum threshold */
-#define ERR_DEADZONE_MAX     (const float)  1.6
-
 namespace PIController {
+
+    /** Default feedforward gain */
+    const float K_FF                 =  0.95;
+    /** Feedforward approximated linear characteristic m parameter */
+    const float M_FF                 =  0.4507;
+    /** Feedforward approximated linear characteristic b parameter */
+    const float B_FF                 =  -5.2925;
+    /** Default anti-windup loop gain */
+    const float K_SAT                =  1.0;
+    /** Default anti-windup negative saturation threshold */
+    const float ANTI_WINDUP_SAT_MIN  =  0.0;
+    /** Default anti-windup positive saturation threshold */
+    const float ANTI_WINDUP_SAT_MAX  =  255.0;
+    /** Default error deadzone minimum threshold */
+    const float ERR_DEADZONE_MIN     =  -1.6;
+    /** Default error deadzone maximum threshold */
+    const float ERR_DEADZONE_MAX     =  1.6;
 
     /**
      * @brief      PI Controller class with additional features for smoother performance.
@@ -158,7 +158,7 @@ namespace PIController {
          *
          * @return     The saturated output
          */
-        inline float Controller::applySaturation(float output);
+        inline float applySaturation(float output);
 
         /**
          * @brief      Applies the error deadzone
@@ -180,7 +180,7 @@ namespace PIController {
          *
          * @return     The corresponding output value
          */
-        inline float Controller::getFeedforward(float y);
+        inline float getFeedforward(float y);
 
         /**
          * @brief      Updates internal coefficients
@@ -195,7 +195,7 @@ namespace PIController {
          * 
          * Resets the internal variables that account for the past.
          */
-        inline void Controller::resetHistory();
+        inline void resetHistory();
 
         /**
          * @brief      Sets the error deadzone.
@@ -203,7 +203,7 @@ namespace PIController {
          * @param      deadzone_min  The deadzone minimum
          * @param      deadzone_max  The deadzone maximum
          */
-        void Controller::setErrorDeadzone(float deadzone_min, float deadzone_max);
+        void setErrorDeadzone(float deadzone_min, float deadzone_max);
 
         /**
          * @brief      Sets the anti windup saturation parameters.
@@ -218,7 +218,7 @@ namespace PIController {
          *
          * @param      state  The desired state
          */
-        void Controller::useFeedForward(bool state);
+        void useFeedforward(bool state);
 
         /**
          * @brief      Sets whether the controller should use the error deadzone.

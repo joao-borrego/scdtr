@@ -76,7 +76,7 @@ namespace PIController {
             err_new = applyDeadzone(err_new);
         }
 
-        float p_new, i_new, u_new, u_sat_new;
+        float p_new{0}, i_new{0}, u_new{0}, u_sat_new{0};
         
         p_new = k_p * err_new;
         if (use_feedforward){
@@ -164,7 +164,7 @@ namespace PIController {
         this->deadzone_max = deadzone_max;
     }
 
-    void Controller::useFeedForward(bool state){
+    void Controller::useFeedforward(bool state){
         this->use_feedforward = state;
     }
 

@@ -9,63 +9,65 @@
 #include "pi.hpp"
 
 /** Baudrate value for Serial communication */ 
-#define BAUDRATE 	 115200
+const long BAUDRATE = 115200;
 /** Size of buffer for Serial communication */
-#define BUFFER_SIZE  30
+const unsigned int  BUFFER_SIZE = 30;
 
 /** Minimum value for the reference */
-#define MIN_REF (const float) 0
+const float MIN_REF = 0.0;
 /** Maximum value for the reference */
-#define MAX_REF (const float) 150
+const float MAX_REF = 150.0;
 /** Minimum value for the output */
-#define MIN_OUT (const float) 0
+const unsigned int MIN_OUT = 0;
 /** Maximum value for the output */
-#define MAX_OUT (const float) 255
+const unsigned int MAX_OUT = 255;
+
+/** Minimum interval between status Serial prints (ms) */
+const unsigned long STATUS_DELAY = 100;
 
 /* PI controller default parameters */
 
 /** Proportional term coefficient */
-#define K_P 0.40291 // 3.0622
+const float K_P = 0.40291; // 3.0622
 /** Integral term coefficient */
-#define K_I 26.8604 // 204.1445
+const float K_I = 26.8604; // 204.1445
 /** Sampling time (s) */
-#define T 	0.030
+const float T   = 0.030;
 
 /* System properties */
 
 /** Aproximate maximum measure for input */
-#define MAX_LUX  (const float) 100.0
+const float MAX_LUX  = 100.0;
 /** Value for low illuminance setting */
-#define LOW_LUX  (const float) (1.0 / 3.0) * MAX_LUX 
+const float LOW_LUX  = (1.0 / 3.0) * MAX_LUX;
 /** Value for high illuminance setting */
-#define HIGH_LUX (const float) (2.0 / 3.0) * MAX_LUX
+const float HIGH_LUX = (2.0 / 3.0) * MAX_LUX;
 
 /* Pinout */
 
 /** LDR analog in pin */
-int pin_ldr = A0;
+const int pin_ldr = A0;
 /** LED PWM out pin */
-int pin_led = 11;
+const int pin_led = 11;
 
 /* Global variables */
 
 /** Reference lux value */
 volatile float reference {0};
 /** LDR input ADC value */
-float ldr_in {0};
+volatile float ldr_in {0};
 /** LDR input converted to LUX units */
 volatile float input {0};
 /** PWM output to LED */
 volatile float output {0};
-
 /** LDR input tension */
-float v_in {0}; 
+volatile float v_in {0}; 
 
 /** Command line buffer */
 char cmd_buffer[BUFFER_SIZE] {0};
 
 /** Proportional Integrator controller */
-PIController::Controller pi(
+PIController::Controller controller(
   &input,
   &output,
   &reference,
@@ -74,7 +76,11 @@ PIController::Controller pi(
   T);
 
 /** Whether to use feedforward for initial estimate */
-bool use_feedforward {false};
+bool use_feedforward {true};
+/** Elapsed milliseconds since startup */
+unsigned long current_millis {0};
+/** Elapsed milliseconds since startup */
+unsigned long last_millis {0};
 
 /**
  * @brief      Arduino setup
@@ -85,7 +91,7 @@ void setup() {
     /* Setup timer interrupt */
     setupTimerInt();
     /* Configure controller features */
-    pi.configureFeatures(true, true, true);
+    controller.configureFeatures(use_feedforward, true, true);
 }
 
 /**
@@ -93,13 +99,19 @@ void setup() {
  */
 void loop() {
     
-    if(readLine()){
+    /* Read commands from Serial */
+    if (readLine()){
         processCommand();    
     }
-    /* Lower CPU usage */
-    delayMicroseconds(1000);
 
-    listVariables();
+    /* Print status every STATUS_DELAY milliseconds */
+    current_millis = millis();
+    if (current_millis - last_millis >= STATUS_DELAY){
+        last_millis = current_millis;
+        listVariables();
+        /* Lower CPU usage */
+        delay(0.8 * STATUS_DELAY);
+    }
 }
 
 /**
@@ -111,9 +123,9 @@ bool readLine(){
 
     static uint8_t offset = 0;
 
-    while(Serial.available()){
+    while (Serial.available()){
         char cur = Serial.read();
-        switch(cur) {
+        switch (cur) {
             // Carriage return
             case '\r':
             // Line feed
@@ -184,26 +196,28 @@ void processCommand(){
             if (value_str){
                 if (!strcmp(value_str, "on")){
                     use_feedforward = true;
+                    controller.useFeedforward(true);
                 } else if (!strcmp(value_str, "off")){
                     use_feedforward = false;
+                    controller.useFeedforward(false);
                 }
             }
         } else if (!strcmp(params, "deadzone")){
             char *value_str = strtok(NULL, " \n");
             if (value_str){
                 if (!strcmp(value_str, "on")){
-                    pi.useErrorDeadzone(true);
+                    controller.useErrorDeadzone(true);
                 } else if (!strcmp(value_str, "off")){
-                    pi.useErrorDeadzone(false);
+                    controller.useErrorDeadzone(false);
                 }
             }
         } else if (!strcmp(params, "anti_windup")){
             char *value_str = strtok(NULL, " \n");
             if (value_str){
                 if (!strcmp(value_str, "on")){
-                    pi.useAntiWindup(true);
+                    controller.useAntiWindup(true);
                 } else if (!strcmp(value_str, "off")){
-                    pi.useAntiWindup(false);
+                    controller.useAntiWindup(false);
                 }
             }
         } else {
@@ -225,9 +239,9 @@ void listVariables(){
     Serial.print(int(use_feedforward));
     // DEBUG
     Serial.print(", ");
-    Serial.println((int) output);
-    //Serial.print(", ");
-    //Serial.println(elapsed_time);
+    Serial.print((int) output);
+    Serial.print(", ");
+    Serial.println(current_millis);
 }
 
 /**
@@ -259,8 +273,8 @@ void setupTimerInt(){
  */
 void writeToLed(){
     /* Constrain output to 8 bits */
-    output = (output >= 0)? output : 0;
-    output = (output <= 255)? output : 255;
+    output = (output >= MIN_OUT)? output : MIN_OUT;
+    output = (output <= MAX_OUT)? output : MAX_OUT;
     analogWrite(pin_led, (int) output);
 }
 
@@ -275,5 +289,5 @@ ISR(TIMER1_COMPA_vect){
     v_in = ldr_in * (5.0 / 1023.0);
     input = Utils::convertToLux(v_in);
     /* Control system */
-    pi.update(writeToLed);
+    controller.update(writeToLed);
 }
