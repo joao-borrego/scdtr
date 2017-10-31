@@ -163,68 +163,41 @@ void printCommand(){
 void processCommand(){
 
     char *command = strtok(cmd_buffer, " \n");
+    char *param = strtok(NULL, " \n");
 
-    if (!strcmp(command, "set")){
-        char *params = strtok(NULL, " \n");
-        if (!strcmp(params, "reference")){
-            char *value_str = strtok(NULL, " \n");
-            if (value_str){
-                float new_reference = atof(value_str);
-                if (new_reference > MIN_REF && new_reference < MAX_REF){    
-                    reference = new_reference;
-                } else if (!strcmp(value_str, "low")){
-                    reference = LOW_LUX;
-                } else if (!strcmp(value_str, "high")){
-                    reference  = HIGH_LUX;
-                } else if (!strcmp(value_str, "off")){
-                    reference = 0;
-                } else {
-                    Serial.println ("Valid options: {low, high, off, ]0, 150[}");
-                }
-            }
-        } else if (!strcmp(params, "output")){
-            char *value_str = strtok(NULL, " \n");
-            if (value_str){
-                float new_output = atof(value_str);
-                if (new_output > MIN_OUT && new_output < MAX_OUT){
-                    output = new_output;
-                }
-            }
-            Serial.println("Invalid value provided!");
-        } else if (!strcmp(params, "feedforward")){
-            char *value_str = strtok(NULL, " \n");
-            if (value_str){
-                if (!strcmp(value_str, "on")){
-                    use_feedforward = true;
-                    controller.useFeedforward(true);
-                } else if (!strcmp(value_str, "off")){
-                    use_feedforward = false;
-                    controller.useFeedforward(false);
-                }
-            }
-        } else if (!strcmp(params, "deadzone")){
-            char *value_str = strtok(NULL, " \n");
-            if (value_str){
-                if (!strcmp(value_str, "on")){
-                    controller.useErrorDeadzone(true);
-                } else if (!strcmp(value_str, "off")){
-                    controller.useErrorDeadzone(false);
-                }
-            }
-        } else if (!strcmp(params, "anti_windup")){
-            char *value_str = strtok(NULL, " \n");
-            if (value_str){
-                if (!strcmp(value_str, "on")){
-                    controller.useAntiWindup(true);
-                } else if (!strcmp(value_str, "off")){
-                    controller.useAntiWindup(false);
-                }
-            }
-        } else {
-            Serial.println("Invalid variable!");
+    if (!strcmp(command, "reference") && param){     
+        float new_reference = atof(param);
+        if (new_reference > MIN_REF && new_reference < MAX_REF){    
+            reference = new_reference;
+        } else if (!strcmp(param, "low")){
+            reference = LOW_LUX;
+        } else if (!strcmp(param, "high")){
+            reference  = HIGH_LUX;
+        } else if (!strcmp(param, "off")){
+            reference = 0;
+        }
+    } else if (!strcmp(command, "feedforward") && param){
+        if (!strcmp(param, "on")){
+            use_feedforward = true;
+            controller.useFeedforward(true);
+        } else if (!strcmp(param, "off")){
+            use_feedforward = false;
+            controller.useFeedforward(false);
+        }
+    } else if (!strcmp(command, "deadzone") && param){
+        if (!strcmp(param, "on")){
+            controller.useErrorDeadzone(true);
+        } else if (!strcmp(param, "off")){
+            controller.useErrorDeadzone(false);
+        }
+    } else if (!strcmp(command, "anti_windup") && param){
+        if (!strcmp(param, "on")){
+            controller.useAntiWindup(true);
+        } else if (!strcmp(param, "off")){
+            controller.useAntiWindup(false);
         }
     } else {
-        Serial.println("Command not found!");
+        Serial.println("Invalid command!");
     }
 }
 
@@ -233,14 +206,14 @@ void processCommand(){
  */
 void listVariables(){
     Serial.print(reference);
-    Serial.print(", ");
+    Serial.print("\t");
     Serial.print(input);
-    Serial.print(", ");
+    Serial.print("\t");
     Serial.print(int(use_feedforward));
     // DEBUG
-    Serial.print(", ");
+    Serial.print("\t");
     Serial.print((int) output);
-    Serial.print(", ");
+    Serial.print("\t");
     Serial.println(current_millis);
 }
 
