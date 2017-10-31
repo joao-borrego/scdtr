@@ -9,18 +9,36 @@
 #include "pi.hpp"
 
 /** Baudrate value for Serial communication */ 
-#define BAUDRATE 115200
+#define BAUDRATE 	 115200
 /** Size of buffer for Serial communication */
-#define BUFFER_SIZE 30
+#define BUFFER_SIZE  30
 
 /** Minimum value for the reference */
-#define MIN_REF 0
+#define MIN_REF (const float) 0
 /** Maximum value for the reference */
-#define MAX_REF 150
+#define MAX_REF (const float) 150
 /** Minimum value for the output */
-#define MIN_OUT 0
+#define MIN_OUT (const float) 0
 /** Maximum value for the output */
-#define MAX_OUT 255
+#define MAX_OUT (const float) 255
+
+/* PI controller default parameters */
+
+/** Proportional term coefficient */
+#define K_P 0.40291 // 3.0622
+/** Integral term coefficient */
+#define K_I 26.8604 // 204.1445
+/** Sampling time (s) */
+#define T 	0.030
+
+/* System properties */
+
+/** Aproximate maximum measure for input */
+#define MAX_LUX  (const float) 100.0
+/** Value for low illuminance setting */
+#define LOW_LUX  (const float) (1.0 / 3.0) * MAX_LUX 
+/** Value for high illuminance setting */
+#define HIGH_LUX (const float) (2.0 / 3.0) * MAX_LUX
 
 /* Pinout */
 
@@ -51,9 +69,12 @@ PIController::Controller pi(
   &input,
   &output,
   &reference,
-  0.4507,
-  0.1,
-  0.01);
+  K_P, //0.4507,
+  K_I, //0.1,
+  T);
+
+/** Whether to use feedforward for initial estimate */
+bool use_feedforward {false};
 
 /**
  * @brief      Arduino setup
@@ -63,6 +84,8 @@ void setup() {
     Serial.begin(BAUDRATE);
     /* Setup timer interrupt */
     setupTimerInt();
+    /* Configure controller features */
+    pi.configureFeatures(false, false, false);
 }
 
 /**
@@ -75,6 +98,8 @@ void loop() {
     }
     /* Lower CPU usage */
     delayMicroseconds(1000);
+
+    listVariables();
 }
 
 /**
@@ -97,7 +122,7 @@ bool readLine(){
                 cmd_buffer[offset] = '\0';
                 if (offset > 0){
                     offset = 0;
-                    printCommand();
+                    //printCommand();
                     return true;
                 }
                 break;
@@ -127,39 +152,60 @@ void processCommand(){
 
     char *command = strtok(cmd_buffer, " \n");
 
-    if (!strcmp(command, "list")){
-        listVariables(); 
-    } else if (!strcmp(command, "set")){
+    if (!strcmp(command, "set")){
         char *params = strtok(NULL, " \n");
         if (!strcmp(params, "reference")){
             char *value_str = strtok(NULL, " \n");
             if (value_str){
                 float new_reference = atof(value_str);
-                if (new_reference > MIN_REF && new_reference < MAX_REF){
+                if (new_reference > MIN_REF && new_reference < MAX_REF){    
                     reference = new_reference;
-                    for (int i = 0; i < 10000; i++){
-                        Serial.print(input);
-                        Serial.print(", ");
-                        delayMicroseconds(100);
-                    }
-                    //Serial.print("Reference set to ");
-                    //Serial.println(reference);
-                    return;
+                } else if (!strcmp(value_str, "low")){
+                    reference = LOW_LUX;
+                } else if (!strcmp(value_str, "high")){
+                    reference  = HIGH_LUX;
+                } else if (!strcmp(value_str, "off")){
+                    reference = 0;
+                } else {
+                    Serial.println ("Valid options: {low, high, off, ]0, 150[}");
                 }
             }
-            Serial.println("Invalid value provided!");
         } else if (!strcmp(params, "output")){
             char *value_str = strtok(NULL, " \n");
             if (value_str){
                 float new_output = atof(value_str);
                 if (new_output > MIN_OUT && new_output < MAX_OUT){
                     output = new_output;
-                    Serial.print("Output set to ");
-                    Serial.println(output);
-                    return;
                 }
             }
             Serial.println("Invalid value provided!");
+        } else if (!strcmp(params, "feedforward")){
+            char *value_str = strtok(NULL, " \n");
+            if (value_str){
+                if (!strcmp(value_str, "on")){
+                    use_feedforward = true;
+                } else if (!strcmp(value_str, "off")){
+                    use_feedforward = false;
+                }
+            }
+        } else if (!strcmp(params, "deadzone")){
+            char *value_str = strtok(NULL, " \n");
+            if (value_str){
+                if (!strcmp(value_str, "on")){
+                    pi.useErrorDeadzone(true);
+                } else if (!strcmp(value_str, "off")){
+                    pi.useErrorDeadzone(false);
+                }
+            }
+        } else if (!strcmp(params, "anti_windup")){
+            char *value_str = strtok(NULL, " \n");
+            if (value_str){
+                if (!strcmp(value_str, "on")){
+                    pi.useAntiWindup(true);
+                } else if (!strcmp(value_str, "off")){
+                    pi.useAntiWindup(false);
+                }
+            }
         } else {
             Serial.println("Invalid variable!");
         }
@@ -172,12 +218,16 @@ void processCommand(){
  * @brief      Lists important variables to Serial
  */
 void listVariables(){
-    Serial.print("Reference is set to ");
-    Serial.println(reference);
-    Serial.print("Input registers ");
-    Serial.println(input);
-    Serial.print("LED output is set to ");
-    Serial.println(output);
+    Serial.print(reference);
+    Serial.print(", ");
+    Serial.print(input);
+    Serial.print(", ");
+    Serial.print(int(use_feedforward));
+    // DEBUG
+    Serial.print(", ");
+    Serial.println((int) output);
+    //Serial.print(", ");
+    //Serial.println(elapsed_time);
 }
 
 /**
@@ -188,13 +238,13 @@ void listVariables(){
  *             Arduino Timer Interrupt Calculator</a> 
  */
 void setupTimerInt(){
-    // TIMER 1 for interrupt frequency 100 Hz:
+    // TIMER 1 for interrupt frequency 100/3 (33.(3)) Hz:
     cli(); // stop interrupts
     TCCR1A = 0; // set entire TCCR1A register to 0
     TCCR1B = 0; // same for TCCR1B
     TCNT1  = 0; // initialize counter value to 0
-    // set compare match register for 100 Hz increments
-    OCR1A = 19999; // = 16000000 / (8 * 100) - 1 (must be <65536)
+    // set compare match register for 100 / 3 Hz increments
+    OCR1A = 60000; // = 16000000 / (8 * (100 / 3)) - 1 (must be <65536)
     // turn on CTC mode
     TCCR1B |= (1 << WGM12);
     // Set CS12, CS11 and CS10 bits for 8 prescaler
@@ -208,9 +258,10 @@ void setupTimerInt(){
  * @brief      Writes to led.
  */
 void writeToLed(){
-  output = (output >= 0)? output : 0;
-  output = (output <= 255)? output : 255;
-  analogWrite(pin_led, (int) output);
+    /* Constrain output to 8 bits */
+    output = (output >= 0)? output : 0;
+    output = (output <= 255)? output : 255;
+    analogWrite(pin_led, (int) output);
 }
 
 /**
