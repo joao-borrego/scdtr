@@ -10,6 +10,11 @@
 
 #include "Arduino.h"
 
+/** Whether to just saturate the integrator term
+ or to use a proper anti-windup feedback loop 
+ and saturate the u output */
+#define SIMPLE_ANTI_WINDUP false
+
 namespace PIController {
 
     /** Default feedforward gain */
@@ -183,6 +188,31 @@ namespace PIController {
         inline float getFeedforward(float y);
 
         /**
+         * @brief      Sets whether the controller should use the feedforward estimate.
+         *
+         * @param      state  The desired state
+         */
+        void useFeedforward(bool state);
+
+        /**
+         * @brief      Sets whether the controller should use the error deadzone.
+         *
+         * @param      state  The desired state
+         */
+        void useErrorDeadzone(bool state);
+
+        /**
+         * @brief      Sets whether the controller should use the anti-windup mechanism.
+         *
+         * @param      state  The desired state
+         */
+        void useAntiWindup(bool state);
+        
+        /**
+         * Unused functions
+         */
+
+        /**
          * @brief      Updates internal coefficients
          *
          * @param      k_p   The k p
@@ -212,26 +242,5 @@ namespace PIController {
          * @param      sat_max  The saturation maximum
          */
         void setAntiWindupSat(float sat_min, float sat_max);
-
-        /**
-         * @brief      Sets whether the controller should use the feedforward estimate.
-         *
-         * @param      state  The desired state
-         */
-        void useFeedforward(bool state);
-
-        /**
-         * @brief      Sets whether the controller should use the error deadzone.
-         *
-         * @param      state  The desired state
-         */
-        void useErrorDeadzone(bool state);
-
-        /**
-         * @brief      Sets whether the controller should use the anti-windup mechanism.
-         *
-         * @param      state  The desired state
-         */
-        void useAntiWindup(bool state);
     };
 }
