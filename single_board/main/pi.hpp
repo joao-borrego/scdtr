@@ -18,7 +18,7 @@
 namespace PIController {
 
     /** Default feedforward gain */
-    const float K_FF                 =  0.95;
+    const float K_FF                 =  0.5;
     /** Feedforward approximated linear characteristic m parameter */
     const float M_FF                 =  0.4507;
     /** Feedforward approximated linear characteristic b parameter */
@@ -36,6 +36,15 @@ namespace PIController {
 
     /**
      * @brief      PI Controller class with additional features for smoother performance.
+     * 
+     * A simple PI Controller with parallel design in order to decouple the proportional and
+     * integral gains.
+     * It has 3 main optional optimisations:
+     * 
+     * 1. Feedforward controller term to quickly reach reference
+     * 2. Anti-windup saturation (with and without feedback loop)
+     * 3. Error deadzone to reduce output jitter
+     * 
      */
     class Controller {
 

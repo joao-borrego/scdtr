@@ -51,7 +51,7 @@ namespace PIController {
         this->use_deadzone = false;
 
         //this->k_1 = k_p * b;
-        this->k_2 = k_p * k_i * T / 2.0;
+        this->k_2 = k_i * T / 2.0;
     }
 
     Controller::configureFeatures(

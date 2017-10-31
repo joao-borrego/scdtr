@@ -26,3 +26,15 @@
 | File          | Command                               | Parameters                          |
 |---------------|---------------------------------------|-------------------------------------|
 |`fig_g_1.csv`  | `sweep(0, 128, 128, 0.1, 1000, VOLT)` | T = 0.1 ms A = 128 samples = 1000   |
+|`fig_g_2.csv`  | `sweep(0, 128, 128, 0.1, 1000, LUX)`  | T = 0.1 ms A = 128 samples = 1000   |
+
+The time constant corresponds to the time interval between the start of the step and the output
+reaching 63% (-3 dB) of the y(end).
+The static gain, G(0) can be obtained from the approximated transfer function of the plant.
+
+**(VERIFY) If we use the step response in Volt we obtain τ = 2.3 ms and G(0) = 0.02433.**
+
+The response in LUX has a lot of oscillation, which makes it a poor candidate to use for parameter
+estimation.
+The numerical method in MATLAB to estimate the linearized system fails after 20 iterations
+while achieving little to no progress in minimizing the cost function.

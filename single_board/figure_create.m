@@ -1,6 +1,6 @@
 %% Open a file and plot
 
-y = csvread('data/fig_g_1.csv');
+y = csvread('data/fig_g_2.csv');
 x = linspace(1, 2000, 2000);
 plot(x, y);
 

@@ -28,9 +28,9 @@ const unsigned long STATUS_DELAY = 100;
 /* PI controller default parameters */
 
 /** Proportional term coefficient */
-const float K_P = 0.40291; // 3.0622
+const float K_P = 2.0568;   // 0.40291; // 3.0622;
 /** Integral term coefficient */
-const float K_I = 26.8604; // 204.1445
+const float K_I = 137.1215; // 26.8604; // 204.1445
 /** Sampling time (s) */
 const float T   = 0.030;
 
@@ -77,9 +77,9 @@ PIController::Controller controller(
 
 /** Whether to use feedforward for initial estimate */
 bool use_feedforward {true};
-/** Elapsed milliseconds since startup */
+/** Latest elapsed milliseconds since startup */
 unsigned long current_millis {0};
-/** Elapsed milliseconds since startup */
+/** Previously recorded elapsed milliseconds since startup */
 unsigned long last_millis {0};
 
 /**
