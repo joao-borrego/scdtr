@@ -5,18 +5,18 @@
 * @author João Borrego
 */
 
-/** Supply voltage in Volt */
-#define V_MAX (float) 5.0 
-/** Value of resistance in series with the ldr in Ohm */
-#define LUX_R (float) 10000.0
-/** Parameter $a$ of the experimental characteristic of the ldr */    
-#define LUX_A (float) -0.62995  // -0.75696
-/** Parameter $b$ of the experimental characteristic of the ldr */    
-#define LUX_B (float) 4.8487    // 4.2136
-
 #include <math.h>
 
 namespace Utils {
+
+    /** Supply voltage in Volt */
+    const float V_MAX = 5.0 ;
+    /** Value of resistance in series with the ldr in Ohm */
+    const float LUX_R = 10000.0;
+    /** Parameter $a$ of the experimental characteristic of the ldr */    
+    const float LUX_A = -0.62995;  // -0.75696;
+    /** Parameter $b$ of the experimental characteristic of the ldr */    
+    const float LUX_B = 4.8487;    // 4.2136;
 
     /**
      * @brief Converts the measured tension of an LDR to a LUX measurement

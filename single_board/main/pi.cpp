@@ -143,7 +143,6 @@ namespace PIController {
         return (y - B_FF) / M_FF;
     }
 
-
     /* Getters and setters */
 
     void Controller::useFeedforward(bool state){

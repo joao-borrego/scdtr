@@ -1,11 +1,11 @@
 /** 
-* @file utils.cpp
+* @file sweep_utils.cpp
 * @brief Generic utilities
 * @author António Almeida
 * @author João Borrego
 */
 
-#include "utils.hpp"
+#include "sweep_utils.hpp"
 
 namespace Utils {
 

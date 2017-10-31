@@ -1,20 +1,24 @@
 /** 
-* @file utils.hpp
+* @file sweep_utils.hpp
 * @brief Generic utilities
 * @author António Almeida
 * @author João Borrego
 */
-
-#define V_MAX (double) 5.0 // Volt
-#define LUX_R (double) 10000.0 // Ohm      
-#define LUX_A (double) -0.62995 // old version -0.75696
-#define LUX_B (double) 4.8487 // 4.2136
 
 #include <math.h>
 
 #include "lookup.hpp"
 
 namespace Utils {
+
+	/** Supply voltage in Volt */
+    const float V_MAX = 5.0 ;
+    /** Value of resistance in series with the ldr in Ohm */
+    const float LUX_R = 10000.0;
+    /** Parameter $a$ of the experimental characteristic of the ldr */    
+    const float LUX_A = -0.62995;  // -0.75696;
+    /** Parameter $b$ of the experimental characteristic of the ldr */    
+    const float LUX_B = 4.8487;    // 4.2136;
 
     /**
      * @brief Converts the measured tension of an LDR to a LUX measurement
