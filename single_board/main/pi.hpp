@@ -20,9 +20,9 @@ namespace PIController {
     /** Default feedforward gain */
     const float K_FF                 =  0.5;
     /** Feedforward approximated linear characteristic m parameter */
-    const float M_FF                 =  0.4507;
+    const float M_FF                 =  0.4330;
     /** Feedforward approximated linear characteristic b parameter */
-    const float B_FF                 =  -5.2925;
+    const float B_FF                 =  -4.6204;
     /** Default anti-windup loop gain */
     const float K_SAT                =  1.0;
     /** Default anti-windup negative saturation threshold */

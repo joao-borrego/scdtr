@@ -11,7 +11,7 @@
 /** Baudrate value for Serial communication */ 
 const long BAUDRATE = 115200;
 /** Size of buffer for Serial communication */
-const unsigned int  BUFFER_SIZE = 30;
+const unsigned int BUFFER_SIZE = 30;
 
 /** Minimum value for the reference */
 const float MIN_REF = 0.0;
@@ -28,9 +28,9 @@ const unsigned long STATUS_DELAY = 100;
 /* PI controller default parameters */
 
 /** Proportional term coefficient */
-const float K_P = 2.0568;   // 0.40291; // 3.0622;
+const float K_P = 2.051;   // 0.40291; // 3.0622;
 /** Integral term coefficient */
-const float K_I = 137.1215; // 26.8604; // 204.1445
+const float K_I = 136.7462; // 26.8604; // 204.1445
 /** Sampling time (s) */
 const float T   = 0.030;
 
@@ -109,8 +109,8 @@ void loop() {
     if (current_millis - last_millis >= STATUS_DELAY){
         last_millis = current_millis;
         listVariables();
-        /* Lower CPU usage */
-        delay(0.8 * STATUS_DELAY);
+        /* Optional: lower CPU usage */
+        delay(0.7 * STATUS_DELAY);
     }
 }
 
@@ -207,12 +207,11 @@ void processCommand(){
 void listVariables(){
     Serial.print(reference);
     Serial.print("\t");
+    Serial.print(( floor(output) / 255.0));
+    Serial.print("\t");
     Serial.print(input);
     Serial.print("\t");
     Serial.print(int(use_feedforward));
-    // DEBUG
-    Serial.print("\t");
-    Serial.print((int) output);
     Serial.print("\t");
     Serial.println(current_millis);
 }
