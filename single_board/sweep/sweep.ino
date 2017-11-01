@@ -23,8 +23,8 @@ const int pin_led = 11;
 /* Global variables */
 
 /** Linear regresion parameters */
-const float a = 0.4507;
-const float b = -5.2925;
+const float m = 0.4330;  // 0.4507;
+const float b = -4.6204; // -5.2925;
 
 float reference {0};
 float ldr_in {0};
@@ -58,11 +58,11 @@ void loop() {
 
     /* f) convert previous plots to LUX */
     //sweep(0, 255, 10, 0.2, 500, LUX);
-    //sweep(0, 255, 1, 50, 1, LUX);
+    sweep(0, 255, 1, 50, 1, LUX);
 
     /* Calculate time constant (impulse response w/ pwm at 128) */
-    //sweep(0, 128, 128, 0.1, 1000, VOLT);
-    //sweep(0, 128, 128, 0.1, 1000, LUX);
+    //sweep(0, 128, 128, 0.5, 300, VOLT);
+    //sweep(0, 128, 128, 0.5, 300, LUX);
 
     // Set led pin to 0 and wait enough time to discharge capacitor
     analogWrite(pin_led, 0);
@@ -114,7 +114,7 @@ void sweep(
             Serial.print(", ");
 
             /* Wait for the sample period in us */
-            while (current_micros - last_micros < sample_time){
+            while (current_micros - last_micros < sample_period){
                 current_micros = micros();
             }
             last_micros = current_micros;
