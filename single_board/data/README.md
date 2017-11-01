@@ -2,7 +2,7 @@
 
 First of all, here's the description of each parameter:
 - *T* is the sample period, i.e. the minimum delay between samples.
-- The *step* is how much the output is varied between levels.
+- The *step* is how much the output varies between levels.
 - *Samples* is the amount of samples **per output level!**
 - *A* is the value of the step in 8bit pwm signal (0 to 255 range).
 
