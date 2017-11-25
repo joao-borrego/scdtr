@@ -28,7 +28,7 @@ const unsigned long STATUS_DELAY = 100;
 /* PI controller default parameters */
 
 /** Proportional term coefficient */
-const float K_P = 2.051;   // 0.40291; // 3.0622;
+const float K_P = 2.051;   // 0.40291;  // 3.0622;
 /** Integral term coefficient */
 const float K_I = 136.7462; // 26.8604; // 204.1445
 /** Sampling time (s) */
