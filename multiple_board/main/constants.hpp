@@ -18,12 +18,12 @@ const int N         = 2;
 
 
 /** $a$ parameters of ldr's characteristics */
-const float LUX_A[N]  = {-0.62995, -0.62995};
+const float LUX_A[N]  = {-0.62995, -0.62453};
 /** $b$ parameters of ldr's characteristics */
-const float LUX_B[N]  = {4.8487, 4.8487};
+const float LUX_B[N]  = {4.8487, 4.9487};
 
 /** K parameter matrix */
 const float K[N*N]    = {0,0,0,0};
 
 // DEBUG
-#define STATUS_DELAY 100
+#define STATUS_DELAY 1000

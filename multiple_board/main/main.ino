@@ -6,6 +6,7 @@
  */
 
 #include <EEPROM.h>
+#include <Wire.h>
 
 #include "constants.hpp"
 #include "utils.hpp"
@@ -34,14 +35,31 @@ unsigned long current_millis {0};
 /** Previously recorded elapsed milliseconds since startup */
 unsigned long last_millis {0};
 
+// TEMP
+char recv;
+
+void onReceive(){
+    recv = Wire.read();
+    Serial.println(recv);
+}
+
+
 /**
  * @brief      Arduino setup
  */
 void setup() {
-    /* Setup serial communication */
-    Serial.begin(BAUDRATE);
     /* Read device ID from EEPROM */
     id = EEPROM.read(ID_ADDR);
+    /* Setup serial communication */
+    Serial.begin(BAUDRATE);
+    /* Setup I2C communication */
+    if (id == 0){
+        // Join the bus as master
+        Wire.begin();
+    } else {
+        Wire.begin(id);
+        Wire.onReceive(onReceive);
+    }
 }
 
 /**
@@ -53,7 +71,13 @@ void loop() {
     current_millis = millis();
     if (current_millis - last_millis >=  STATUS_DELAY){
         last_millis = current_millis;
-        listVariables();
+
+        if (id == 0){
+            Wire.beginTransmission(1);
+            Wire.write('A');
+            Wire.endTransmission();
+        }
+
         /* Optional: lower CPU usage */
         delay(0.7 * STATUS_DELAY);
     }
@@ -64,9 +88,9 @@ void loop() {
  */
 void listVariables(){
 
-	ldr_in = analogRead(pin_ldr);
-	v_in = ldr_in * (VCC / 1023.0);
-	input = Utils::convertToLux(v_in, LUX_A[id], LUX_B[id]);
+    ldr_in = analogRead(pin_ldr);
+    v_in = ldr_in * (VCC / 1023.0);
+    input = Utils::convertToLux(v_in, LUX_A[id], LUX_B[id]);
 
     Serial.print(id, DEC);
     Serial.print("\t");
