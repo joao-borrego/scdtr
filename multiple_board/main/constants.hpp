@@ -12,9 +12,11 @@ const float VCC     = 5.0;
 #define BAUDRATE    115200
 
 /** EEPROM address for device ID */
-const int ID_ADDR   = 0;
+const int ID_ADDR       = 0;
 /** Number of active devices */
-const int N         = 2;
+const int N             = 2;
+/** Master ID */
+const int MASTER        = 0;
 
 
 /** $a$ parameters of ldr's characteristics */

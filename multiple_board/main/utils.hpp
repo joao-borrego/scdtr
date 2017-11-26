@@ -6,6 +6,7 @@
 */
 
 #include <math.h>
+#include <Arduino.h>
 
 namespace Utils {
 
@@ -13,6 +14,13 @@ namespace Utils {
     const float V_MAX = 5.0;
     /** Value of resistance in series with the ldr in Ohm */
     const float LUX_R = 10000.0;
+
+    // convert float to byte array  source: http://mbed.org/forum/helloworld/topic/2053/
+    typedef union float2bytes_t
+    {    
+        float f; 
+        byte b[sizeof(float)]; 
+    }; 
 
     /**
      * @brief Converts the measured tension of an LDR to a LUX measurement
@@ -29,4 +37,5 @@ namespace Utils {
      * @return The corresponding LUX value
      */
     float convertToLux(float v_in, float a, float b, float v_max=V_MAX, float r=LUX_R);
+
 }
