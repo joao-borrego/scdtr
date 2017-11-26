@@ -57,6 +57,9 @@ hold on;
 y = m * x + b;
 plot(x, y);
 
+% m = 0.4330
+% b = -4.6204
+
 %% g) Step response
 
 y = csvread('data/fig_g_1.csv');

@@ -153,6 +153,8 @@ void calibrateOnRequest(){
 void calibrate(float *k_matrix, int devices, uint8_t id){
 
     float value;
+    float output[2] = {127.0, 255.0};
+    float tmp[N*N*2];
 
     // Master 
     if (id == MASTER){
@@ -167,49 +169,64 @@ void calibrate(float *k_matrix, int devices, uint8_t id){
 
     Serial.println("[Calibration] Started");
 
-    for (int i = 0; i < devices; i++){
-        // Turn system i led on
-        if (i == id){
-            analogWrite(pin_led, 255);
-        }
-        delay(100);
-
-        if (id == MASTER){
-            for (int j = 0; j < devices; j++){
-                if (j == MASTER){
-                    value = getLDRValue();
-                } else {
-                    Wire.requestFrom(j, 4);
-                    while ((value = readFloat()) < 0){}
-                }
-                
-                // DEBUG
-                Serial.print(value);
-                if (i == j && j == devices - 1){
-                    Serial.print("\n");
-                } else {
-                    Serial.print(",");
-                }
-
-                k[i*N + j] = value; 
+    for (int s = 0; s < 2; s++){
+        
+        for (int i = 0; i < devices; i++){
+            // Turn system i led on
+            if (i == id){
+                analogWrite(pin_led, (int) output[s]);
             }
-            for (int j = 0; j < devices; j++){
-                if (j != MASTER){
-                    sendReady(j);
-                }
-            }
-        } else {
-            waitReady();
-        }
+            delay(100);
 
-        // Turn system i led off
-        if (i == id){
-            analogWrite(pin_led, 0);
+            if (id == MASTER){
+                for (int j = 0; j < devices; j++){
+                    if (j == MASTER){
+                        value = getLDRValue();
+                    } else {
+                        Wire.requestFrom(j, 4);
+                        while ((value = readFloat()) < 0){}
+                    }
+                    
+                    // DEBUG
+                    /*
+                    Serial.print(value);
+                    if (i == j && j == devices - 1){
+                        Serial.print("\n");
+                    } else {
+                        Serial.print(",");
+                    }
+                    */
+
+                    tmp[i*N + j*N + s] = value; 
+                }
+                for (int j = 0; j < devices; j++){
+                    if (j != MASTER){
+                        sendReady(j);
+                    }
+                }
+            } else {
+                waitReady();
+            }
+
+            // Turn system i led off
+            if (i == id){
+                analogWrite(pin_led, 0);
+            }
+            delay(100);
         }
-        delay(100);
     }
 
-    // TODO - Send matrix to each arduino?
+    
+    if (id == MASTER) {
+        for (int i = 0; i < devices; i++){
+            for (int j = 0; j < devices; j++){
+                k_matrix[i*devices + j] = (tmp[i*devices + j*devices + 1] - tmp[i*devices + j*devices]) / 
+                    (output[1] - output[0]);
+                Serial.println(k_matrix[i*devices + j]);
+            }
+        }
+        // TODO - Send matrix to each arduino?
+    }
 
     Serial.println("[Calibration] Done");
 }
