@@ -16,6 +16,11 @@ namespace Calibration{
     /** $b$ parameter of ldr characteristic */
     float lux_b{0};
 
+    /** */
+    volatile int idx{0};
+    /** */
+    volatile float tmp_lux[N * 2]; 
+
     void writeFloat(float var){
         int size = sizeof(float);
         byte packet[size];
@@ -50,6 +55,18 @@ namespace Calibration{
         calibration_ready = false;
     }
 
+    void inline barrier(int id){
+        if (id == MASTER){
+            for (int i = 0; i < N; i++){
+                if (i != MASTER){
+                    sendReady(i);
+                }
+            }
+        } else {
+            waitReady();
+        }
+    }
+
     float getLDRValue(){
         float ldr_in = analogRead(pin_ldr);
         float v_in = ldr_in * (VCC / 1023.0);
@@ -60,18 +77,10 @@ namespace Calibration{
     void onReceive(int bytes){
 
         if (Wire.available() != 0){
-            // Command
             if (bytes == 1){
                 byte value = Wire.read();
-                if (value == 0){
+                if (value == READY){
                     calibration_ready = true;
-                }
-            // Data
-            } else {
-                for (int i = 0; i < bytes; i++){
-                    byte value = Wire.read();
-                    Serial.print("[I2C] Received: ");
-                    Serial.println(value, HEX);
                 }
             }
         }
@@ -79,34 +88,28 @@ namespace Calibration{
 
     void onRequest(){
         float lux = getLDRValue();
+        tmp_lux[idx++] = lux;
         writeFloat(lux);
     }
 
-    void execute(float *k_matrix, int devices, uint8_t id){
+    void execute(float *k_i, float *o_i, uint8_t id){
 
-        float value;
         float output[2] = {127.0, 255.0};
-        float tmp[N*N*2];
+        
+        float value;
 
         lux_a = LUX_A[id];
         lux_b = LUX_B[id];
 
-        // Master 
-        if (id == MASTER){
-            for (int i = 0; i < devices; i++){
-                if (i != MASTER){
-                    sendReady(i);
-                }
-            }
-        } else {
-            waitReady();
-        }
+        *o_i = getLDRValue();
+        Serial.println(*o_i);
 
+        barrier(id);
         Serial.println("[Calibration] Started");
 
         for (int s = 0; s < 2; s++){
             
-            for (int i = 0; i < devices; i++){
+            for (int i = 0; i < N; i++){
                 // Turn system i led on
                 if (i == id){
                     analogWrite(pin_led, (int) output[s]);
@@ -114,34 +117,20 @@ namespace Calibration{
                 delay(100);
 
                 if (id == MASTER){
-                    for (int j = 0; j < devices; j++){
+                    for (int j = 0; j < N; j++){
                         if (j == MASTER){
                             value = getLDRValue();
+                            tmp_lux[idx++] = value;
                         } else {
                             Wire.requestFrom(j, 4);
-                            while ((value = readFloat()) < 0){}
-                        }
-                        
-                        // DEBUG
-                        /*
-                        Serial.print(value);
-                        if (i == j && j == devices - 1){
-                            Serial.print("\n");
-                        } else {
-                            Serial.print(",");
-                        }
-                        */
-
-                        tmp[i*N + j*N + s] = value; 
-                    }
-                    for (int j = 0; j < devices; j++){
-                        if (j != MASTER){
-                            sendReady(j);
+                            float tmp;
+                            while ((tmp = readFloat()) < 0){}
+                            //Serial.println(tmp);
                         }
                     }
-                } else {
-                    waitReady();
                 }
+
+                barrier(id);
 
                 // Turn system i led off
                 if (i == id){
@@ -151,21 +140,22 @@ namespace Calibration{
             }
         }
 
-        
-        if (id == MASTER) {
-            Serial.print("K = [");
-            for (int i = 0; i < devices; i++){
-                for (int j = 0; j < devices; j++){
-                    k_matrix[i*devices + j] = (tmp[i*devices + j*devices + 1] - tmp[i*devices + j*devices]) / 
-                        (output[1] - output[0]);
-                    Serial.print(k_matrix[i*devices + j]);
-                    Serial.print(" ");
-                }
-            }
-            Serial.print("]\n");
+        Serial.print("o_i = ");
+        Serial.println(*o_i);
 
-            // TODO - Send matrix to each arduino?
+        Serial.print("k_i = [");
+        for (int j = 0; j < N; j++){
+            k_i[j] = (tmp_lux[N + j] - tmp_lux[j]) / (output[1] - output[0]);
+                Serial.print(k_i[j]);
+                Serial.print(" ");
         }
+        Serial.println("]");
+
+        for (int i = 0; i < 2*N; i++){
+            Serial.print(tmp_lux[i]);
+            Serial.print(" ");
+        }
+        Serial.println();
 
         Serial.println("[Calibration] Done");
     }

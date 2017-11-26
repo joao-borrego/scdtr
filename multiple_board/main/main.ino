@@ -17,8 +17,10 @@
 /** Device id */
 uint8_t id{0};
 
-/** K parameter matrix */
-float k[N*N]{0};
+/** Row i of K parameter matrix */
+float k_i[N]{0};
+/** LUX value for complete darkness */
+float o_i{0};
 
 /** LDR input ADC value */
 volatile float ldr_in {0};
@@ -53,7 +55,7 @@ void setup() {
     Serial.println(id);
 
     /* Determine K matrix */
-    Calibration::execute(k, N, id);
+    Calibration::execute(k_i, &o_i, id);
 }
 
 /**
