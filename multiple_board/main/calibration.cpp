@@ -1,5 +1,5 @@
 /** 
-* @file calibration.hpp
+* @file calibration.cpp
 * @brief Calibration utility implementation
 * @author João Borrego
 * @author António Almeida
