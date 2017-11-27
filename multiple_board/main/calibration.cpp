@@ -140,21 +140,15 @@ namespace Calibration{
         }
 
         Serial.print("o_i = ");
-        Serial.println(*o_i);
+        Serial.println(*o_i, 3);
 
         Serial.print("k_i = [");
         for (int j = 0; j < N; j++){
             k_i[j] = (tmp_lux[N + j] - tmp_lux[j]) / (output[1] - output[0]);
-                Serial.print(k_i[j]);
+                Serial.print(k_i[j], 3);
                 Serial.print(" ");
         }
         Serial.println("]");
-
-        for (int i = 0; i < 2*N; i++){
-            Serial.print(tmp_lux[i]);
-            Serial.print(" ");
-        }
-        Serial.println();
 
         Serial.println("[Calibration] Done");
     }
