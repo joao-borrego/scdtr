@@ -34,9 +34,9 @@ const int MASTER        = 0;
 /** Value of resistance in series with the ldr in Ohm */
 const float LUX_R = 10000.0;
 /** $a$ parameters of ldr's characteristics */
-const float LUX_A[N]  = {-0.62995, -0.62453};
+const float LUX_A[N]  = {-0.62995, -0.62103};
 /** $b$ parameters of ldr's characteristics */
-const float LUX_B[N]  = {4.8487, 4.9487};
+const float LUX_B[N]  = {4.8487, 4.8487};
 
 // DEBUG
 #define STATUS_DELAY 1000
