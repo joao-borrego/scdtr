@@ -62,6 +62,5 @@ void setup() {
  * @brief      Arduino loop
  */
 void loop() {
-    
-    // TODO
+
 }

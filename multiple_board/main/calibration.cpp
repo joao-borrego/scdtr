@@ -102,10 +102,9 @@ namespace Calibration{
         lux_b = LUX_B[id];
 
         *o_i = getLDRValue();
-        Serial.println(*o_i);
 
-        barrier(id);
         Serial.println("[Calibration] Started");
+        barrier(id);
 
         for (int s = 0; s < 2; s++){
             
