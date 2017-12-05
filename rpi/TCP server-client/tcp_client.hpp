@@ -7,6 +7,12 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
+using boost::asio::deadline_timer;
+using boost::asio::ip::tcp;
+
+#include "debug.hpp"
+#include "constants.hpp"
+
 class TCPClient
 {
 
@@ -128,4 +134,4 @@ private:
      */
     void handleSend(const boost::system::error_code & err_code,
         size_t length);
-}
+};
