@@ -14,7 +14,6 @@ void parseRequest(const std::string & request, std::string & response)
     try
     {
         iss >> type >> cmd >> arg;
-        std::cout << type << ";" << cmd << ";" << arg << std::endl;
     }
     catch (std::exception & e)
     {

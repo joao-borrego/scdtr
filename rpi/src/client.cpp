@@ -34,9 +34,10 @@ int main(int argc, char* argv[])
             std::cin.getline(request, SEND_BUFFER);
             size_t request_length = std::strlen(request);
             
-            if (request_length > 0)
+            if (0 < request_length && request_length < SEND_BUFFER)
             {
-                boost::asio::write(s, boost::asio::buffer(request, request_length));
+                request[request_length] = MSG_DELIMETER;
+                boost::asio::write(s, boost::asio::buffer(request, request_length + 1));
     
                 char reply[PACKET_SIZE] = {'\0'};
                 size_t reply_length = boost::asio::read(s,

@@ -13,6 +13,7 @@ void TCPSession::start()
 
 void TCPSession::startRead()
 {
+    memset(recv_buffer_, '\0', RECV_BUFFER);
     socket_.async_read_some(boost::asio::buffer(recv_buffer_, RECV_BUFFER),
         boost::bind(& TCPSession::handleRead, this, 
             boost::asio::placeholders::error,
@@ -33,7 +34,7 @@ void TCPSession::handleRead(const boost::system::error_code & error,
         
         if (request_str)
         {
-            std::string response = "";
+            std::string response;
             std::string request(request_str);
 
             parseRequest(request, response);
@@ -44,7 +45,6 @@ void TCPSession::handleRead(const boost::system::error_code & error,
         {
             // Ignore non-terminated or empty messages (e.g. heartbeat)
             debugPrintTrace("Empty message");
-            
         }
 
         send_buffer_[length] = '\0';
