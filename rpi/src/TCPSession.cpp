@@ -28,23 +28,34 @@ void TCPSession::handleRead(const boost::system::error_code & error,
         debugPrintTrace("Received " << bytes_transferred << 
             " bytes: " << recv_buffer_);
 
-        char *request = std::strtok(recv_buffer_, DELIMETER_STR);
-        if (request)
+        size_t length = 0;
+        char *request_str = std::strtok(recv_buffer_, DELIMETER_STR);
+        
+        if (request_str)
         {
-            std::string response("Response");
+            std::string response;
+            std::string request(request_str);
+
+            parseRequest(request, response);
             strcpy(send_buffer_, response.c_str());
+            length = response.size();
         }
         else
         {
             // Ignore non-terminated or empty messages (e.g. heartbeat)
             debugPrintTrace("Empty message");
+            
         }
 
+        send_buffer_[length] = '\0';
         startWrite();
     }
     else
     {
-        errPrintTrace(error.message());
+        if (error == boost::asio::error::eof)
+            debugPrintTrace("Connection closed");
+        else
+            errPrintTrace(error.message());
         delete this;
     }
 }

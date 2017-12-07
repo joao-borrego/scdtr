@@ -33,13 +33,16 @@ int main(int argc, char* argv[])
             char request[SEND_BUFFER];
             std::cin.getline(request, SEND_BUFFER);
             size_t request_length = std::strlen(request);
-            boost::asio::write(s, boost::asio::buffer(request, request_length));
-
-            char reply[RECV_BUFFER];
-            size_t reply_length = boost::asio::read(s,
-                    boost::asio::buffer(reply, RECV_BUFFER));
-            std::cout.write(reply, reply_length);
-            std::cout << "\n";
+            
+            if (request_length > 0)
+            {
+                boost::asio::write(s, boost::asio::buffer(request, request_length));
+    
+                char reply[PACKET_SIZE];
+                size_t reply_length = boost::asio::read(s,
+                    boost::asio::buffer(reply, PACKET_SIZE));
+                std::cout << reply << std::endl;
+            }
         }
     }
     catch (std::exception& e)

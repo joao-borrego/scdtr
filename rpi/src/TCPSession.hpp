@@ -11,13 +11,10 @@ using boost::asio::ip::tcp;
 
 #include "debug.hpp"
 #include "constants.hpp"
+#include "request.hpp"
 
 /** Deadline for pending read (seconds) */
 #define EXPIRE_READ         300
-/** Size of receive buffer */
-#define RECV_BUFFER         1024
-/** Size of send buffer */
-#define SEND_BUFFER         1024
 
 /**
  * @brief      Class for tcp session.
