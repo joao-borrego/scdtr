@@ -31,13 +31,13 @@
 /** Get current illuminance control reference at desk */
 #define LUX_REF         'r' // <i>
 /** Get instantaneous power consumption at desk or total */
-#define POWER_INST      'p' // <i> or T
+#define POWER           'p' // <i> or T
 /** Get accumulated energy consumption at desk or total */
 #define ENERGY          'e' // <i> or T
 /** Get accumulated comfort error at desk or total */
-#define COMFORT_E       'c' // <i> or T
+#define COMFORT_ERR     'c' // <i> or T
 /** Get accumulated comfort varaince at desk or total */
-#define COMFORT_V       'v' // <i> or T
+#define COMFORT_VAR     'v' // <i> or T
 
 /** Total modifier parameter */
 #define TOTAL           'T'

@@ -33,7 +33,7 @@ void TCPSession::handleRead(const boost::system::error_code & error,
         
         if (request_str)
         {
-            std::string response;
+            std::string response = "";
             std::string request(request_str);
 
             parseRequest(request, response);

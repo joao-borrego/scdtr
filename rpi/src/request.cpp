@@ -8,15 +8,18 @@ void parseRequest(const std::string & request, std::string & response)
 {
     std::istringstream iss(request);
     std::string type, cmd, arg;
+    int id = -1;
     bool total = false;
 
     try
     {
         iss >> type >> cmd >> arg;
+        std::cout << type << ";" << cmd << ";" << arg << std::endl;
     }
     catch (std::exception & e)
     {
-
+        errPrintTrace(e.what());
+        return;
     }
     
     if (!type.empty())
@@ -40,7 +43,8 @@ void parseRequest(const std::string & request, std::string & response)
                     {
                         try
                         {
-                            int i = std::stoi(arg);
+                            id = std::stoi(arg);
+                            if (id < 0) throw std::exception();
                         }
                         catch (std::exception e)
                         {
@@ -54,10 +58,52 @@ void parseRequest(const std::string & request, std::string & response)
                     switch (param)
                     {
                         case LUX:
-                            response = "l";
+                            //float value = getLux(id);
+                            response = std::string(1,LUX) + " ";
                             break;
                         case DUTY_CYCLE:
-                            response = "d";
+                            //int value = getDutyCycle(id);
+                            response = std::string(1, DUTY_CYCLE) + " ";
+                            break;
+                        case OCCUPANCY:
+                            //bool value = getOccupancy(id);
+                            response = std::string(1, OCCUPANCY) + " ";
+                            break;
+                        case LUX_LOWER:
+                            //float value = getLuxLowerBound(id);
+                            response = std::string(1, LUX_LOWER) + " ";
+                            break;
+                        case LUX_EXTERNAL:
+                            //float value = getLuxExternal(id);
+                            response = std::string(1, LUX_EXTERNAL) + " ";
+                            break;
+                        case LUX_REF:
+                            //float value = getLuxReference(id);
+                            response =  std::string(1, LUX_REF) + " ";
+                            break;
+                        case POWER:
+                            //float value = getPower(id, total);
+                            response =  std::string(1, POWER) + " " + 
+                                ((id == -1 && total)? std::string(1, TOTAL) : std::to_string(id)) +
+                                " ";
+                            break;
+                        case ENERGY:
+                            //float value = getEnergy(id, total);
+                            response =  std::string(1, ENERGY) + " " + 
+                                ((id == -1 && total)? std::string(1, TOTAL) : std::to_string(id)) +
+                                " ";
+                            break;
+                        case COMFORT_ERR:
+                            //float value = getComfortError(id, total);
+                            response =  std::string(1, COMFORT_ERR) + " " + 
+                                ((id == -1 && total)? std::string(1, TOTAL) : std::to_string(id)) +
+                                " ";
+                            break;
+                        case COMFORT_VAR:
+                        //float value = getComfortVariance(id, total);
+                            response =  std::string(1, COMFORT_VAR) + " " + 
+                                ((id == -1 && total)? std::string(1, TOTAL) : std::to_string(id)) +
+                                " ";
                             break;
                         default:
                             response = "Invalid command";
