@@ -23,7 +23,7 @@ LDFLAGS ?= -lboost_system -lpthread
 
 MKDIR_P ?= mkdir -p
 
-all: $(BIN_DIR)/$(SERVER_EXEC) $(BIN_DIR)/$(CLIENT_EXEC)
+all: $(BIN_DIR)/$(SERVER_EXEC) $(BIN_DIR)/$(CLIENT_EXEC) clean_build
 
 # Server binary executable
 $(BIN_DIR)/$(SERVER_EXEC): $(SERVER_OBJ)
