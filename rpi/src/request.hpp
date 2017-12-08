@@ -13,11 +13,11 @@
 /* Request types */
 
 /** Request to obtain a certain parameter */
-#define GET     "g"
+#define GET     		"g"
 /** Request to modify a certain parameter */
-#define SET     "s"
+#define SET     		"s"
 /** Request to reset the system */
-#define RESET   "r"
+#define RESET  			"r"
 
 /* Get requests */
 
@@ -44,6 +44,13 @@
 
 /** Total modifier parameter */
 #define TOTAL           'T'
+
+/* Responses */
+
+/** Command acknowledged and executed */
+#define ACK 			"ack"
+/** Invalid request */
+#define INVALID 		"Invalid request!"
 
 /* Functions */
 

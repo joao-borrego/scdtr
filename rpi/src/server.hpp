@@ -11,6 +11,12 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
+#include "System.hpp"
 #include "TCPServer.hpp"
+
+/**
+ * @brief      Runs TCP server.
+ */
+void tcpServer();
 
 #endif

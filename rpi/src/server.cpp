@@ -10,7 +10,14 @@ using boost::asio::ip::tcp;
 
 int main()
 {
-    try
+    System sys(N, T_S);
+    tcpServer();
+    return 0;
+}
+
+void tcpServer()
+{
+	try
     {
         boost::asio::io_service io;
         TCPServer server(io, PORT);
@@ -20,5 +27,4 @@ int main()
     {
         std::cerr << e.what() << std::endl;
     }
-    return 0;
 }

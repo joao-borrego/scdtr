@@ -27,7 +27,7 @@ void parseRequest(const std::string & request, std::string & response)
         if (type == RESET)
         {
             // TODO - Command
-            response = "ack";
+            response = ACK;
         }
         else
         {
@@ -48,7 +48,7 @@ void parseRequest(const std::string & request, std::string & response)
                         }
                         catch (std::exception e)
                         {
-                            response = "Invalid command";
+                            response = INVALID;
                             return;
                         }
                     }
@@ -106,7 +106,7 @@ void parseRequest(const std::string & request, std::string & response)
                                 " ";
                             break;
                         default:
-                            response = "Invalid command";
+                            response = INVALID;
                     }
                 }
                 else if (type == SET)
@@ -116,22 +116,22 @@ void parseRequest(const std::string & request, std::string & response)
                         int i = std::stoi(cmd);
                         bool val = std::stoi(cmd);
                         // TODO - Command
-                        response = "ack";
+                        response = ACK;
                     }
                     catch (std::exception e)
                     {
-                        response = "Invalid command";
+                        response = INVALID;
                     }
                 }
             }
             else
             {
-                response = "Invalid command";
+                response = INVALID;
             }
         }
     }
     else
     {
-        response = "Invalid command";
+        response = INVALID;
     }
 }
