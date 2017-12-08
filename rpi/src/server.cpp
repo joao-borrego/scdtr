@@ -10,17 +10,17 @@ using boost::asio::ip::tcp;
 
 int main()
 {
-    System sys(N, T_S);
-    tcpServer();
+    System::ptr sys(new System(N, T_S));
+    tcpServer(sys);
     return 0;
 }
 
-void tcpServer()
+void tcpServer(System::ptr & sys)
 {
-	try
+    try
     {
         boost::asio::io_service io;
-        TCPServer server(io, PORT);
+        TCPServer server(io, PORT, sys);
         io.run();
     }
     catch (std::exception & e)

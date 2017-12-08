@@ -12,6 +12,7 @@
 using boost::asio::ip::tcp;
 
 #include "TCPSession.hpp"
+#include "System.hpp"
 #include "debug.hpp"
 #include "constants.hpp"
 
@@ -25,6 +26,8 @@ private:
 
     /** TCP session acceptor */
     tcp::acceptor acceptor_;
+    /** System pointer */
+    System::ptr system_;
 
 public:
 
@@ -33,10 +36,15 @@ public:
      *
      * @param      io_service  The i/o service
      * @param      port        The TCP port for incoming connections
+     * @param[in]  system      The system
      */
-    TCPServer(boost::asio::io_service & io_service, unsigned short port)
+    TCPServer(
+        boost::asio::io_service & io_service,
+        unsigned short port,
+        System::ptr system)
         : acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
     {
+        system_ = system;
         startAccept();
     }
 

@@ -12,7 +12,7 @@
 #include <vector>
 #include <list>
 #include <algorithm>
-
+#include <boost/shared_ptr.hpp>
 
 #include "debug.hpp"
 
@@ -48,6 +48,10 @@ public:
 class System
 {
 
+public:
+
+    typedef boost::shared_ptr< System > ptr;
+
 private:
 
     /** Number of nodes in the system */
@@ -81,6 +85,13 @@ public:
     {
         start();
     }
+
+    /**
+     * @brief      Gets the number of nodes in the system.
+     *
+     * @return     The number of nodes in the system.
+     */
+    size_t getNodes();
 
     // TODO
     void start();

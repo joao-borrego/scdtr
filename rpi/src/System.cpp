@@ -6,6 +6,11 @@
 
 #include "System.hpp"
 
+size_t System::getNodes()
+{
+    return nodes_;
+}
+
 void System::start()
 {
     debugPrintTrace("System initialised.");

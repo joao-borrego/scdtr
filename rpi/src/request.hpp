@@ -9,15 +9,16 @@
 #include <sstream>
 
 #include "debug.hpp"
+#include "System.hpp"
 
 /* Request types */
 
 /** Request to obtain a certain parameter */
-#define GET     		"g"
+#define GET             "g"
 /** Request to modify a certain parameter */
-#define SET     		"s"
+#define SET             "s"
 /** Request to reset the system */
-#define RESET  			"r"
+#define RESET           "r"
 
 /* Get requests */
 
@@ -48,18 +49,22 @@
 /* Responses */
 
 /** Command acknowledged and executed */
-#define ACK 			"ack"
+#define ACK             "ack"
 /** Invalid request */
-#define INVALID 		"Invalid request!"
+#define INVALID         "Invalid request!"
 
 /* Functions */
 
 /**
  * @brief      Returns a response for a given request
  *
+ * @param[in]  system    The system
  * @param[in]  request   The request
  * @param      response  The response
  */
-void parseRequest(const std::string & request, std::string & response);
+void parseRequest(
+    System::ptr system,
+    const std::string & request,
+    std::string & response);
 
 #endif

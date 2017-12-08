@@ -11,6 +11,7 @@ using boost::asio::ip::tcp;
 
 #include "debug.hpp"
 #include "constants.hpp"
+#include "System.hpp"
 #include "request.hpp"
 
 /** Deadline for pending read (seconds) */
@@ -30,6 +31,8 @@ private:
     char recv_buffer_[RECV_BUFFER];
     /** Response buffer */
     char send_buffer_[SEND_BUFFER];
+    /** System pointer */
+    System::ptr system_;
 
 public:
 
@@ -38,8 +41,11 @@ public:
      *
      * @param      io_service  The i/o service
      */
-    TCPSession(boost::asio::io_service & io_service)
-        :   socket_(io_service){}
+    TCPSession(boost::asio::io_service & io_service, System::ptr system)
+        :   socket_(io_service)
+    {
+        system_ = system;
+    }
 
     /**
      * @brief      Obtains TCP socket.

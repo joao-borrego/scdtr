@@ -6,7 +6,7 @@
 
 void TCPServer::startAccept()
 {
-    TCPSession* new_session = new TCPSession(acceptor_.get_io_service());
+    TCPSession* new_session = new TCPSession(acceptor_.get_io_service(), system_);
 
     acceptor_.async_accept(new_session->socket(),
         boost::bind(& TCPServer::handleAccept, this, new_session,

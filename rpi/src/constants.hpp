@@ -6,7 +6,7 @@
 #define CONSTANTS_HPP
 
 /** Number of nodes in system */
-#define N 	2
+#define N   2
 /** System sampling period */
 #define T_S 0.001
 
@@ -25,6 +25,6 @@
 /** Size of send buffer */
 #define SEND_BUFFER         PACKET_SIZE
 /** Size of packet */
-#define PACKET_SIZE			50
+#define PACKET_SIZE         50
 
 #endif

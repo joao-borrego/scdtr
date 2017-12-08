@@ -16,7 +16,9 @@
 
 /**
  * @brief      Runs TCP server.
+ *
+ * @param[in]  sys   The system
  */
-void tcpServer();
+void tcpServer(System::ptr & sys);
 
 #endif
