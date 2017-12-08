@@ -26,18 +26,3 @@ void TCPServer::handleAccept(TCPSession *new_session,
         delete new_session;
     }
 }
-
-int main()
-{
-    try
-    {
-        boost::asio::io_service io;
-        TCPServer server(io, PORT);
-        io.run();
-    }
-    catch (std::exception & e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-    return 0;
-}

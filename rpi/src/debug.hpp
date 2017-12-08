@@ -3,6 +3,9 @@
  * @brief Custom debug utilities
  */
 
+#ifndef DEBUG_HPP
+#define DEBUG_HPP
+
 #include <iostream>
 #include <string.h>
 
@@ -29,3 +32,5 @@
     std::cout << "[ERROR] " << __FILENAME__ << ":" << __LINE__ << ":" << __func__ << ": " << \
     x << "\n";\
 } while (0)
+
+#endif

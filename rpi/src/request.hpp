@@ -2,6 +2,9 @@
  * @file request.hpp
  */
 
+#ifndef REQUEST_HPP
+#define REQUEST_HPP
+
 #include <iostream>
 #include <sstream>
 
@@ -51,3 +54,5 @@
  * @param      response  The response
  */
 void parseRequest(const std::string & request, std::string & response);
+
+#endif

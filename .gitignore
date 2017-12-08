@@ -1,3 +1,8 @@
+# Documentation
 /doc
+# Binaries
 /bin
 *.bin
+/build
+*.o
+*.d

@@ -2,6 +2,9 @@
  * @file TCPServer.hpp
  */
 
+#ifndef TCP_SERVER_HPP
+#define TCP_SERVER_HPP
+
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -50,3 +53,5 @@ private:
     void handleAccept(TCPSession *new_session,
       const boost::system::error_code & error);
 };
+
+#endif

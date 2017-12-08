@@ -3,6 +3,7 @@
  */
 
 #include "request.hpp"
+#include "System.hpp"
 
 void parseRequest(const std::string & request, std::string & response)
 {
@@ -21,7 +22,7 @@ void parseRequest(const std::string & request, std::string & response)
         return;
     }
     
-    if (!type.empty())
+    if (type.size() == 1)
     {
         if (type == RESET)
         {
@@ -99,7 +100,7 @@ void parseRequest(const std::string & request, std::string & response)
                                 " ";
                             break;
                         case COMFORT_VAR:
-                        //float value = getComfortVariance(id, total);
+                            //float value = getComfortVariance(id, total);
                             response =  std::string(1, COMFORT_VAR) + " " + 
                                 ((id == -1 && total)? std::string(1, TOTAL) : std::to_string(id)) +
                                 " ";

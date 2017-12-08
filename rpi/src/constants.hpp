@@ -2,6 +2,9 @@
  * constants.hpp
  */
 
+#ifndef CONSTANTS_HPP
+#define CONSTANTS_HPP
+
 /** Server host */
 #define HOST "127.0.0.1"
 /** Listenning port for TCP server */
@@ -18,3 +21,5 @@
 #define SEND_BUFFER         PACKET_SIZE
 /** Size of packet */
 #define PACKET_SIZE			50
+
+#endif
