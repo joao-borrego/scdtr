@@ -1,0 +1,51 @@
+/**
+ * @file matrix.hpp
+ * 
+ * @brief Float matrix operations headers
+ */
+
+#include <stdio.h>
+#include <string.h>
+
+/**
+ * @brief      Multiplies A and B and stores in C.
+ *
+ * @param      A     input  (n x m) matrix 
+ * @param      B     input  (m x p) matrix
+ * @param      C     output (n x p) matrix
+ * @param[in]  n     rows of A
+ * @param[in]  m     cols of A = rows of B 
+ * @param[in]  p     cols of B
+ */
+void mul(float* A, float* B, float* C, int n, int m, int p);
+
+/**
+ * @brief      Multiplies A and B element-wise and stores in C.
+ *
+ * @param      A     input  (n x m) matrix 
+ * @param      B     input  (n x m) matrix
+ * @param      C     output (n x m) matrix
+ * @param[in]  n     rows of A = rows of B
+ * @param[in]  m     cols of A = cols of B
+ */
+void elemMul(float* A, float* B, float* C, int n, int m);
+
+/**
+ * @brief      (Deep) copies A to B.
+ *
+ * @param      A     input  (n x m) matrix 
+ * @param      B     output (n x m) matrix
+ * @param[in]  n     rows of A
+ * @param[in]  m     cols of A
+ */
+void copy(float* A, float* B, int n, int m);
+
+/**
+ * @brief      Transposes A and stores in A_transpose
+ *
+ * @param      A            A
+ * @param      A_transpose  A transpose
+ * @param[in]  n            rows of A
+ * @param[in]  m            cols of A
+ */
+void transpose(float *A, float *A_transpose, int n, int m);

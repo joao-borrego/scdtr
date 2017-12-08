@@ -11,6 +11,7 @@
 #include "constants.hpp"
 #include "utils.hpp"
 #include "calibration.hpp"
+#include "consensus.hpp"
 
 /* Global variables */
 

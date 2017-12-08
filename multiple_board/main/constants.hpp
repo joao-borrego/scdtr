@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "Arduino.h"
+
 /** Positive Supply Voltage */
 const float VCC     = 5.0;
 
@@ -40,6 +42,3 @@ const float LUX_B[N]  = {4.8487, 4.8487};
 
 // DEBUG
 #define STATUS_DELAY 1000
-
-/** K parameter matrix */
-const float K[N*N]    = {0,0,0,0};
