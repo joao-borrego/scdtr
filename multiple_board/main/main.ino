@@ -11,6 +11,7 @@
 #include "constants.hpp"
 #include "utils.hpp"
 #include "calibration.hpp"
+#include "consensus.hpp"
 
 /* Global variables */
 
@@ -56,6 +57,8 @@ void setup() {
 
     /* Determine K matrix */
     Calibration::execute(k_i, &o_i, id);
+
+    //solve(id, NULL, NULL, 0.0);
 }
 
 /**
