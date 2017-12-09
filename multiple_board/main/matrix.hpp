@@ -8,6 +8,28 @@
 #include <string.h>
 
 /**
+ * @brief      Sums A and B and stores in C.
+ *
+ * @param      A     input  (n x m) matrix 
+ * @param      B     input  (n x m) matrix
+ * @param      C     output (n x m) matrix
+ * @param[in]  n     rows of A = rows of B
+ * @param[in]  m     cols of A = cols of B
+ */
+void sum(float* A, float* B, float* C, int n, int m);
+
+/**
+ * @brief      Subtracts A and B and stores in C.
+ *
+ * @param      A     input  (n x m) matrix 
+ * @param      B     input  (n x m) matrix
+ * @param      C     output (n x m) matrix
+ * @param[in]  n     rows of A = rows of B
+ * @param[in]  m     cols of A = cols of B
+ */
+void sub(float* A, float* B, float* C, int n, int m);
+
+/**
  * @brief      Multiplies A and B and stores in C.
  *
  * @param      A     input  (n x m) matrix 
@@ -31,6 +53,16 @@ void mul(float* A, float* B, float* C, int n, int m, int p);
 void elemMul(float* A, float* B, float* C, int n, int m);
 
 /**
+ * @brief      Fills A with a given value.
+ *
+ * @param      A      (n x m) matrix
+ * @param[in]  value  The value
+ * @param[in]  n      rows of A
+ * @param[in]  m      cols of A
+ */
+void fill(float *A, float value, int n, int m);
+
+/**
  * @brief      (Deep) copies A to B.
  *
  * @param      A     input  (n x m) matrix 
@@ -43,7 +75,7 @@ void copy(float* A, float* B, int n, int m);
 /**
  * @brief      Transposes A and stores in A_transpose
  *
- * @param      A            A
+ * @param      A            (n x m) matrix
  * @param      A_transpose  A transpose
  * @param[in]  n            rows of A
  * @param[in]  m            cols of A

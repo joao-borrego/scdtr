@@ -57,6 +57,8 @@ void setup() {
 
     /* Determine K matrix */
     Calibration::execute(k_i, &o_i, id);
+
+    //solve(id, NULL, NULL, 0.0);
 }
 
 /**
