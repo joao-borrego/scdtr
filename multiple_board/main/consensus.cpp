@@ -32,7 +32,7 @@ bool checkConstraints(float *d_i, float *K_i, float L, float o)
     float u = L - o;
 
     for (int j = 0; j < N; j++){
-        if (d_i[j] < 100.0 || d_i[j] < 0.0) return false;
+        if (d_i[j] > 100.0 || d_i[j] < 0.0) return false;
     }
     mul(K_i, d_i, &prod, 1, N, 1);
     if (prod < u) return false;
