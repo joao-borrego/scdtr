@@ -8,6 +8,19 @@
 
 #include "consensus.hpp"
 
+/* Global variables */
+
+/** Current id */
+volatile int cur            = 0;
+/** Received best solution */
+volatile float d_tmp[N]     = {0.0};
+/** Averaged best solution */
+volatile float d_i_avg[N]   = {0.0};
+
+namespace Consensus{
+
+/* Functions */
+
 float costFunction(float *d_i, float *R_i, float *Z_i)
 {
     // Auxiliary variables
@@ -61,11 +74,40 @@ void updateBest(
     }
 }
 
-void getAverageSolution(float *d_i_best, float *d_i_avg)
+void getAverageSolution(uint8_t id, float *d_i_best)
 {
-    // Loop to receive and broadcast solution
-    // Sum received solutions to avg array in respective position
-    // Divide each entry of d_i_avg by N
+    for (int j = 0; j < N; j++){
+
+        if (j == id){
+            for (int k = 0; k < N; k++){
+                if (k != id){
+                    Communication::sendConsensus(k, d_i_best);
+                }
+            }
+        } else {
+            while ( j <= cur){}
+        }
+    }
+
+    for (int j = 0; j < N; j++){
+        d_i_avg[j] = d_i_avg[j] / N;
+    }
+}
+
+void onReceive(int bytes){
+
+    byte msg[MAX_SIZE] = {0};
+    size_t size = Communication::readToBuffer(msg);
+
+    uint8_t id = msg[ID];
+    uint8_t type = msg[TYPE];
+    if (id == cur && type == CON){
+        Communication::readConsensus(msg + HEADER_SIZE, d_tmp);
+        for (int j = 0; j < N; j++){
+            d_i_avg[j] += d_tmp[j];
+        }
+        cur++;
+    }
 }
 
 int solve(size_t id, float* L, float* K_i, float o)
@@ -75,8 +117,6 @@ int solve(size_t id, float* L, float* K_i, float o)
     float d_i[N]        = {0.0};
     // Best duty cycle for current iteration
     float d_i_best[N]   = {0.0};
-    // Average of best solutions
-    float d_i_avg[N]    = {0.0};
 
     // Unconstrained solution
     float d_i_0[N]      = {0.0};
@@ -204,8 +244,10 @@ int solve(size_t id, float* L, float* K_i, float o)
 
         updateBest(d_i, K_i, L[id], o, d_i_best, &cost_best, R_i, Z_i);
 
-        getAverageSolution(d_i_best, d_i_avg);
+        getAverageSolution(id, d_i_best);
     }
 
     return d_i_best[id];
+}
+
 }

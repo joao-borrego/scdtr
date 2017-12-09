@@ -1,0 +1,142 @@
+/**
+ * @file communication.cpp
+ * 
+ * @brief Communication protocol
+ */
+
+#include <Arduino.h>
+#include <Wire.h>
+
+#include "communication.hpp"
+
+namespace Communication
+{
+    /* Global variables */
+
+    /** Device Id */
+    uint8_t dev_id = 0;
+
+    /* For handles */
+
+    /** Reset flag */
+    volatile bool reset = false;
+    /** Start consensus flag */
+    volatile bool consensus = false;
+
+    /* Functions */
+
+    void setDeviceId(uint8_t id)
+    {
+        dev_id = id;
+    }
+
+    void sendAck(uint8_t dest)
+    {
+        byte packet[HEADER_SIZE];
+        packet[0] = dev_id;
+        packet[1] = ACK;
+        
+        Wire.beginTransmission(dest);
+        Wire.write(packet, HEADER_SIZE);
+        Wire.endTransmission();
+
+        Serial.println("[I2C] Sending ACK");
+    }
+
+    void sendConsensus(uint8_t dest, float *d_i)
+    {
+        size_t size = HEADER_SIZE + DATA_CONSENSUS_SIZE;
+        byte packet[size];
+        packet[0] = dev_id;
+        packet[1] = CON;
+        for (int j = 0; j < N; j++)
+        {
+            float_bytes d;
+            d.f = d_i[j];
+            for (int k = 0; k < sizeof(float); k++){
+                packet[2 + j * sizeof(float) + k] = d.b[k];    
+            }
+        }
+
+        Wire.beginTransmission(dest);
+        Wire.write(packet, size);
+        Wire.endTransmission();
+    }
+
+    void sendInfo(uint8_t dest, float lux, float ref, float ext, bool occupancy)
+    {
+        size_t size = HEADER_SIZE + DATA_INFO_SIZE;
+        byte packet[size];
+        packet[0] = dev_id;
+        packet[1] = INF;
+        
+        float_bytes l, r, e;
+        l.f = lux;
+        for (int j = 0; j < sizeof(float); j++){
+            packet[2 + j] = l.b[j];    
+        }
+        r.f = ref;
+        for (int j = 0; j < sizeof(float); j++){
+            packet[2 + sizeof(float) + j] = r.b[j];    
+        }
+        e.f = ext;
+        for (int j = 0; j < sizeof(float); j++){
+            packet[2 + 2 * sizeof(float) + j] = e.b[j];    
+        }
+        packet[2 + 3 * sizeof(float)] = (occupancy)? 0 : 1;
+        
+        Wire.beginTransmission(dest);
+        Wire.write(packet, size);
+        Wire.endTransmission();
+    }
+
+    void readConsensus(byte *buffer, float *out){
+
+        for (int j = 0; j < N; j++){
+            float_bytes d;
+            for (int k = 0; k < sizeof(float); k++){
+                d.b[k] = buffer[k];    
+            }
+            out[j] = d.f;
+        }
+    }
+
+    size_t readToBuffer(byte *buffer){
+
+        size_t read = 0;
+        while (Wire.available()) {
+            buffer[read++] = Wire.read();
+        }
+        return read;
+    }
+
+    void onReceive(int bytes)
+    {
+        byte buffer[MAX_SIZE] = {0};
+        size_t read = 0;
+
+        while (Wire.available()) {
+            buffer[read++] = Wire.read();
+        }
+
+        if (read > 0){
+            
+            // DEBUG
+            Serial.print("[I2C] Received ");
+            Serial.print(read);
+            Serial.print(" bytes from ");
+            Serial.println(buffer[ID]);
+            
+            uint8_t type = buffer[TYPE];
+            switch (type)
+            {
+                case RES:
+                    reset = true;
+                    break;
+                case ICO:
+                    consensus = true;
+                    break;
+            }
+        }
+    }
+}
