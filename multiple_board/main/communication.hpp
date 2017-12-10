@@ -31,14 +31,16 @@ const size_t DATA_INFO_SIZE         = sizeof(float) * 3 + sizeof(uint8_t) * 2;
 
 /* Packet types */
 
+/** SYNchronise */
+const byte SYN      = 0x00;
 /** ACKnowledgement */
-const byte ACK      = 0x00;
+const byte ACK      = 0x01;
 /** CONsensus */
-const byte CON      = 0x01;
+const byte CON      = 0x02;
 /** Initiate COnsensus */
-const byte ICO      = 0x02;
+const byte ICO      = 0x04;
 /** INFo */
-const byte INF      = 0x03;
+const byte INF      = 0x05;
 /** RESet */
 const byte RES      = 0x0F;
 
@@ -66,6 +68,37 @@ namespace Communication
      * @param[in]  id    The identifier
      */
     void setDeviceId(uint8_t id);
+
+    /**
+     * @brief      Empty callback function to ignore
+     *
+     * @param[in]  bytes  The bytes to be read
+     */
+    void nop(int bytes);
+
+    /**
+     * @brief      Synchronises every device.
+     *
+     * @param[in]  id    The identifier
+     */
+    void barrier(uint8_t id);
+
+    /**
+     * @brief   Waits until unlocked by device 0.
+     */
+    void waitSyn();
+
+    /**
+     * @brief      Waits for a device ack.
+     *
+     * @return     Whether an ack was NOT received
+     */
+    bool waitAck();
+
+    /**
+     * @brief   If acknowledgement requested.
+     */
+    void onRequest();
 
     /**
      * @brief      Sends an acknowledge packet.

@@ -16,18 +16,59 @@ namespace Communication
     /** Device Id */
     uint8_t dev_id = 0;
 
+    /* Barrier lock */
+    volatile bool lock = false;
+
     /* For handles */
 
     /** Reset flag */
-    volatile bool reset = false;
+    volatile bool reset     = false;
     /** Start consensus flag */
     volatile bool consensus = false;
 
     /* Functions */
 
+    void nop(int bytes){}
+
     void setDeviceId(uint8_t id)
     {
         dev_id = id;
+    }
+
+    void barrier(uint8_t id)
+    {
+        Serial.println("[Barrier] Start");
+        if (id == MASTER){
+            for (int i = 0; i < N; i++){
+                if (i != MASTER){
+                    Wire.requestFrom(i, 1);
+                    while(waitAck());
+                }
+            }
+        } else {
+            waitSyn();
+        }
+        Serial.println("[Barrier] End");
+    }
+
+    void waitSyn()
+    {
+        while (lock == false){}
+        lock = false;
+    }
+
+    bool waitAck()
+    {
+        while (Wire.available()){
+            if (Wire.read()) return false;
+        }
+        return true;
+    }
+
+    void onRequest()
+    {
+        Wire.write(ACK);
+        lock = true;
     }
 
     void sendAck(uint8_t dest)
@@ -95,7 +136,7 @@ namespace Communication
         for (int j = 0; j < N; j++){
             float_bytes d;
             for (int k = 0; k < sizeof(float); k++){
-                d.b[k] = buffer[k];    
+                d.b[k] = buffer[k + j * sizeof(float)];    
             }
             out[j] = d.f;
         }

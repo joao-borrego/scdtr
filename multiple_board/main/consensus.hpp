@@ -9,7 +9,7 @@
 namespace Consensus{
 
 /** Total number of iterations */
-const float ITERATIONS = 1;
+const float ITERATIONS = 50;
 /** Rho */
 const float RHO = 0.01;
 /** TODO */

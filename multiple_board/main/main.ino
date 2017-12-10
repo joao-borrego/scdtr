@@ -74,8 +74,9 @@ void loop() {
     Communication::sendInfo((id + 1) % N, input, 0.0, o_i, false);
 
     // if start consensus
-    Wire.onReceive(Consensus::onReceive);
     
+    Wire.onReceive(Communication::nop);
+
     float k_i_tmp[N][N] = {{2.0, 1.0}, {1.0, 2.0}};
     int d_best;
     if (id == 0){

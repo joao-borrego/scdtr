@@ -14,8 +14,10 @@
 volatile int cur            = 0;
 /** Received best solution */
 volatile float d_tmp[N]     = {0.0};
-/** Averaged best solution */
-volatile float d_i_avg[N]   = {0.0};
+/** Sum of neighbours' solutions */
+volatile float d_copies[N]  = {0.0};
+
+volatile bool ready = false;
 
 namespace Consensus{
 
@@ -85,9 +87,15 @@ void updateBest(
     }
 }
 
-void getAverageSolution(uint8_t id, float *d_i_best)
+void getCopies(uint8_t id, float *d_i_best)
 {
-    fill(d_i_avg, 0.0, N, 1);
+    // Setup
+    cur = 0;
+    fill(d_copies, 0.0, N, 1);
+    Wire.onRequest(Communication::onRequest);
+    Wire.onReceive(Consensus::onReceive);
+    Communication::barrier(id);
+
     for (int j = 0; j < N; j++){
 
         if (j == id){
@@ -97,13 +105,14 @@ void getAverageSolution(uint8_t id, float *d_i_best)
                 }
             }
         } else {
-            while ( j <= cur){}
+            while (!ready){}
+            ready = false;
         }
+        cur++;
     }
 
-    for (int j = 0; j < N; j++){
-        d_i_avg[j] = d_i_avg[j] / N;
-    }
+    Wire.onRequest(Communication::nop);
+    Wire.onReceive(Communication::nop);
 }
 
 void onReceive(int bytes)
@@ -116,10 +125,17 @@ void onReceive(int bytes)
     uint8_t type = msg[TYPE];
     if (id == cur && type == CON){
         Communication::readConsensus(msg + HEADER_SIZE, d_tmp);
+
+        Serial.print("[Msg] ");
+
         for (int j = 0; j < N; j++){
-            d_i_avg[j] += d_tmp[j];
+            d_copies[j] += d_tmp[j];
+
+            Serial.print(d_tmp[j]);
+            Serial.print(" ");
         }
-        cur++;
+        Serial.println();
+        ready = true;
     }
 }
 
@@ -134,6 +150,8 @@ int solve(size_t id, float L, float* K_i, float o)
     float d_i_aux[N]    = {0.0};
     // Best duty cycle for current iteration
     float d_i_best[N]   = {0.0};
+    // Averaged best solution
+    float d_i_avg[N]    = {0.0};
 
     // Unconstrained solution
     float d_i_0[N]      = {0.0};
@@ -259,7 +277,7 @@ int solve(size_t id, float L, float* K_i, float o)
 
         aux_4 = g_i / rho;
         mul(d_i_aux, &aux_4, d_i, N, 1, 1);
-        debugPrint(d_i, N, it, "d_4_1");
+        //debugPrint(d_i, N, it, "d_4_1");
         sum(d_i_0, d_i, d_i, N, 1);
 
         debugPrint(d_i, N, it, "d_4");
@@ -284,10 +302,24 @@ int solve(size_t id, float L, float* K_i, float o)
 
         updateBest(d_i, K_i, L, o, d_i_best, &cost_best, R_i, Z_i);
 
-        getAverageSolution(id, d_i_best);
+        debugPrint(d_i_best, N, it, "d_best");
+
+        getCopies(id, d_i_best);
+
+        copy(d_copies, d_i_avg, N, 1);
+        for (int j = 0; j < N; j++){
+            d_i_avg[j] += d_i_best[j];
+            d_i_avg[j] = d_i_avg[j] / N;
+        }
+        debugPrint(d_i_avg, N, it, "d_i_avg");
+
+        // d_i and d_i_aux are bith used as aux vectors here
+        sub(d_i_best, d_i_avg, d_i_aux, N, 1);
+        mul(d_i_aux, &rho, d_i, N, 1, 1);
+        sum(y_i, d_i, y_i, N, 1);
     }
 
-    return d_i_best[id];
+    return round(d_i_best[id]);
 }
 
 }
