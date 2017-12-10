@@ -21,6 +21,17 @@ namespace Consensus{
 
 /* Functions */
 
+void debugPrint(float *d, int size, int it, char* description)
+{
+    Serial.print("[Consensus] ");
+    Serial.print(it);
+    Serial.print(" - ");
+    Serial.print(description);
+    Serial.print(" [ ");
+    for (int j = 0; j < size; j++) { Serial.print(d[j]); Serial.print(" "); }
+    Serial.println("]");
+}
+
 float costFunction(float *d_i, float *R_i, float *Z_i)
 {
     // Auxiliary variables
@@ -76,6 +87,7 @@ void updateBest(
 
 void getAverageSolution(uint8_t id, float *d_i_best)
 {
+    fill(d_i_avg, 0.0, N, 1);
     for (int j = 0; j < N; j++){
 
         if (j == id){
@@ -94,7 +106,8 @@ void getAverageSolution(uint8_t id, float *d_i_best)
     }
 }
 
-void onReceive(int bytes){
+void onReceive(int bytes)
+{
 
     byte msg[MAX_SIZE] = {0};
     size_t size = Communication::readToBuffer(msg);
@@ -110,11 +123,15 @@ void onReceive(int bytes){
     }
 }
 
-int solve(size_t id, float* L, float* K_i, float o)
+int solve(size_t id, float L, float* K_i, float o)
 {
 
     // Duty cycle for current iteration
     float d_i[N]        = {0.0};
+    // Aux variable for intermediate calculations
+    // Standard matrix multiplications cannot have any common operand and result matrix
+    // since the original matrix would be overwritten and its data lost
+    float d_i_aux[N]    = {0.0};
     // Best duty cycle for current iteration
     float d_i_best[N]   = {0.0};
 
@@ -176,62 +193,83 @@ int solve(size_t id, float* L, float* K_i, float o)
         k_r_squared_two_norm += (K_i_r[j] * K_i_r[j]);
     }
 
+    debugPrint(K_i, N, -1, "K_i");
+    debugPrint(P_i, N, -1, "P_i");
+    debugPrint(&n_i, 1, -1, "n_i");
+    debugPrint(&g_i, 1, -1, "g_i");
+    debugPrint(&k_r_squared_two_norm, 1, -1, "‖k_r‖_2 ^ 2");
+
     for (int it = 0; it < ITERATIONS; it++){
 
         for (int j = 0; j < N; j++){
             Z_i[j] = rho * d_i_avg[j] - y_i[j] - ((j == id)? c_i : 0);
         }
+        debugPrint(Z_i, N, it, "Z_i");
 
         // Unconstrained
         elemMul(P_i, Z_i, d_i_0, N, 1);
-        updateBest(d_i_0, K_i, L[id], o, d_i_best, &cost_best, R_i, Z_i);
+
+        debugPrint(d_i_0, N, it, "d_0");
+
+        updateBest(d_i_0, K_i, L, o, d_i_best, &cost_best, R_i, Z_i);
 
         // Constrained linear boundary: u_1 = o_i - L_i
-        aux_1 = o - L[id];
+        aux_1 = o - L;
         for (int j = 0; j < N; j++){
             aux_1 += (K_i[j] * Z_i[j] * P_i[j]);
         }
-        aux_1 = aux_1 * n_i;
+        aux_1 = aux_1 / n_i;
 
-        elemMul(K_i, P_i, d_i, N, 1);
-        mul(d_i, &aux_1, d_i, N, 1, 1);
+        elemMul(K_i, P_i, d_i_aux, N, 1);
+        mul(d_i_aux, &aux_1, d_i, N, 1, 1);
         sub(d_i_0, d_i, d_i, N, 1);
-        updateBest(d_i, K_i, L[id], o, d_i_best, &cost_best, R_i, Z_i);
+        
+        debugPrint(d_i, N, it, "d_1");
+
+        updateBest(d_i, K_i, L, o, d_i_best, &cost_best, R_i, Z_i);
 
         // Constrained 0 boundary: u_2 = 0
         for (int j = 0; j < N; j++){
             d_i[j] = (j == id)? 0.0 : d_i_0[j];
         }
-        updateBest(d_i, K_i, L[id], o, d_i_best, &cost_best, R_i, Z_i);
+
+        debugPrint(d_i, N, it, "d_2");
+
+        updateBest(d_i, K_i, L, o, d_i_best, &cost_best, R_i, Z_i);
 
         // Constrained 100 boundary: u_3 = 100 (%)
         for (int j = 0; j < N; j++){
             d_i[j] = (j == id)? 100.0 : d_i_0[j];
         }
-        updateBest(d_i, K_i, L[id], o, d_i_best, &cost_best, R_i, Z_i);
+
+        debugPrint(d_i, N, it, "d_3");
+
+        updateBest(d_i, K_i, L, o, d_i_best, &cost_best, R_i, Z_i);
 
         // d_4 Constrained to linear and 0 boundaries
-        aux_2 = L[id] - o;
-        mul(K_i, &aux_2, d_i, N, 1, 1);
+        aux_2 = L - o;
+        mul(K_i, &aux_2, d_i_aux, N, 1, 1);
 
         mul(Z_i, K_i_r, &v_i, 1, N, 1);
-
         aux_3 = v_i / rho;
         mul(K_i, &aux_3, aux_m_1, N, 1, 1);
 
-        sub(d_i, aux_m_1, d_i, N, 1);
-        d_i[id] = k_r_squared_two_norm * Z_i[id] / (rho + q_i);
+        sub(d_i_aux, aux_m_1, d_i_aux, N, 1);
+        d_i_aux[id] = (k_r_squared_two_norm * Z_i[id]) / (rho + q_i);
 
         aux_4 = g_i / rho;
-        mul(d_i, &aux_4, d_i, N, 1, 1);
+        mul(d_i_aux, &aux_4, d_i, N, 1, 1);
+        debugPrint(d_i, N, it, "d_4_1");
         sum(d_i_0, d_i, d_i, N, 1);
 
-        updateBest(d_i, K_i, L[id], o, d_i_best, &cost_best, R_i, Z_i);
+        debugPrint(d_i, N, it, "d_4");
+
+        updateBest(d_i, K_i, L, o, d_i_best, &cost_best, R_i, Z_i);
 
         // d_5 Constrained to linear and 100 boundaries
         mul(K_i, &aux_2, d_i, N, 1, 1);
 
-        aux_5 = - 100.0  * K_i[id];
+        aux_5 = 100.0  * K_i[id];
         mul(K_i, &aux_5, aux_m_2, N, 1, 1);
 
         sub(d_i, aux_m_2, d_i, N, 1);
@@ -239,10 +277,12 @@ int solve(size_t id, float* L, float* K_i, float o)
         d_i[id] = (100.0 * k_r_squared_two_norm)
             - (k_r_squared_two_norm * Z_i[id] / (rho + q_i));
 
-        mul(d_i, &aux_4, d_i, N, 1, 1);
-        sum(d_i_0, d_i, d_i, N, 1);
+        mul(d_i, &aux_4, d_i_aux, N, 1, 1);
+        sum(d_i_0, d_i_aux, d_i, N, 1);
 
-        updateBest(d_i, K_i, L[id], o, d_i_best, &cost_best, R_i, Z_i);
+        debugPrint(d_i, N, it, "d_5");
+
+        updateBest(d_i, K_i, L, o, d_i_best, &cost_best, R_i, Z_i);
 
         getAverageSolution(id, d_i_best);
     }

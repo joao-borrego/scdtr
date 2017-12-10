@@ -49,10 +49,11 @@ void setup() {
     Serial.print("[I2C] Registered with id ");
     Serial.println((int) id);
     
+
     // Begin I2C communication 
     Communication::setDeviceId(id);
     Wire.begin(id);
-
+    /*
     // Determine K matrix and external illuminance
     Wire.onReceive(Calibration::onReceive);
     Wire.onRequest(Calibration::onRequest);
@@ -60,7 +61,7 @@ void setup() {
 
     // Setup I2C communication for main loop 
     Wire.onReceive(Communication::onReceive);
-
+    */
 }
 
 /**
@@ -73,8 +74,16 @@ void loop() {
     Communication::sendInfo((id + 1) % N, input, 0.0, o_i, false);
 
     // if start consensus
-    // Wire.onReceive(Consensus::onReceive);
-    // Consensus::solve(id, NULL, NULL, 0.0);
+    Wire.onReceive(Consensus::onReceive);
+    
+    float k_i_tmp[N][N] = {{2.0, 1.0}, {1.0, 2.0}};
+    int d_best;
+    if (id == 0){
+        d_best = Consensus::solve(id, 150.0, k_i_tmp[0], 30.0);
+    }else{
+        d_best = Consensus::solve(id, 80.0,  k_i_tmp[1],  0.0);
+    }
+    Serial.println(d_best);
 
-    delay(1000);
+    delay(100000);
 }
