@@ -1,6 +1,6 @@
 /**
  * @file  System.cpp
- * 
+ *
  * @brief System main class
  */
 
@@ -11,14 +11,32 @@ size_t System::getNodes()
     return nodes_;
 }
 
-void System::start()
+void System::start(const std::string & serial)
 {
+    boost::system::error_code error;
+
+    // Initialise Serial connection
+    /*
+    serial_port_.open(serial, error);
+    if (error){ errPrintTrace(error.message() << ": " << serial); exit(-1); }
+    serial_port_.set_option(
+        boost::asio::serial_port_base::baud_rate(SERIAL_BAUDRATE), error);
+    if (error){ errPrintTrace(error.message()); exit(-1); }
+    */
     debugPrintTrace("System initialised.");
 }
 
 void System::readData()
 {
 
+}
+
+int System::writeSerial(const std::string & msg)
+{
+    boost::system::error_code error;
+    int bytes = boost::asio::write(serial_port_, boost::asio::buffer(msg), error);
+    if (error){ errPrintTrace(error.message()); }
+    return bytes;
 }
 
 void System::insertEntry(
@@ -123,7 +141,7 @@ float System::getLuxReference(size_t id)
 float System::getPower(size_t id, bool total)
 {
     float power_i, power = 0.0;
-    
+
     if (!total)
     {
         power = getDutyCycle(id); // * 1.0 W
@@ -195,7 +213,7 @@ float System::comfortErrorNode(size_t id)
 float System::getComfortError(size_t id, bool total)
 {
     float comfort_error = 0.0;
-    
+
     try
     {
         if (!total)
@@ -227,8 +245,8 @@ float System::comfortVarianceNode(size_t id)
         lux = entries_.at(id).at(i).lux_reference;
         lux_1 = entries_.at(id).at(i-1).lux_reference;
         lux_2 = entries_.at(id).at(i-2).lux_reference;
-        
-        comfort_variance += (std::abs(lux - 2*lux_1 + lux_2)) / 
+
+        comfort_variance += (std::abs(lux - 2*lux_1 + lux_2)) /
             (std::pow(sample_period_,2));
     }
     return comfort_variance / nodes_;
@@ -237,7 +255,7 @@ float System::comfortVarianceNode(size_t id)
 float System::getComfortVariance(size_t id, bool total)
 {
     float comfort_variance = 0.0;
-    
+
     try
     {
         if (!total)

@@ -21,10 +21,13 @@
 #define DELIMETER_STR "\n"
 
 /** Size of receive buffer */
-#define RECV_BUFFER         1024
+#define RECV_BUFFER 1024
 /** Size of send buffer */
-#define SEND_BUFFER         PACKET_SIZE
+#define SEND_BUFFER PACKET_SIZE
 /** Size of packet */
-#define PACKET_SIZE         50
+#define PACKET_SIZE 50
+
+/** Serial communication Baudrate */
+#define SERIAL_BAUDRATE 115200
 
 #endif
