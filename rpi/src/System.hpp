@@ -13,8 +13,10 @@
 #include <list>
 #include <algorithm>
 #include <boost/shared_ptr.hpp>
+#include <boost/asio.hpp>
 
 #include "debug.hpp"
+#include "constants.hpp"
 
 class Entry
 {
@@ -54,6 +56,8 @@ public:
 
 private:
 
+    /* Logs */
+
     /** Number of nodes in the system */
     size_t nodes_;
     /** Sampling period */
@@ -67,6 +71,18 @@ private:
     /** External illuminance for each desk */
     std::vector< float > lux_external_;
 
+    /* Communication handles */
+    
+    /** I/O Service for synchronous Serial communications */
+    boost::asio::io_service io_serial_;
+    /** I/O Service for asynchronous I2C communications */
+    boost::asio::io_service io_i2c;
+
+    /* Synchronous Serial connection for outgoing commands */
+    boost::asio::serial_port serial_port_;
+    /** Asynchronous I2C sniffer for incoming information */
+    // TODO
+
 public:
 
     /**
@@ -74,16 +90,21 @@ public:
      *
      * @param[in]  nodes  The number of nodes in the system
      * @param[in]  t_s    The system input sampling period
+     * @param[in]  serial The system serial port name
      */
-    System(size_t nodes, float t_s)
+    System(
+        size_t nodes,
+        float t_s,
+        const std::string & serial)
         : nodes_(nodes),
           sample_period_(t_s),
           entries_(nodes, std::vector < Entry >()),
           occupancy_(nodes),
           lux_lower_bound_(nodes),
-          lux_external_(nodes)
+          lux_external_(nodes),
+          serial_port_(io_serial_)
     {
-        start();
+        start(serial);
     }
 
     /**
@@ -93,11 +114,24 @@ public:
      */
     size_t getNodes();
 
-    // TODO
-    void start();
+    /**
+     * @brief      Initialises System interfaces.
+     *
+     * @param[in]  serial  The serial port name
+     */
+    void start(const std::string & serial);
 
     // TODO
     void readData();
+
+    /**
+     * @brief      Writes a message to the Serial port.
+     *
+     * @param[in]  msg   The message
+     *
+     * @return     Bytes written
+     */
+    int writeSerial(const std::string & msg);
 
     /**
      * @brief      Inserts a log entry

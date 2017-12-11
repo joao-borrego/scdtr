@@ -10,7 +10,7 @@ using boost::asio::ip::tcp;
 
 int main()
 {
-    System::ptr sys(new System(N, T_S));
+    System::ptr sys(new System(N, T_S, "/dev/ttyACM0"));
     tcpServer(sys);
     return 0;
 }

@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <Arduino.h>
+
 /**
  * @brief      Sums A and B and stores in C.
  *

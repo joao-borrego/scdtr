@@ -10,6 +10,7 @@
 
 #include "constants.hpp"
 #include "utils.hpp"
+#include "communication.hpp"
 #include "calibration.hpp"
 #include "consensus.hpp"
 
@@ -39,26 +40,28 @@ unsigned long last_millis {0};
  * @brief      Arduino setup
  */
 void setup() {
-    /* Read device ID from EEPROM */
-    id = EEPROM.read(ID_ADDR);
-    /* Setup serial communication */
+    
+    // Setup serial communication
     Serial.begin(BAUDRATE);
-    /* Setup I2C communication */
-    if (id == MASTER){
-        Wire.begin();
-        Serial.print("[I2C] Registered as Master - ");
-    } else {
-        Wire.begin(id);
-        Wire.onReceive(Calibration::onReceive);
-        Wire.onRequest(Calibration::onRequest);
-        Serial.print("[I2C] Registered as Slave - ");
-    }
-    Serial.println(id);
+    
+    //Read device ID from EEPROM
+    id = EEPROM.read(ID_ADDR);
+    Serial.print("[I2C] Registered with id ");
+    Serial.println((int) id);
+    
 
-    /* Determine K matrix */
+    // Begin I2C communication 
+    Communication::setDeviceId(id);
+    Wire.begin(id);
+    /*
+    // Determine K matrix and external illuminance
+    Wire.onReceive(Calibration::onReceive);
+    Wire.onRequest(Calibration::onRequest);
     Calibration::execute(k_i, &o_i, id);
 
-    //solve(id, NULL, NULL, 0.0);
+    // Setup I2C communication for main loop 
+    Wire.onReceive(Communication::onReceive);
+    */
 }
 
 /**
@@ -66,4 +69,22 @@ void setup() {
  */
 void loop() {
 
+    // Packets have to be acknowledged in order to be sniffed:
+    // Each device acks a single packet
+    Communication::sendInfo((id + 1) % N, input, 0.0, o_i, false);
+
+    // if start consensus
+    
+    Wire.onReceive(Communication::nop);
+
+    float k_i_tmp[N][N] = {{2.0, 1.0}, {1.0, 2.0}};
+    int d_best;
+    if (id == 0){
+        d_best = Consensus::solve(id, 150.0, k_i_tmp[0], 30.0);
+    }else{
+        d_best = Consensus::solve(id, 80.0,  k_i_tmp[1],  0.0);
+    }
+    Serial.println(d_best);
+
+    delay(100000);
 }

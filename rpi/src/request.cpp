@@ -35,7 +35,7 @@ void parseRequest(
     {
         if (type == RESET)
         {
-            // TODO - Command
+            system->writeSerial(RESET);
             response = ACK;
         }
         else
@@ -142,9 +142,10 @@ void parseRequest(
                 {
                     try
                     {
-                        int i = std::stoi(cmd);
-                        bool val = std::stoi(cmd);
-                        // TODO - Command
+                        int id = std::stoi(cmd);
+                        if (id < 0 || id >= system->getNodes()) throw std::exception();
+                        bool val = std::stoi(arg);
+                        system->writeSerial(request);
                         response = ACK;
                     }
                     catch (std::exception e)
