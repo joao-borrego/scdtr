@@ -1,8 +1,12 @@
 # Documentation
-/doc
+*/doc
 # Binaries
-/bin
+*/bin
 *.bin
-/build
+*/build
 *.o
 *.d
+*.swp
+*.swn
+*.swo
+
