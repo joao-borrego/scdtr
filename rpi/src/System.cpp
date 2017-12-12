@@ -161,7 +161,7 @@ float System::getLux(size_t id)
     }
 }
 
-int System::getDutyCycle(size_t id)
+float System::getDutyCycle(size_t id)
 {
     boost::shared_lock<boost::shared_mutex> lock(mutex_);
     try

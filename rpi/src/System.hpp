@@ -32,7 +32,7 @@ public:
     /** Registered lux value */
     float lux;
     /** Registered duty cycle */
-    int duty_cycle;
+    float duty_cycle;
     /** Reference illuminance */
     float lux_reference;
 
@@ -44,7 +44,7 @@ public:
      * @param[in]  d_c   The registered duty cycle
      * @param[in]  l_r   The reference illuminance
      */
-    Entry(std::time_t t_s, float l, int d_c, float l_r)
+    Entry(std::time_t t_s, float l, float d_c, float l_r)
         : timestamp(t_s),
           lux(l),
           duty_cycle(d_c),
@@ -180,7 +180,7 @@ public:
      *
      * @return     The duty cycle.
      */
-    int getDutyCycle(size_t id);
+    float getDutyCycle(size_t id);
 
     /**
      * @brief      Gets the occupancy for a given desk.
