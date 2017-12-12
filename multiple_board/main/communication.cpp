@@ -104,27 +104,42 @@ namespace Communication
         Wire.endTransmission();
     }
 
-    void sendInfo(uint8_t dest, float lux, float ref, float ext, bool occupancy)
+    void sendInfo(
+        uint8_t dest,
+        float lux,
+        float duty_cycle,
+        float lower_bound,
+        float ext,
+        float ref,
+        bool occupancy)
     {
         size_t size = HEADER_SIZE + DATA_INFO_SIZE;
         byte packet[size];
         packet[0] = dev_id;
         packet[1] = INF;
         
-        float_bytes l, r, e;
-        l.f = lux;
+        float_bytes fb;
+        fb.f = lux;
         for (int j = 0; j < sizeof(float); j++){
-            packet[2 + j] = l.b[j];    
+            packet[2 + j] = fb.b[j];    
         }
-        r.f = ref;
+        fb.f = duty_cycle;
         for (int j = 0; j < sizeof(float); j++){
-            packet[2 + sizeof(float) + j] = r.b[j];    
+            packet[2 + sizeof(float) + j] = fb.b[j];    
         }
-        e.f = ext;
+        fb.f = lower_bound;
         for (int j = 0; j < sizeof(float); j++){
-            packet[2 + 2 * sizeof(float) + j] = e.b[j];    
+            packet[2 + 2 * sizeof(float) + j] = fb.b[j];    
         }
-        packet[2 + 3 * sizeof(float)] = (occupancy)? 0 : 1;
+        fb.f = ext;
+        for (int j = 0; j < sizeof(float); j++){
+            packet[2 + 3 * sizeof(float) + j] = fb.b[j];    
+        }
+        fb.f = ref;
+        for (int j = 0; j < sizeof(float); j++){
+            packet[2 + 4 * sizeof(float) + j] = fb.b[j];    
+        }
+        packet[2 + 5 * sizeof(float)] = (occupancy)? 0 : 1;
         
         Wire.beginTransmission(dest);
         Wire.write(packet, size);

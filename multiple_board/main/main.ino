@@ -71,10 +71,11 @@ void loop() {
 
     // Packets have to be acknowledged in order to be sniffed:
     // Each device acks a single packet
-    Communication::sendInfo((id + 1) % N, input, 0.0, o_i, false);
+    Communication::sendInfo((id + 1) % N, input, 0.90, 30.0, 20.0, 50.0, false);
 
     // if start consensus
     
+    /*
     Wire.onReceive(Communication::nop);
 
     float k_i_tmp[N][N] = {{2.0, 1.0}, {1.0, 2.0}};
@@ -85,6 +86,7 @@ void loop() {
         d_best = Consensus::solve(id, 80.0,  k_i_tmp[1],  0.0);
     }
     Serial.println(d_best);
+    */
 
-    delay(100000);
+    delay(100);
 }
