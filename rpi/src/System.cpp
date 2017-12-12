@@ -245,7 +245,7 @@ float System::getPower(size_t id, bool total)
     {
         for (int i = 0; i < nodes_; i++)
         {
-            power_i = getDutyCycle(id);
+            power_i = getDutyCycle(i);
             power += power_i;
             if (power_i == -1) return -1;
         }
