@@ -30,16 +30,16 @@ void System::start(const std::string & serial, const std::string & i2c)
 
     debugPrintTrace("Waiting for writer in I2C pipe" + i2c);
     i2c_fd_ = open(i2c.c_str(), O_RDONLY);
-    if (i2c_fd_ == -1){ errPrintTrace("Failed to open I2C pipe: " + i2c); }
-    try {
-        i2c_.assign(i2c_fd_);
-    } catch (std::exception e) {
-        errPrintTrace(e.what());
+    if (i2c_fd_ == -1){
+        errPrintTrace("Failed to open I2C pipe: " + i2c);
+        exit(EXIT_FAILURE);
     }
+    
+    i2c_.assign(i2c_fd_);
+
     startRead();
     
     debugPrintTrace("Opened I2C FIFO for reading.");
-
     debugPrintTrace("System initialised.");
 }
 
@@ -59,9 +59,8 @@ void System::handleRead(const boost::system::error_code & error,
 
             uint8_t id = i2c_buffer_[0];
             uint8_t type = i2c_buffer_[1];
-            debugPrintTrace("id " << id << " type " << type);
-
             char *data = i2c_buffer_ + 2;
+
             if (type == INF){
                 
                 float lux, dc, lb, ext, ref;
@@ -81,17 +80,28 @@ void System::handleRead(const boost::system::error_code & error,
                     }
                 }
                 occupancy = data[5 * sizeof(float)];
-
                 std::time_t timestamp = std::time(nullptr);
-                debugPrintTrace("Received: " << 
-                    " " << lux <<
-                    " " << dc <<
-                    " " << lb <<
-                    " " << ext <<
-                    " " << ref << 
-                    " " << occupancy);
 
-                // TODO - Remaining variables
+                debugPrintTrace("[I2C]" << 
+                    "id " << id <<
+                    "lux " << lux <<
+                    "dc  " << dc <<
+                    "lb  " << lb <<
+                    "ext " << ext <<
+                    "ref " << ref << 
+                    "occ " << occupancy);
+
+                // Update values in memory
+                try
+                {
+                    lux_lower_bound_.at(id) = lb;
+                    lux_external_.at(id)    = ext;
+                    occupancy_.at(id)       = occupancy;
+                }
+                catch( std::out_of_range & e)
+                {
+                    errPrintTrace(e.what());
+                }
                 insertEntry(id, timestamp, lux, dc, ref);
             }
         }
@@ -124,6 +134,8 @@ void System::insertEntry(
     float lux_reference)
 {
     Entry new_entry = Entry(timestamp, lux, duty_cycle, lux_reference);
+    
+    boost::unique_lock<boost::shared_mutex> lock(mutex_);
     try
     {
         entries_.at(id).push_back(std::move(new_entry));
@@ -136,6 +148,7 @@ void System::insertEntry(
 
 float System::getLux(size_t id)
 {
+    boost::shared_lock<boost::shared_mutex> lock(mutex_);
     try
     {
         return (entries_.at(id).empty())?
@@ -150,6 +163,7 @@ float System::getLux(size_t id)
 
 int System::getDutyCycle(size_t id)
 {
+    boost::shared_lock<boost::shared_mutex> lock(mutex_);
     try
     {
         return (entries_.at(id).empty())?
@@ -164,6 +178,7 @@ int System::getDutyCycle(size_t id)
 
 bool System::getOccupancy(size_t id)
 {
+    boost::shared_lock<boost::shared_mutex> lock(mutex_);
     try
     {
         return occupancy_.at(id);
@@ -177,6 +192,7 @@ bool System::getOccupancy(size_t id)
 
 float System::getLuxLowerBound(size_t id)
 {
+    boost::shared_lock<boost::shared_mutex> lock(mutex_);
     try
     {
         return lux_lower_bound_.at(id);
@@ -190,6 +206,7 @@ float System::getLuxLowerBound(size_t id)
 
 float System::getLuxExternal(size_t id)
 {
+    boost::shared_lock<boost::shared_mutex> lock(mutex_);
     try
     {
         return lux_external_.at(id);
@@ -203,6 +220,7 @@ float System::getLuxExternal(size_t id)
 
 float System::getLuxReference(size_t id)
 {
+    boost::shared_lock<boost::shared_mutex> lock(mutex_);
     try
     {
         return (entries_.at(id).empty())?
@@ -238,6 +256,8 @@ float System::getPower(size_t id, bool total)
 float System::energyNode(size_t id)
 {
     float d_prev, t_prev, t_cur, energy = 0.0;
+    boost::shared_lock<boost::shared_mutex> lock(mutex_);
+    
     int length = entries_.at(id).size();
     for (int i = 1; i < length; i++)
     {
@@ -277,6 +297,8 @@ float System::getEnergy(size_t id, bool total)
 float System::comfortErrorNode(size_t id)
 {
     float lux_ref, lux, comfort_error = 0.0;
+    boost::shared_lock<boost::shared_mutex> lock(mutex_);
+
     int length = entries_.at(id).size();
     for (int i = 0; i < length; i++)
     {
@@ -316,6 +338,8 @@ float System::getComfortError(size_t id, bool total)
 float System::comfortVarianceNode(size_t id)
 {
     float lux, lux_1, lux_2, comfort_variance = 0.0;
+    boost::shared_lock<boost::shared_mutex> lock(mutex_);
+
     int length = entries_.at(id).size();
     for (int i = 2; i < length; i++)
     {

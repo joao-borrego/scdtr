@@ -10,9 +10,18 @@ using boost::asio::ip::tcp;
 
 System::ptr system_;
 
-int main()
+int main(int argc, char *argv[])
 {
-    system_ = System::ptr(new System(N, T_S, "/dev/ttyACM0", "/tmp/myfifo"));
+
+    if (argc != 3)
+    {
+        std::cout << "Usage:\t" << argv[0] << " <Serial> <I2C>" << std::endl;
+        std::cout << " e.g.:\t" << argv[0] << " /dev/tty/ACM0   /tmp/i2c" << std::endl;
+           
+        exit(EXIT_FAILURE);
+    }
+
+    system_ = System::ptr(new System(NODES, T_S, argv[1], argv[2]));
     
     std::thread t1(i2c);
     std::thread t2(tcpServer);

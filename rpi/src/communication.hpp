@@ -13,7 +13,8 @@
  * Info         = [ Header | d_i | l_i | r_i | o_i ]
  */
 
-#pragma once
+#ifndef COMMUNICATION_HPP
+#define COMMUNICATION_HPP
 
 #include "constants.hpp"
 
@@ -22,7 +23,7 @@ const size_t MAX_SIZE               = 32;
 /** Packet header size (bytes) */
 const size_t HEADER_SIZE            = sizeof(uint8_t) * 2;
 /** Consensus data size (bytes) */
-const size_t DATA_CONSENSUS_SIZE    = sizeof(float) * N;
+const size_t DATA_CONSENSUS_SIZE    = sizeof(float) * NODES;
 /** Information data size (bytes) */
 const size_t DATA_INFO_SIZE         = sizeof(float) * 3 + sizeof(uint8_t) * 2;
 
@@ -58,3 +59,5 @@ namespace Communication
     } float_bytes;
 
 }
+
+#endif

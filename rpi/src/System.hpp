@@ -12,6 +12,8 @@
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -58,20 +60,24 @@ public:
 
 private:
 
-    /* Logs */
-
     /** Number of nodes in the system */
     size_t nodes_;
     /** Sampling period */
     float sample_period_;
-    /** Registered entries */
+    
+    /* Direct measurements */
+
+    /** Mutex for thread-safe data access */
+    boost::shared_mutex mutex_;
+    /** Registered log entries */
     std::vector < std::vector< Entry > > entries_;
-    /** Current occupancy for each desk */
-    std::vector< bool > occupancy_;
+
     /** Illuminance lower bound for each desk */
     std::vector< float > lux_lower_bound_;
     /** External illuminance for each desk */
     std::vector< float > lux_external_;
+    /** Current occupancy for each desk */
+    std::vector< bool > occupancy_;
 
     /* Communication handles */
     
@@ -89,17 +95,9 @@ private:
     /** I2C receive buffer */
     char i2c_buffer_[RECV_BUFFER];
 
-    // TODO
-
 public:
 
-    /**
-     * @brief      Constructor
-     *
-     * @param[in]  nodes  The number of nodes in the system
-     * @param[in]  t_s    The system input sampling period
-     * @param[in]  serial The system serial port name
-     */
+    //TODO
     System(
         size_t nodes,
         float t_s,
@@ -108,9 +106,9 @@ public:
         : nodes_(nodes),
           sample_period_(t_s),
           entries_(nodes, std::vector < Entry >()),
-          occupancy_(nodes),
           lux_lower_bound_(nodes),
           lux_external_(nodes),
+          occupancy_(nodes),
           serial_port_(io_serial_),
           i2c_(io_i2c_)
     {
