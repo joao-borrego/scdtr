@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <boost/shared_ptr.hpp>
 #include <boost/asio.hpp>
+#include <boost/bind.hpp>
 
 #include "debug.hpp"
 #include "constants.hpp"
@@ -76,11 +77,17 @@ private:
     /** I/O Service for synchronous Serial communications */
     boost::asio::io_service io_serial_;
     /** I/O Service for asynchronous I2C communications */
-    boost::asio::io_service io_i2c;
+    boost::asio::io_service io_i2c_;
 
     /* Synchronous Serial connection for outgoing commands */
     boost::asio::serial_port serial_port_;
     /** Asynchronous I2C sniffer for incoming information */
+    boost::asio::posix::stream_descriptor i2c_;
+    /** I2C pipe file descriptor */
+    int i2c_fd_;
+    /** I2C receive buffer */
+    char i2c_buffer_[RECV_BUFFER];
+
     // TODO
 
 public:
@@ -95,16 +102,18 @@ public:
     System(
         size_t nodes,
         float t_s,
-        const std::string & serial)
+        const std::string & serial,
+        const std::string & i2c)
         : nodes_(nodes),
           sample_period_(t_s),
           entries_(nodes, std::vector < Entry >()),
           occupancy_(nodes),
           lux_lower_bound_(nodes),
           lux_external_(nodes),
-          serial_port_(io_serial_)
+          serial_port_(io_serial_),
+          i2c_(io_i2c_)
     {
-        start(serial);
+        start(serial, i2c);
     }
 
     /**
@@ -119,10 +128,15 @@ public:
      *
      * @param[in]  serial  The serial port name
      */
-    void start(const std::string & serial);
+    void start(const std::string & serial, const std::string & i2c);
+
+    void startRead();
+
+    void runI2C();
 
     // TODO
-    void readData();
+    void handleRead(const boost::system::error_code & error,
+        size_t bytes_transferred);
 
     /**
      * @brief      Writes a message to the Serial port.

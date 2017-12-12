@@ -10,15 +10,13 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <thread>
 
 #include "System.hpp"
 #include "TCPServer.hpp"
 
-/**
- * @brief      Runs TCP server.
- *
- * @param[in]  sys   The system
- */
-void tcpServer(System::ptr & sys);
+void tcpServer();
+
+void i2c();
 
 #endif

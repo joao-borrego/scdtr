@@ -8,19 +8,32 @@
 
 using boost::asio::ip::tcp;
 
+System::ptr system_;
+
 int main()
 {
-    System::ptr sys(new System(N, T_S, "/dev/ttyACM0"));
-    tcpServer(sys);
+    system_ = System::ptr(new System(N, T_S, "/dev/ttyACM0", "/tmp/myfifo"));
+    
+    std::thread t1(i2c);
+    std::thread t2(tcpServer);
+
+    t1.join();
+    t2.join();
+
     return 0;
 }
 
-void tcpServer(System::ptr & sys)
+void i2c()
+{
+    system_->runI2C();
+}
+
+void tcpServer()
 {
     try
     {
         boost::asio::io_service io;
-        TCPServer server(io, PORT, sys);
+        TCPServer server(io, PORT, system_);
         io.run();
     }
     catch (std::exception & e)

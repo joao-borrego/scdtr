@@ -11,7 +11,7 @@ size_t System::getNodes()
     return nodes_;
 }
 
-void System::start(const std::string & serial)
+void System::start(const std::string & serial, const std::string & i2c)
 {
     boost::system::error_code error;
 
@@ -23,12 +23,58 @@ void System::start(const std::string & serial)
         boost::asio::serial_port_base::baud_rate(SERIAL_BAUDRATE), error);
     if (error){ errPrintTrace(error.message()); exit(-1); }
     */
+
+    //debugPrintTrace("Opened Serial connection with system.");
+
+    // Initialise read from I2C fifo
+
+    debugPrintTrace("Waiting for writer in I2C pipe" + i2c);
+    i2c_fd_ = open(i2c.c_str(), O_RDONLY);
+    if (i2c_fd_ == -1){ errPrintTrace("Failed to open I2C pipe: " + i2c); }
+    try {
+        i2c_.assign(i2c_fd_);
+    } catch (std::exception e) {
+        errPrintTrace(e.what());
+    }
+    startRead();
+    
+    debugPrintTrace("Opened I2C FIFO for reading.");
+
     debugPrintTrace("System initialised.");
 }
 
-void System::readData()
-{
+void System::startRead(){
+    i2c_.async_read_some(boost::asio::buffer(i2c_buffer_, RECV_BUFFER),
+        boost::bind(& System::handleRead, this, 
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::bytes_transferred));
+}
 
+void System::handleRead(const boost::system::error_code & error,
+    size_t bytes_transferred)
+{
+    if (!error)
+    {
+        if (bytes_transferred >= 2){
+
+            unsigned char id = i2c_buffer_[0];
+            unsigned char type = i2c_buffer_[1];
+            debugPrintTrace("id " << id << " type " << type);
+
+            std::time_t timestamp = std::time(nullptr);
+            insertEntry(0, timestamp, 500.0, 40, 30.0);
+        }
+
+        startRead();
+    }
+    else {
+        errPrintTrace("Lost connection to system!");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void System::runI2C(){
+    io_i2c_.run();
 }
 
 int System::writeSerial(const std::string & msg)
