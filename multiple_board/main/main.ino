@@ -87,8 +87,8 @@ void loop() {
     Communication::sendInfo((id + 1) % N,
         lux, out / 255.0, lower_bound, o_i, ref, occupancy);
     */
-    Communication::sendInfo((id + 1) % N, lux,
-        out / 255.0, (id+1)*30.0, (id+1)*20.0, (id+1)*50.0, id == 0);
+    Communication::sendInfo((id + 1) % N,
+        100.0, 0.90, 30.0, 20.0, 50.0, id == 0);
 
     // if start consensus
     

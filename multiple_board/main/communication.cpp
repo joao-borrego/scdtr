@@ -120,6 +120,7 @@ namespace Communication
         
         float_bytes fb;
         fb.f = lux;
+        uint8_t occupied = (occupancy)? 1 : 0;
         for (int j = 0; j < sizeof(float); j++){
             packet[2 + j] = fb.b[j];    
         }
@@ -139,7 +140,7 @@ namespace Communication
         for (int j = 0; j < sizeof(float); j++){
             packet[2 + 4 * sizeof(float) + j] = fb.b[j];    
         }
-        packet[2 + 5 * sizeof(float)] = (occupancy)? 0 : 1;
+        packet[2 + 5 * sizeof(float)] = occupied;
         
         Wire.beginTransmission(dest);
         Wire.write(packet, size);

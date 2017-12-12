@@ -27,7 +27,7 @@ const size_t HEADER_SIZE            = sizeof(uint8_t) * 2;
 /** Consensus data size (bytes) */
 const size_t DATA_CONSENSUS_SIZE    = sizeof(float) * N;
 /** Information data size (bytes) */
-const size_t DATA_INFO_SIZE         = sizeof(float) * 3 + sizeof(uint8_t) * 2;
+const size_t DATA_INFO_SIZE         = sizeof(float) * 5 + sizeof(uint8_t);
 
 /* Packet types */
 
