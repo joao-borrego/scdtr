@@ -61,8 +61,31 @@ void System::handleRead(const boost::system::error_code & error,
             unsigned char type = i2c_buffer_[1];
             debugPrintTrace("id " << id << " type " << type);
 
-            std::time_t timestamp = std::time(nullptr);
-            insertEntry(0, timestamp, 500.0, 40, 30.0);
+            char *data = i2c_buffer_ + 2;
+            if (type == INF){
+                
+                float lux, dc, lb, ext, ref;
+                uint8_t occupancy;
+                
+                Communication::float_bytes fb;
+                for (int i = 0; i < 5; i++){
+                    for (int j = 0; j< sizeof(float); j++){
+                        fb.b[j] = data[i * sizeof(float) + j];
+                    }
+                    switch(i){
+                        case 0: lux = fb.f; break;
+                        case 1: dc  = fb.f; break;
+                        case 2: lb  = fb.f; break;
+                        case 3: ext = fb.f; break;
+                        case 4: ref = fb.f; break;
+                    }
+                }
+                occupancy = data[5 * sizeof(float)];
+
+                std::time_t timestamp = std::time(nullptr);
+                // TODO - Remaining variables
+                insertEntry(id, timestamp, lux, dc, ref);
+            }
         }
 
         startRead();

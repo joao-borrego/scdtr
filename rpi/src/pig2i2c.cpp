@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include "pigpio.h"
 
@@ -62,8 +63,10 @@ e.g. ./pig2i2c 9 11 </dev/pigpio0 # monitor external bus
 #define SDA_RISING  4
 #define SDA_STEADY  8
 
-#define STANDBY 0
-#define READ    1
+#define STANDBY     0
+#define READ        1
+
+#define MAX_SIZE    32
 
 static char * timeStamp()
 {
@@ -80,14 +83,27 @@ static char * timeStamp()
     return buf;
 }
 
-int parse_I2C(int SCL, int SDA, bool & valid,
-                bool & start, bool & end, bool & acked)
+typedef union float_bytes_t{
+    float f;
+    unsigned char b[sizeof(float)];
+} float_bytes;
+
+void writePacket(int fd, int *packet, size_t size)
+{
+    if (size >=  2){
+        write(fd, packet, size);
+    }
+}
+
+int parse_I2C( int SCL, int SDA, bool & valid,
+               bool & start, bool & end, bool & acked)
 {
     static int in_data=0, byte=0, bit=0;
     static int oldSCL=1, oldSDA=1;
 
     int xSCL, xSDA;
 
+    // Data byte read
     int rv = 0;
 
     if (SCL != oldSCL)
@@ -190,37 +206,6 @@ int parse_I2C(int SCL, int SDA, bool & valid,
     return rv;
 }
 
-typedef union float_bytes_t{
-    float f;
-    unsigned char b[sizeof(float)];
-} float_bytes;
-
-void decodePacket(int *buffer, size_t size)
-{
-    // Note: first byte in i2c buffer is useless to us
-    if (size < 3){
-        // Empty packet
-        return;
-    }
-    
-    int id = buffer[1];
-    int type = buffer[2];
-    printf("Id %d Type %d - ", id, type);
-   
-    if (type == 2 && size == 11){
-        for (int i = 0; i < 2; i++){
-            float_bytes fb;
-            for (int j = 0; j < sizeof(float); j++){
-                fb.b[j] = buffer[1 + 2 + i * sizeof(float) + j];
-            }
-            printf("%.3f ", fb.f);
-        }
-    }
-
-    printf("\n");
-    fflush(NULL);                
-
-}
 
 int main(int argc, char * argv[])
 {
@@ -230,7 +215,7 @@ int main(int argc, char * argv[])
 
     gpioReport_t report;
 
-    if (argc > 2)
+    if (argc > 3)
     {
         gSCL = atoi(argv[1]);
         gSDA = atoi(argv[2]);
@@ -242,6 +227,7 @@ int main(int argc, char * argv[])
     }
     else
     {
+        printf("Usage: ./pig2i2c.bin <SCL> <SDA> <path/to/FIFO>\n");
         exit(-1);
     }
 
@@ -250,16 +236,34 @@ int main(int argc, char * argv[])
     SCL = 1;
     SDA = 1;
     level = bI2C;
-
-    bool valid, start, end, acked;
-    unsigned char recv = 0;
     
-    size_t idx = 0;
-    size_t size = 0;
-    int  packet[32] = {0};
+    // Variables for packet creation 
+    bool valid, start, end, acked;
+    unsigned char recv      = 0;
+    size_t idx              = 0;
+    size_t size             = 0;
+    int  packet[MAX_SIZE]   = {0};
+    // Current program state
+    int state               = STANDBY;
 
-    int state = 0;
+    // Output FIFO
+    int fifo_fd; 
+    char fifo_path[100];    
+    strncpy(fifo_path, argv[3], 100);
+    // Check if FIFO exists. If not, create it
+    struct stat st;
+    if (stat(fifo_path, &st) != 0){
+        printf("[INFO] FIFO not found. Creating %s\n", fifo_path);
+        mkfifo(fifo_path, 0666);
+    }
+    // Open FIFO for writing
+    fifo_fd = open(fifo_path, O_WRONLY);
+    if (fifo_fd < 0){
+        fprintf(stderr, "[ERROR] Could not open FIFO\n");
+        exit(-1);
+    }
 
+    // Sniff I2C communications and redirect packets to FIFO
     while ((r=read(STDIN_FILENO, &report, RS)) == RS)
     {
         report.level &= bI2C;
@@ -285,7 +289,8 @@ int main(int argc, char * argv[])
                     state = STANDBY;
                     size = idx;
                     
-                    decodePacket(packet, size);
+                    // First byte of packet can be discarded
+                    writePacket(fifo_fd, packet + 1, size - 1);
 
                     idx = 0;
                 } else if (valid) {
@@ -294,6 +299,7 @@ int main(int argc, char * argv[])
             }
         }
     }
+    unlink(fifo_path);
     return 0;
 }
 

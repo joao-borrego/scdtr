@@ -18,6 +18,7 @@
 
 #include "debug.hpp"
 #include "constants.hpp"
+#include "communication.hpp"
 
 class Entry
 {
