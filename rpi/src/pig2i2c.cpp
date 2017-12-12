@@ -88,14 +88,14 @@ typedef union float_bytes_t{
     unsigned char b[sizeof(float)];
 } float_bytes;
 
-void writePacket(int fd, int *packet, size_t size)
+void writePacket(int fd, uint8_t *packet, size_t size)
 {
     if (size >=  2){
         write(fd, packet, size);
     }
 }
 
-int parse_I2C( int SCL, int SDA, bool & valid,
+uint8_t parse_I2C( int SCL, int SDA, bool & valid,
                bool & start, bool & end, bool & acked)
 {
     static int in_data=0, byte=0, bit=0;
@@ -104,7 +104,7 @@ int parse_I2C( int SCL, int SDA, bool & valid,
     int xSCL, xSDA;
 
     // Data byte read
-    int rv = 0;
+    uint8_t rv = 0;
 
     if (SCL != oldSCL)
     {
@@ -239,12 +239,12 @@ int main(int argc, char * argv[])
     
     // Variables for packet creation 
     bool valid, start, end, acked;
-    unsigned char recv      = 0;
-    size_t idx              = 0;
-    size_t size             = 0;
-    int  packet[MAX_SIZE]   = {0};
+    uint8_t recv             = 0;
+    size_t  idx              = 0;
+    size_t  size             = 0;
+    uint8_t packet[MAX_SIZE] = {0};
     // Current program state
-    int state               = STANDBY;
+    int state                = STANDBY;
 
     // Output FIFO
     int fifo_fd; 
