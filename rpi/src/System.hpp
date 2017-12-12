@@ -93,7 +93,7 @@ private:
     /** I2C pipe file descriptor */
     int i2c_fd_;
     /** I2C receive buffer */
-    char i2c_buffer_[RECV_BUFFER];
+    uint8_t i2c_buffer_[RECV_BUFFER];
 
 public:
 

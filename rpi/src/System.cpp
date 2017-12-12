@@ -59,7 +59,7 @@ void System::handleRead(const boost::system::error_code & error,
 
             uint8_t id = i2c_buffer_[0];
             uint8_t type = i2c_buffer_[1];
-            char *data = i2c_buffer_ + 2;
+            uint8_t *data = i2c_buffer_ + 2;
 
             if (type == INF){
                 
@@ -83,13 +83,13 @@ void System::handleRead(const boost::system::error_code & error,
                 std::time_t timestamp = std::time(nullptr);
 
                 debugPrintTrace("[I2C]" << 
-                    "id " << id <<
-                    "lux " << lux <<
-                    "dc  " << dc <<
-                    "lb  " << lb <<
-                    "ext " << ext <<
-                    "ref " << ref << 
-                    "occ " << occupancy);
+                    " id " << (int) id <<
+                    " lux " << lux <<
+                    " dc  " << dc <<
+                    " lb  " << lb <<
+                    " ext " << ext <<
+                    " ref " << ref << 
+                    " occ " << (bool) occupancy);
 
                 // Update values in memory
                 try
