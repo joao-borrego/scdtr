@@ -57,8 +57,8 @@ void System::handleRead(const boost::system::error_code & error,
     {
         if (bytes_transferred >= 2){
 
-            unsigned char id = i2c_buffer_[0];
-            unsigned char type = i2c_buffer_[1];
+            uint8_t id = i2c_buffer_[0];
+            uint8_t type = i2c_buffer_[1];
             debugPrintTrace("id " << id << " type " << type);
 
             char *data = i2c_buffer_ + 2;
@@ -83,6 +83,14 @@ void System::handleRead(const boost::system::error_code & error,
                 occupancy = data[5 * sizeof(float)];
 
                 std::time_t timestamp = std::time(nullptr);
+                debugPrintTrace("Received: " << 
+                    " " << lux <<
+                    " " << dc <<
+                    " " << lb <<
+                    " " << ext <<
+                    " " << ref << 
+                    " " << occupancy);
+
                 // TODO - Remaining variables
                 insertEntry(id, timestamp, lux, dc, ref);
             }
