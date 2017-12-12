@@ -19,7 +19,7 @@ CLIENT_DEP := $(CLIENT_OBJ:.o=.d)
 
 CPPFLAGS ?= -std=c++11
 
-LDFLAGS ?= -lboost_system -lpthread
+LDFLAGS ?= -lboost_system -lpthread -lboost_thread
 
 MKDIR_P ?= mkdir -p
 

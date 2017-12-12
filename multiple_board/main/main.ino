@@ -22,19 +22,29 @@ uint8_t id{0};
 /** Row i of K parameter matrix */
 float k_i[N]{0};
 /** LUX value for complete darkness */
-float o_i{0};
+float o_i                   {0};
+
+// TODO - Remove volatile
 
 /** LDR input ADC value */
-volatile float ldr_in {0};
+volatile float ldr_in       {0};
 /** LDR input in Volt */
-volatile float v_in {0};
+volatile float v_in         {0};
 /** LDR input converted to LUX units */
-volatile float input {0};
+volatile float lux          {0};
+/** LED duty cycle */
+volatile uint8_t out        {0};
+/** Lux lower bound */
+volatile float lower_bound  {0};
+/** Lux reference */
+volatile uint8_t ref        {0};
+/** Occupancy */
+volatile bool occupancy     {false};   
 
 /** Latest elapsed milliseconds since startup */
-unsigned long current_millis {0};
+unsigned long current_millis    {0};
 /** Previously recorded elapsed milliseconds since startup */
-unsigned long last_millis {0};
+unsigned long last_millis       {0};
 
 /**
  * @brief      Arduino setup
@@ -53,6 +63,7 @@ void setup() {
     // Begin I2C communication 
     Communication::setDeviceId(id);
     Wire.begin(id);
+    
     /*
     // Determine K matrix and external illuminance
     Wire.onReceive(Calibration::onReceive);
@@ -71,10 +82,17 @@ void loop() {
 
     // Packets have to be acknowledged in order to be sniffed:
     // Each device acks a single packet
-    Communication::sendInfo((id + 1) % N, input, 0.0, o_i, false);
+    
+    /*
+    Communication::sendInfo((id + 1) % N,
+        lux, out / 255.0, lower_bound, o_i, ref, occupancy);
+    */
+    Communication::sendInfo((id + 1) % N,
+        100.0, 0.90, 30.0, 20.0, 50.0, id == 0);
 
     // if start consensus
     
+    /*
     Wire.onReceive(Communication::nop);
 
     float k_i_tmp[N][N] = {{2.0, 1.0}, {1.0, 2.0}};
@@ -85,6 +103,7 @@ void loop() {
         d_best = Consensus::solve(id, 80.0,  k_i_tmp[1],  0.0);
     }
     Serial.println(d_best);
+    */
 
-    delay(100000);
+    delay(100);
 }

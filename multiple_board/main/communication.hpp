@@ -10,7 +10,7 @@
  * 
  * Header       = [ Id | Type ]
  * Consensus    = [ Header | d_i_1 d_i_2 ... d_i_N ]
- * Info         = [ Header | d_i | l_i | r_i | o_i ]
+ * Info         = [ Header | lux | dc | lb | ext | ref | occ ]
  */
 
 #pragma once
@@ -27,7 +27,7 @@ const size_t HEADER_SIZE            = sizeof(uint8_t) * 2;
 /** Consensus data size (bytes) */
 const size_t DATA_CONSENSUS_SIZE    = sizeof(float) * N;
 /** Information data size (bytes) */
-const size_t DATA_INFO_SIZE         = sizeof(float) * 3 + sizeof(uint8_t) * 2;
+const size_t DATA_INFO_SIZE         = sizeof(float) * 5 + sizeof(uint8_t);
 
 /* Packet types */
 
@@ -133,15 +133,24 @@ namespace Communication
     size_t readToBuffer(byte *buffer);
 
     /**
-     * @brief      Sends an information packet.
+     * @brief      Sends an information packet
      *
-     * @param[in]  dest       The destination id
-     * @param[in]  lux        The illuminance
-     * @param[in]  ref        The reference illuminance
-     * @param[in]  ext        The external illuminance
-     * @param[in]  occupancy  The occupancy
+     * @param[in]  dest         The destination
+     * @param[in]  lux          The lux
+     * @param[in]  duty_cycle   The duty cycle
+     * @param[in]  lower_bound  The lower bound
+     * @param[in]  ext          The external lux
+     * @param[in]  ref          The reference
+     * @param[in]  occupancy    The occupancy
      */
-    void sendInfo(uint8_t dest, float lux, float ref, float ext, bool occupancy);
+    void sendInfo(
+        uint8_t dest,
+        float lux,
+        float duty_cycle,
+        float lower_bound,
+        float ext,
+        float ref,
+        bool occupancy);
 
     /**
      * @brief      Callback function for processing received data

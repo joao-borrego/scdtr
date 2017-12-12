@@ -12,11 +12,15 @@
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/asio.hpp>
+#include <boost/bind.hpp>
 
 #include "debug.hpp"
 #include "constants.hpp"
+#include "communication.hpp"
 
 class Entry
 {
@@ -28,7 +32,7 @@ public:
     /** Registered lux value */
     float lux;
     /** Registered duty cycle */
-    int duty_cycle;
+    float duty_cycle;
     /** Reference illuminance */
     float lux_reference;
 
@@ -40,7 +44,7 @@ public:
      * @param[in]  d_c   The registered duty cycle
      * @param[in]  l_r   The reference illuminance
      */
-    Entry(std::time_t t_s, float l, int d_c, float l_r)
+    Entry(std::time_t t_s, float l, float d_c, float l_r)
         : timestamp(t_s),
           lux(l),
           duty_cycle(d_c),
@@ -56,55 +60,59 @@ public:
 
 private:
 
-    /* Logs */
-
     /** Number of nodes in the system */
     size_t nodes_;
     /** Sampling period */
     float sample_period_;
-    /** Registered entries */
+    
+    /* Direct measurements */
+
+    /** Mutex for thread-safe data access */
+    boost::shared_mutex mutex_;
+    /** Registered log entries */
     std::vector < std::vector< Entry > > entries_;
-    /** Current occupancy for each desk */
-    std::vector< bool > occupancy_;
+
     /** Illuminance lower bound for each desk */
     std::vector< float > lux_lower_bound_;
     /** External illuminance for each desk */
     std::vector< float > lux_external_;
+    /** Current occupancy for each desk */
+    std::vector< bool > occupancy_;
 
     /* Communication handles */
     
     /** I/O Service for synchronous Serial communications */
     boost::asio::io_service io_serial_;
     /** I/O Service for asynchronous I2C communications */
-    boost::asio::io_service io_i2c;
+    boost::asio::io_service io_i2c_;
 
     /* Synchronous Serial connection for outgoing commands */
     boost::asio::serial_port serial_port_;
     /** Asynchronous I2C sniffer for incoming information */
-    // TODO
+    boost::asio::posix::stream_descriptor i2c_;
+    /** I2C pipe file descriptor */
+    int i2c_fd_;
+    /** I2C receive buffer */
+    uint8_t i2c_buffer_[RECV_BUFFER];
 
 public:
 
-    /**
-     * @brief      Constructor
-     *
-     * @param[in]  nodes  The number of nodes in the system
-     * @param[in]  t_s    The system input sampling period
-     * @param[in]  serial The system serial port name
-     */
+    //TODO
     System(
         size_t nodes,
         float t_s,
-        const std::string & serial)
+        const std::string & serial,
+        const std::string & i2c)
         : nodes_(nodes),
           sample_period_(t_s),
           entries_(nodes, std::vector < Entry >()),
-          occupancy_(nodes),
           lux_lower_bound_(nodes),
           lux_external_(nodes),
-          serial_port_(io_serial_)
+          occupancy_(nodes),
+          serial_port_(io_serial_),
+          i2c_(io_i2c_)
     {
-        start(serial);
+        start(serial, i2c);
     }
 
     /**
@@ -119,10 +127,15 @@ public:
      *
      * @param[in]  serial  The serial port name
      */
-    void start(const std::string & serial);
+    void start(const std::string & serial, const std::string & i2c);
+
+    void startRead();
+
+    void runI2C();
 
     // TODO
-    void readData();
+    void handleRead(const boost::system::error_code & error,
+        size_t bytes_transferred);
 
     /**
      * @brief      Writes a message to the Serial port.
@@ -167,7 +180,7 @@ public:
      *
      * @return     The duty cycle.
      */
-    int getDutyCycle(size_t id);
+    float getDutyCycle(size_t id);
 
     /**
      * @brief      Gets the occupancy for a given desk.

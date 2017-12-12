@@ -6,7 +6,7 @@
 #define CONSTANTS_HPP
 
 /** Number of nodes in system */
-#define N   2
+#define NODES   2
 /** System sampling period */
 #define T_S 0.001
 

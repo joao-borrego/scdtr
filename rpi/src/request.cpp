@@ -78,60 +78,62 @@ void parseRequest(
                     int value_i = -1;
                     bool value_b = 0;
 
+                    std::string id_str(std::to_string(id));
+
                     switch (param)
                     {
                         case LUX:
                             value_f = system->getLux(id);
-                            response = std::string(1,LUX) + " " 
-                                + std::to_string(value_f);
+                            response = std::string(1,LUX) + " " + id_str
+                                + " " + std::to_string(value_f);
                             break;
                         case DUTY_CYCLE:
                             value_i = system->getDutyCycle(id);
-                            response = std::string(1, DUTY_CYCLE) + " "
-                                + std::to_string(value_i);
+                            response = std::string(1, DUTY_CYCLE) + " " + id_str
+                                + " " + std::to_string(value_i);
                             break;
                         case OCCUPANCY:
                             value_b = system->getOccupancy(id);
-                            response = std::string(1, OCCUPANCY) + " "
-                                + std::to_string(value_b);
+                            response = std::string(1, OCCUPANCY) + " " + id_str
+                                + " " + std::to_string(value_b);
                             break;
                         case LUX_LOWER:
                             value_f = system->getLuxLowerBound(id);
-                            response = std::string(1, LUX_LOWER) + " "
-                                + std::to_string(value_f);
+                            response = std::string(1, LUX_LOWER) + " " + id_str
+                                + " " + std::to_string(value_f);
                             break;
                         case LUX_EXTERNAL:
                             value_f = system->getLuxExternal(id);
-                            response = std::string(1, LUX_EXTERNAL) + " "
-                                + std::to_string(value_f);
+                            response = std::string(1, LUX_EXTERNAL) + " " + id_str
+                                + " " + std::to_string(value_f);
                             break;
                         case LUX_REF:
                             value_f = system->getLuxReference(id);
-                            response =  std::string(1, LUX_REF) + " "
-                                + std::to_string(value_f);
+                            response =  std::string(1, LUX_REF) + " " + id_str
+                                + " " + std::to_string(value_f);
                             break;
                         case POWER:
                             value_f = system->getPower(id, total);
                             response =  std::string(1, POWER) + " " + 
-                                ((id == -1 && total)? std::string(1, TOTAL) : std::to_string(id))
+                                ((id == -1 && total)? std::string(1, TOTAL) : id_str)
                                 + " " + std::to_string(value_f);
                             break;
                         case ENERGY:
                             value_f = system->getEnergy(id, total);
                             response =  std::string(1, ENERGY) + " " + 
-                                ((id == -1 && total)? std::string(1, TOTAL) : std::to_string(id))
+                                ((id == -1 && total)? std::string(1, TOTAL) : id_str)
                                 + " " + std::to_string(value_f);
                             break;
                         case COMFORT_ERR:
                             value_f = system->getComfortError(id, total);
                             response =  std::string(1, COMFORT_ERR) + " " + 
-                                ((id == -1 && total)? std::string(1, TOTAL) : std::to_string(id))
+                                ((id == -1 && total)? std::string(1, TOTAL) : id_str)
                                 + " " + std::to_string(value_f);
                             break;
                         case COMFORT_VAR:
                             value_f = system->getComfortVariance(id, total);
                             response =  std::string(1, COMFORT_VAR) + " " + 
-                                ((id == -1 && total)? std::string(1, TOTAL) : std::to_string(id))
+                                ((id == -1 && total)? std::string(1, TOTAL) : id_str)
                                 + " " + std::to_string(value_f);
                             break;
                         default:
