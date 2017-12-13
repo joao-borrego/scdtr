@@ -7,8 +7,10 @@
 
 #include <iostream>
 #include <sstream>
+#include <ctime>
 
 #include "debug.hpp"
+#include "constants.hpp"
 #include "System.hpp"
 
 /* Request types */
@@ -19,6 +21,10 @@
 #define SET             "s"
 /** Request to reset the system */
 #define RESET           "r"
+/** Start "Real-time" stream of given variable */
+#define START_STREAM    "c"
+/** Stop "Real-time" stream of given variable */
+#define STOP_STREAM     "d"
 
 /* Get requests */
 
@@ -43,6 +49,7 @@
 /** Get accumulated comfort varaince at desk or total */
 #define COMFORT_VAR     'v' // <i> or T
 
+
 /** Total modifier parameter */
 #define TOTAL           'T'
 
@@ -55,16 +62,18 @@
 
 /* Functions */
 
-/**
- * @brief      Returns a response for a given request
- *
- * @param[in]  system    The system
- * @param[in]  request   The request
- * @param      response  The response
- */
+//TODO
 void parseRequest(
     System::ptr system,
+    std::vector< bool> & flags,
     const std::string & request,
+    std::string & response);
+
+//TODO
+void streamUpdate(
+    System::ptr system,
+    std::vector< std::time_t > & timestamp,
+    const std::vector< bool> & flags,
     std::string & response);
 
 #endif

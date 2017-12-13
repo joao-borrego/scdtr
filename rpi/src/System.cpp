@@ -61,7 +61,11 @@ void System::handleRead(const boost::system::error_code & error,
             uint8_t type = i2c_buffer_[1];
             uint8_t *data = i2c_buffer_ + 2;
 
-            if (type == INF){
+            // DEBUG
+            std::cout << "[I2C]\n";
+            insertEntry(0, std::time(nullptr), 50, 0.6, 55);
+
+            if (type == INF /* && size*/){
                 
                 float lux, dc, lb, ext, ref;
                 uint8_t occupancy;
@@ -133,16 +137,28 @@ void System::insertEntry(
     int duty_cycle,
     float lux_reference)
 {
-    Entry new_entry = Entry(timestamp, lux, duty_cycle, lux_reference);
-    
     boost::unique_lock<boost::shared_mutex> lock(mutex_);
     try
     {
-        entries_.at(id).push_back(std::move(new_entry));
+        entries_.at(id).emplace_back(timestamp, lux, duty_cycle, lux_reference);
     }
     catch (const std::out_of_range & e)
     {
         errPrintTrace(e.what());
+    }
+}
+
+Entry *System::getLatestEntry(size_t id)
+{
+    try
+    {
+        return (entries_.at(id).empty())?
+            nullptr : &entries_.at(id).back();
+    }
+    catch (const std::out_of_range & e)
+    {
+        errPrintTrace(e.what());
+        return nullptr;
     }
 }
 

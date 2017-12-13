@@ -105,7 +105,7 @@ public:
         const std::string & i2c)
         : nodes_(nodes),
           sample_period_(t_s),
-          entries_(nodes, std::vector < Entry >()),
+          entries_(nodes * STREAM_FLAGS, std::vector < Entry >()),
           lux_lower_bound_(nodes),
           lux_external_(nodes),
           occupancy_(nodes),
@@ -163,6 +163,15 @@ public:
         float lux_reference);
 
     /* Get */
+
+    /**
+     * @brief      Gets the latest entry.
+     *
+     * @param[in]  id    The node identifier
+     *
+     * @return     The latest entry.
+     */
+    Entry *getLatestEntry(size_t id);
 
     /**
      * @brief      Gets the latest lux value for a given desk.

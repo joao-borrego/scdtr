@@ -4,6 +4,7 @@
 
 
 #include <iostream>
+#include <ctime>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
@@ -34,6 +35,17 @@ private:
     /** System pointer */
     System::ptr system_;
 
+    /* "Real-time" data stream */
+
+    // TODO - mutex?
+    /** Timestamp of last update */
+    std::vector< std::time_t > last_update_;
+    /** Boolean flags */
+    std::vector< bool > flags_;
+
+    /** Timer */
+    boost::asio::deadline_timer timer_;
+    
 public:
 
     /**
@@ -42,7 +54,10 @@ public:
      * @param      io_service  The i/o service
      */
     TCPSession(boost::asio::io_service & io_service, System::ptr system)
-        :   socket_(io_service)
+        :   socket_(io_service),
+            flags_(STREAM_FLAGS),
+            last_update_(system->getNodes()),
+            timer_(io_service, boost::posix_time::seconds(1))
     {
         system_ = system;
     }
@@ -85,9 +100,16 @@ private:
     /**
      * @brief      Answers a pending request.
      *
-     * @param[in]  error           The error code
-     * @param[in]  bytes_transferred  The bytes transferred
+     * @param[in]  error                The error code
+     * @param[in]  bytes_transferred    The bytes transferred
      */
     void handleWrite(const boost::system::error_code & error,
         size_t bytes_transferred);
+
+
+    /**
+     * @brief      Handles a preiodic timer event.
+     */
+    void handleTimer();
+
 };

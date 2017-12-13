@@ -3,10 +3,47 @@
  */
 
 #include "request.hpp"
-#include "System.hpp"
+
+void streamUpdate(
+    System::ptr system,
+    std::vector< std::time_t > & timestamps,
+    const std::vector< bool> & flags,
+    std::string & response)
+{
+    int nodes = system->getNodes();
+    float var;
+    Entry *entry;
+    response = "";
+
+    for (int i = 0; i < nodes; i++)
+    {
+        entry = system->getLatestEntry((size_t) i);
+        if (entry != NULL){
+            if (entry->timestamp > timestamps[i]){
+                if (flags[STREAM_FLAGS * i]){
+                    var = entry->lux;
+                    if (var != -1){
+                        response += "c " + std::to_string(LUX) + " " + std::to_string(var)
+                            + " " + std::to_string(entry->timestamp) + "\n";
+                    }
+                }
+                if (flags[STREAM_FLAGS * i + 1]){
+                    var = entry->duty_cycle;
+                    if (var != -1){
+                        response += "c " + std::to_string(DUTY_CYCLE) + " " + std::to_string(var)
+                            + " " + std::to_string(entry->timestamp) + "\n";
+                    }
+                }
+                timestamps[i] = entry->timestamp;
+            }
+        }
+    }
+    debugPrintTrace(response);
+}
 
 void parseRequest(
     System::ptr system,
+    std::vector< bool> & flags,
     const std::string & request,
     std::string & response)
 {
@@ -30,7 +67,7 @@ void parseRequest(
         errPrintTrace(e.what());
         return;
     }
-    
+
     if (type.size() == 1)
     {
         if (type == RESET)
@@ -45,7 +82,7 @@ void parseRequest(
                 if (type == GET)
                 {
                     char param = cmd[0];
-                    
+
                     if (arg.size() == 1 && arg[0] == TOTAL)
                     {
                         if (param == POWER || param == ENERGY ||
@@ -56,7 +93,7 @@ void parseRequest(
                         else
                         {
                             response = INVALID;
-                            return;    
+                            return;
                         }
                     }
                     else
@@ -114,25 +151,25 @@ void parseRequest(
                             break;
                         case POWER:
                             value_f = system->getPower(id, total);
-                            response =  std::string(1, POWER) + " " + 
+                            response =  std::string(1, POWER) + " " +
                                 ((id == -1 && total)? std::string(1, TOTAL) : id_str)
                                 + " " + std::to_string(value_f);
                             break;
                         case ENERGY:
                             value_f = system->getEnergy(id, total);
-                            response =  std::string(1, ENERGY) + " " + 
+                            response =  std::string(1, ENERGY) + " " +
                                 ((id == -1 && total)? std::string(1, TOTAL) : id_str)
                                 + " " + std::to_string(value_f);
                             break;
                         case COMFORT_ERR:
                             value_f = system->getComfortError(id, total);
-                            response =  std::string(1, COMFORT_ERR) + " " + 
+                            response =  std::string(1, COMFORT_ERR) + " " +
                                 ((id == -1 && total)? std::string(1, TOTAL) : id_str)
                                 + " " + std::to_string(value_f);
                             break;
                         case COMFORT_VAR:
                             value_f = system->getComfortVariance(id, total);
-                            response =  std::string(1, COMFORT_VAR) + " " + 
+                            response =  std::string(1, COMFORT_VAR) + " " +
                                 ((id == -1 && total)? std::string(1, TOTAL) : id_str)
                                 + " " + std::to_string(value_f);
                             break;
@@ -154,6 +191,36 @@ void parseRequest(
                     {
                         response = INVALID;
                     }
+                }
+                else if (type == START_STREAM || type == STOP_STREAM)
+                {
+                    if (cmd.size() == 1)
+                    {
+                        char var = cmd[0];
+                        try
+                        {
+                            id = std::stoi(arg);
+                            if (id < 0 || id >= system->getNodes()) throw std::exception();
+                        }
+                        catch (std::exception e)
+                        {
+                            response = INVALID;
+                            return;
+                        }
+                        switch(var)
+                        {
+                            case LUX:
+                                flags[id * STREAM_FLAGS] = (type == START_STREAM);
+                                break;
+                            case DUTY_CYCLE:
+                                flags[id * STREAM_FLAGS + 1] = (type == START_STREAM);
+                                break;
+                        } 
+                    }
+                }
+                else
+                {
+                    response = INVALID;
                 }
             }
             else

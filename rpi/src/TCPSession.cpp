@@ -7,8 +7,10 @@
 
 void TCPSession::start()
 {
-    // Start the receiver actor
+    // Start the receiver actor and recv send loop
     startRead();
+    // Start the timer
+    timer_.async_wait(boost::bind(& TCPSession::handleTimer, this));
 }
 
 void TCPSession::startRead()
@@ -37,7 +39,7 @@ void TCPSession::handleRead(const boost::system::error_code & error,
             std::string response;
             std::string request(request_str);
 
-            parseRequest(system_, request, response);
+            parseRequest(system_, flags_, request, response);
             strcpy(send_buffer_, response.c_str());
             length = response.size();
         }
@@ -80,4 +82,14 @@ void TCPSession::handleWrite(const boost::system::error_code & error,
         errPrintTrace(error.message());
         delete this;
     }
+}
+
+void TCPSession::handleTimer()
+{
+    debugPrintTrace("[Timer]");
+
+    // Reschedule the timer
+    timer_.expires_at(timer_.expires_at() + boost::posix_time::seconds(1));
+    // Post the timer event
+    timer_.async_wait(boost::bind(& TCPSession::handleTimer, this));
 }

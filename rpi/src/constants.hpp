@@ -30,4 +30,7 @@
 /** Serial communication Baudrate */
 #define SERIAL_BAUDRATE 115200
 
+/* Stream flags */
+#define STREAM_FLAGS 2
+
 #endif
