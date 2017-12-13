@@ -9,8 +9,9 @@
 #include <iostream>
 #include <string.h>
 
+/** Show custom debug messages */
 #define VERBOSE
-
+/** Current filename string */
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 #ifdef VERBOSE
@@ -28,6 +29,7 @@
 #define debugPrintTrace(x) do {} while (0)
 #endif
 
+/** Display error and where it occurred */
 #define errPrintTrace(x) do {\
     std::cout << "[ERROR] " << __FILENAME__ << ":" << __LINE__ << ":" << __func__ << ": " << \
     x << "\n";\

@@ -4,13 +4,14 @@
 
 #include "TCPSession.hpp"
 
-
 void TCPSession::start()
 {
     // Start the receiver actor and recv send loop
     startRead();
     // Start the timer
-    timer_.async_wait(boost::bind(& TCPSession::handleTimer, this));
+    timer_.expires_from_now(boost::posix_time::seconds(1));
+    timer_.async_wait(boost::bind(& TCPSession::handleTimer, this,
+        boost::asio::placeholders::error));
 }
 
 void TCPSession::startRead()
@@ -46,7 +47,7 @@ void TCPSession::handleRead(const boost::system::error_code & error,
         else
         {
             // Ignore non-terminated or empty messages (e.g. heartbeat)
-            debugPrintTrace("Empty message");
+            //debugPrintTrace("Empty message");
         }
 
         send_buffer_[length] = '\0';
@@ -79,17 +80,57 @@ void TCPSession::handleWrite(const boost::system::error_code & error,
     }
     else
     {
-        errPrintTrace(error.message());
+        if (error == boost::asio::error::eof)
+            debugPrintTrace("Connection closed");
+        else
+            errPrintTrace(error.message());
         delete this;
     }
 }
 
-void TCPSession::handleTimer()
+void TCPSession::startStreamWrite()
 {
-    debugPrintTrace("[Timer]");
+    boost::asio::async_write(socket_, boost::asio::buffer(stream_buffer_, SEND_BUFFER),
+        boost::bind(& TCPSession::handleStreamWrite, this,
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::bytes_transferred));
+}
 
-    // Reschedule the timer
-    timer_.expires_at(timer_.expires_at() + boost::posix_time::seconds(1));
-    // Post the timer event
-    timer_.async_wait(boost::bind(& TCPSession::handleTimer, this));
+void TCPSession::handleStreamWrite(const boost::system::error_code & error,
+    size_t bytes_transferred)
+{
+    if (error)
+    {
+        if (error == boost::asio::error::eof)
+            debugPrintTrace("Connection closed");
+        else
+            errPrintTrace(error.message());
+        delete this;
+    }
+}
+
+void TCPSession::handleTimer(const boost::system::error_code & error)
+{
+    
+    if (!error)
+    {
+        // Get current timestamp
+        std::time_t now = std::time(nullptr);
+
+        // Obtain stream string
+        std::string response;
+        streamUpdate(system_, last_update_, flags_, response); 
+        if (!response.empty())
+        {
+            strcpy(stream_buffer_, response.c_str());
+            stream_buffer_[response.size()] = '\0';
+            startStreamWrite();
+        }
+
+        // Reschedule the timer
+        timer_.expires_at(timer_.expires_at() + boost::posix_time::seconds(1));
+        // Post the timer event
+        timer_.async_wait(boost::bind(& TCPSession::handleTimer, this,
+            boost::asio::placeholders::error));
+    }
 }

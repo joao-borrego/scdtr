@@ -62,7 +62,6 @@ void System::handleRead(const boost::system::error_code & error,
             uint8_t *data = i2c_buffer_ + 2;
 
             // DEBUG
-            std::cout << "[I2C]\n";
             insertEntry(0, std::time(nullptr), 50, 0.6, 55);
 
             if (type == INF /* && size*/){
@@ -86,6 +85,7 @@ void System::handleRead(const boost::system::error_code & error,
                 occupancy = data[5 * sizeof(float)];
                 std::time_t timestamp = std::time(nullptr);
 
+                /*
                 debugPrintTrace("[I2C]" << 
                     " id " << (int) id <<
                     " lux " << lux <<
@@ -94,6 +94,7 @@ void System::handleRead(const boost::system::error_code & error,
                     " ext " << ext <<
                     " ref " << ref << 
                     " occ " << (bool) occupancy);
+                */
 
                 // Update values in memory
                 try
@@ -160,6 +161,37 @@ Entry *System::getLatestEntry(size_t id)
         errPrintTrace(e.what());
         return nullptr;
     }
+}
+
+void System::getValuesInPeriod(
+    size_t id,
+    std::time_t start,
+    std::time_t end,
+    int var,
+    std::string & response)
+{
+    response = "";
+    std::string value;
+
+    try
+    {
+        for (auto & e : entries_.at(id))
+        {
+            if (e.timestamp >= start && e.timestamp <= end)
+            {
+                if (var == GET_LUX) value = std::to_string(e.lux);
+                else                value = std::to_string(e.duty_cycle);
+                
+                response += (value + ", "); 
+            }
+        }
+    }
+    catch (const std::out_of_range & e)
+    {
+        errPrintTrace(e.what());
+    }
+    response.erase(response.size() - 2);
+
 }
 
 float System::getLux(size_t id)

@@ -2,7 +2,6 @@
  * @file TCPSession.hpp
  */
 
-
 #include <iostream>
 #include <ctime>
 #include <boost/asio.hpp>
@@ -15,11 +14,8 @@ using boost::asio::ip::tcp;
 #include "System.hpp"
 #include "request.hpp"
 
-/** Deadline for pending read (seconds) */
-#define EXPIRE_READ         300
-
 /**
- * @brief      Class for tcp session.
+ * @brief      Class for TCP session.
  */
 class TCPSession
 {
@@ -42,10 +38,11 @@ private:
     std::vector< std::time_t > last_update_;
     /** Boolean flags */
     std::vector< bool > flags_;
-
     /** Timer */
     boost::asio::deadline_timer timer_;
-    
+    /** Stream buffer */
+    char stream_buffer_[SEND_BUFFER];
+
 public:
 
     /**
@@ -57,9 +54,14 @@ public:
         :   socket_(io_service),
             flags_(STREAM_FLAGS),
             last_update_(system->getNodes()),
-            timer_(io_service, boost::posix_time::seconds(1))
+            timer_(io_service)
     {
         system_ = system;
+    }
+
+    ~TCPSession()
+    {
+        timer_.cancel();
     }
 
     /**
@@ -98,7 +100,7 @@ private:
     void startWrite();
 
     /**
-     * @brief      Answers a pending request.
+     * @brief      Handles a write response.
      *
      * @param[in]  error                The error code
      * @param[in]  bytes_transferred    The bytes transferred
@@ -106,10 +108,23 @@ private:
     void handleWrite(const boost::system::error_code & error,
         size_t bytes_transferred);
 
+    /**
+     * @brief      Starts a stream write.
+     */
+    void startStreamWrite();
 
     /**
-     * @brief      Handles a preiodic timer event.
+     * @brief      Handles a write stream.
+     *
+     * @param[in]  error              The error code
+     * @param[in]  bytes_transferred  The bytes transferred
      */
-    void handleTimer();
+    void handleStreamWrite(const boost::system::error_code & error,
+        size_t bytes_transferred);
+
+    /**
+     * @brief      Handles a periodic timer event.
+     */
+    void handleTimer(const boost::system::error_code & error);
 
 };

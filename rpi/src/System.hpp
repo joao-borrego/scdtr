@@ -22,6 +22,11 @@
 #include "constants.hpp"
 #include "communication.hpp"
 
+/** Flag for obtaining lux values */
+#define GET_LUX         0
+/** Flag for obtaining duty cycle values */
+#define GET_DUTY_CYCLE  1
+
 class Entry
 {
 
@@ -129,8 +134,10 @@ public:
      */
     void start(const std::string & serial, const std::string & i2c);
 
+    // TODO
     void startRead();
 
+    // TODO
     void runI2C();
 
     // TODO
@@ -172,6 +179,22 @@ public:
      * @return     The latest entry.
      */
     Entry *getLatestEntry(size_t id);
+
+    /**
+     * @brief      Gets the values of lux or duty cycke in a time period.
+     *
+     * @param[in]  id        The node identifier
+     * @param[in]  start     The start
+     * @param[in]  end       The end
+     * @param[in]  var       The variable (LUX | DUTY_CYCLE)
+     * @param      response  The output string with comma-separated values
+     */
+    void getValuesInPeriod(
+        size_t id,
+        std::time_t start,
+        std::time_t end,
+        int var,
+        std::string & response);
 
     /**
      * @brief      Gets the latest lux value for a given desk.

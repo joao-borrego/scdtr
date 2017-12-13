@@ -38,7 +38,7 @@ void streamUpdate(
             }
         }
     }
-    debugPrintTrace(response);
+    //debugPrintTrace(response);
 }
 
 void parseRequest(
@@ -51,6 +51,9 @@ void parseRequest(
     std::string type, cmd, arg;
     int id = -1;
     bool total = false;
+
+    std::time_t now = std::time(nullptr);
+    std::time_t minute_ago = now - 60;
 
     if (!system)
     {
@@ -192,7 +195,7 @@ void parseRequest(
                         response = INVALID;
                     }
                 }
-                else if (type == START_STREAM || type == STOP_STREAM)
+                else if (type == START_STREAM || type == STOP_STREAM || type == LAST_MINUTE)
                 {
                     if (cmd.size() == 1)
                     {
@@ -207,15 +210,25 @@ void parseRequest(
                             response = INVALID;
                             return;
                         }
-                        switch(var)
+
+                        if (type == LAST_MINUTE)
                         {
-                            case LUX:
-                                flags[id * STREAM_FLAGS] = (type == START_STREAM);
-                                break;
-                            case DUTY_CYCLE:
-                                flags[id * STREAM_FLAGS + 1] = (type == START_STREAM);
-                                break;
-                        } 
+                            system->getValuesInPeriod(id, now, minute_ago, var, response);
+                        }
+                        else
+                        {
+                            switch(var)
+                            {
+                                case LUX:
+                                    flags[id * STREAM_FLAGS] = (type == START_STREAM);
+                                    break;
+                                case DUTY_CYCLE:
+                                    flags[id * STREAM_FLAGS + 1] = (type == START_STREAM);
+                                    break;
+                                default:
+                                    response = INVALID;
+                            } 
+                        }
                     }
                 }
                 else

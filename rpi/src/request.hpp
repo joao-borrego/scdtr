@@ -21,9 +21,11 @@
 #define SET             "s"
 /** Request to reset the system */
 #define RESET           "r"
-/** Start "Real-time" stream of given variable */
+/** Get buffer with last minute information on a given variable */
+#define LAST_MINUTE     "b"
+/** Start "real-time" stream of given variable */
 #define START_STREAM    "c"
-/** Stop "Real-time" stream of given variable */
+/** Stop "real-time" stream of given variable */
 #define STOP_STREAM     "d"
 
 /* Get requests */
@@ -48,7 +50,6 @@
 #define COMFORT_ERR     'c' // <i> or T
 /** Get accumulated comfort varaince at desk or total */
 #define COMFORT_VAR     'v' // <i> or T
-
 
 /** Total modifier parameter */
 #define TOTAL           'T'
