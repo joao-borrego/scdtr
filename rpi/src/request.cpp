@@ -23,14 +23,16 @@ void streamUpdate(
                 if (flags[STREAM_FLAGS * i]){
                     var = entry->lux;
                     if (var != -1){
-                        response += "c " + std::to_string(LUX) + " " + std::to_string(var)
+                        response += "c " + std::string(1, LUX) + " " 
+                            + std::to_string(i) + " " + std::to_string(var)
                             + " " + std::to_string(entry->timestamp) + "\n";
                     }
                 }
                 if (flags[STREAM_FLAGS * i + 1]){
                     var = entry->duty_cycle;
                     if (var != -1){
-                        response += "c " + std::to_string(DUTY_CYCLE) + " " + std::to_string(var)
+                        response += "c " + std::string(1, DUTY_CYCLE) + " "
+                            + std::to_string(i) + " " + std::to_string(var)
                             + " " + std::to_string(entry->timestamp) + "\n";
                     }
                 }
