@@ -67,9 +67,6 @@ void System::handleRead(const boost::system::error_code & error,
             uint8_t type = i2c_buffer_[1];
             uint8_t *data = i2c_buffer_ + 2;
 
-            // DEBUG
-            insertEntry(0, std::time(nullptr), 50, 0.6, 55);
-
             if (type == INF /* && size*/){
                 
                 float lux, dc, lb, ext, ref;
@@ -113,7 +110,7 @@ void System::handleRead(const boost::system::error_code & error,
                 {
                     errPrintTrace(e.what());
                 }
-                insertEntry((int) id, timestamp, lux, dc, ref);
+                insertEntry((size_t) id, timestamp, lux, dc, ref);
                 // TODO - Update remaining variables
             }
         }
