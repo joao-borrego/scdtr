@@ -21,15 +21,16 @@ const int pin_led = 11;
 
 /* Communication */
 
-/** Serial communication BAUD rate */
-#define BAUDRATE    115200
-
 /** EEPROM address with device ID */
-const int ID_ADDR       = 0;
+const int ID_ADDR       	= 0;
 /** Number of active devices */
-const int N             = 2;
+const int N             	= 2;
 /** Master ID */
-const int MASTER        = 0;
+const int MASTER        	= 0;
+/** Baudrate value for Serial communication */ 
+const long BAUDRATE 		= 115200;
+/** Size of buffer for Serial communication */
+const size_t BUFFER_SIZE 	= 30;
 
 /* System properties */
 
@@ -64,6 +65,13 @@ const float HIGH_LUX = (2.0 / 3.0) * MAX_LUX;
 const int CONTROL       = 0;
 /** Calibration state */
 const int CALIBRATION   = 1;
+/** Consensus state */
+const int CONSENSUS   	= 2;
 
 /** I2C information broadcast period (ms) */
 #define STATUS_DELAY 500
+
+/* Other */
+
+/** Not defined */
+const int ND = -2;

@@ -19,20 +19,30 @@ namespace Communication
     /* Barrier lock */
     volatile bool lock = false;
 
-    /* For handles */
+    /* Pointers to important variables */
 
-    /** Reset flag */
-    volatile bool reset     = false;
-    /** Start consensus flag */
-    volatile bool consensus = false;
+    /** Reset flag pointer */
+    volatile bool *reset;
+    /** Start consensus flag pointer */
+    volatile bool *consensus;
+    /** Illuminance lower bound pointer */
+    volatile float *lower_bound;
+
 
     /* Functions */
 
     void nop(int bytes){}
 
-    void setDeviceId(uint8_t id)
+    void setup(
+        const uint8_t id,
+        const bool *reset_ptr,
+        const bool *consensus_ptr,
+        const float *lower_bound_ptr)
     {
         dev_id = id;
+        reset = reset_ptr;
+        consensus = consensus_ptr;
+        lower_bound = lower_bound_ptr;
     }
 
     void barrier(uint8_t id)
@@ -71,25 +81,25 @@ namespace Communication
         lock = true;
     }
 
-    void sendAck(uint8_t dest)
+    void sendPacket(uint8_t dest, uint8_t type)
     {
         byte packet[HEADER_SIZE];
-        packet[0] = dev_id;
-        packet[1] = ACK;
+        packet[ID] = dev_id;
+        packet[TYPE] = type;
         
         Wire.beginTransmission(dest);
         Wire.write(packet, HEADER_SIZE);
         Wire.endTransmission();
 
-        Serial.println("[I2C] Sending ACK");
+        Serial.println("[I2C] Sending header-only packet");
     }
 
-    void sendConsensus(uint8_t dest, float *d_i)
+    void sendConsensus(uint8_t dest, bool start, float *d_i)
     {
         size_t size = HEADER_SIZE + DATA_CONSENSUS_SIZE;
         byte packet[size];
-        packet[0] = dev_id;
-        packet[1] = CON;
+        packet[ID] = dev_id;
+        packet[TYPE] = (start)? ICO : CON;
         for (int j = 0; j < N; j++)
         {
             float_bytes d;
@@ -102,6 +112,9 @@ namespace Communication
         Wire.beginTransmission(dest);
         Wire.write(packet, size);
         Wire.endTransmission();
+
+        if (start)  Serial.println("[I2C] Sending initiate consensus packet");
+        else        Serial.println("[I2C] Sending consensus packet");
     }
 
     void sendInfo(
@@ -115,8 +128,8 @@ namespace Communication
     {
         size_t size = HEADER_SIZE + DATA_INFO_SIZE;
         byte packet[size];
-        packet[0] = dev_id;
-        packet[1] = INF;
+        packet[ID] = dev_id;
+        packet[TYPE] = INF;
         
         float_bytes fb;
         fb.f = lux;
@@ -188,10 +201,16 @@ namespace Communication
             switch (type)
             {
                 case RES:
-                    reset = true;
+                    *reset = true;
                     break;
                 case ICO:
-                    consensus = true;
+                    // Update lower bound
+                    float_bytes fb;
+                    for (int i = 0; i < sizeof(float); i++){
+                        fb.b[i] = buffer[i + dev_id * sizeof(float)];    
+                    }
+                    *lower_bound = fb.f;
+                    *consensus = true;
                     break;
             }
         }

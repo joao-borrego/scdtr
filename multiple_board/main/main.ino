@@ -43,16 +43,13 @@ volatile float out          {0.0};
 /** Lux lower bound */
 volatile float lower_bound  {0.0};
 /** Lux reference */
-volatile float ref          {50.0};
+volatile float ref          {20.0};
 /** Occupancy */
 volatile bool occupancy     {false};
 
 /** Proportional Integrator controller */
 PIController::Controller controller(
   &lux, &out, &ref, K_P, K_I, T);
-
-/** Whether to use feedforward for initial estimate */
-bool use_feedforward {true};
 
 /** Latest elapsed milliseconds since startup */
 unsigned long current_millis    {0};
@@ -62,7 +59,16 @@ unsigned long last_millis       {0};
 /* Simple state machine */
 
 /** Current node state */
-volatile int state {CONTROL};
+volatile int state      {CONTROL};
+/** Reset trigger */
+volatile bool reset     {false};
+/** Calibration trigger */
+volatile bool calibrate {false};
+/** Consensus trigger */
+volatile bool consensus {false};
+
+/** Command line buffer for Serial input */
+char cmd_buffer[BUFFER_SIZE] {0};
 
 /**
  * @brief      Arduino setup
@@ -78,14 +84,14 @@ void setup() {
     Serial.println((int) id);
 
     // Setup I2C communication
-    Communication::setDeviceId(id);
+    Communication::setup(id, &reset, &consensus, &lower_bound);
     Wire.begin(id);
 
     // Setup timer interrupt
     setupTimerInt();
 
     // Configure controller features
-    controller.configureFeatures(use_feedforward, true, true);
+    controller.configureFeatures(true, true, true);
     /*
     // Determine K matrix and external illuminance
     Wire.onReceive(Calibration::onReceive);
@@ -102,21 +108,26 @@ void setup() {
  */
 void loop() {
 
-    // Packets have to be acknowledged in order to be sniffed:
-    // Each device acks a single packet
+    // Master has a Serial connection with an external server
+    if (id == MASTER) {
+        if (readLine()){
+            processCommand();
+        }
+    }
 
-    /*
-    Communication::sendInfo((id + 1) % N,
-        lux, out / 255.0, lower_bound, o_i, ref, occupancy);
-    */
+    // Update current state
+    updateState();
 
-     current_millis = millis();
+    // Broadcast information to I2C bus periodically
+    current_millis = millis();
     if (current_millis - last_millis >= STATUS_DELAY){
         last_millis = current_millis;
-        
+
+        // Packets have to be acknowledged in order to be sniffed:
+        // Each device acks a single packet
         Communication::sendInfo((id + 1) % N,
         lux, out / 255.0, 30.0, 20.0, 50.0, id == 0);
-        
+
         // DEBUG
         Serial.print(ref);
         Serial.print("\t");
@@ -143,11 +154,104 @@ void loop() {
 }
 
 /**
+ * @brief      Updates the current state.
+ */
+void updateState(){
+
+    if (reset) {
+        reset = false;
+        state = CALIBRATION;
+    } else if (state == CONTROL) {
+        if (consensus){
+            consensus = false;
+            state = CONSENSUS;
+        }
+    }
+}
+
+/**
+ * @brief      Reads a line from Serial.
+ *
+ * @return     Whether a line was read
+ */
+bool readLine(){
+
+    static uint8_t offset = 0;
+
+    while (Serial.available()){
+        char cur = Serial.read();
+        switch (cur) {
+            // Carriage return
+            case '\r':
+            // Line feed
+            case '\n':
+                // Terminate string
+                cmd_buffer[offset] = '\0';
+                if (offset > 0){
+                    offset = 0;
+                    //printCommand();
+                    return true;
+                }
+                break;
+            default:
+                if (offset < BUFFER_SIZE - 1){
+                    cmd_buffer[offset] = cur;
+                    offset++;
+                    cmd_buffer[offset] = '\0';
+                }
+        }
+    }
+    return false;
+}
+
+/**
+ * @brief      Processes a command read from Serial.
+ */
+void processCommand(){
+
+    char *command = strtok(cmd_buffer, " \n");
+    char *param = strtok(NULL, " \n");
+    char *value = strtok(NULL, " \n");
+
+    int i = (param)? atoi(param) : ND;
+    float f = (value)? atof(param) : ND;
+
+    if (!strcmp(command, "reset")) {
+        
+        for (int j = 0; j < N; j++) {
+            if (j != MASTER) {
+                Communication::sendPacket(j, RES);
+            }
+        }
+        reset = true;
+
+    } else {
+        
+        if ((!strcmp(command, "occupancy") || !strcmp(command, "reference"))
+            && i >= 0 && i < N && f != ND) {
+            
+            float tmp_lower_bound[N] = {ND};
+            
+            if (i == MASTER) lower_bound = f;
+            else tmp_lower_bound[i] = f;
+
+            for (int j = 0; j < N; j++) {
+                if (j != MASTER) {
+                    Communication::sendConsensus(j, true, tmp_lower_bound);
+                }
+            }
+            consensus = true;
+        }
+    }
+}
+
+
+/**
  * @brief      Sets up timer interrupts
- * 
+ *
  * @note       The body of this funtion was generated automatically at
  *             <a href="http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html">
- *             Arduino Timer Interrupt Calculator</a> 
+ *             Arduino Timer Interrupt Calculator</a>
  */
 void setupTimerInt(){
     // TIMER 1 for interrupt frequency 100/3 (33.(3)) Hz:
@@ -182,14 +286,14 @@ void writeToLed(){
  * @param[in]  <unnamed>    Timer/Counter1 Compare Match A
  */
 ISR(TIMER1_COMPA_vect){
-    
+
     if (state == CONTROL){
-        
+
         // Sample input
         ldr_in =  analogRead(pin_ldr);
         v_in = ldr_in * (VCC / 1023.0);
         lux = Utils::convertToLux(v_in, LUX_A[id], LUX_B[id]);
-    
+
         // Control system
         controller.update(writeToLed);
 

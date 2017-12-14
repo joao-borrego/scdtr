@@ -62,12 +62,12 @@ namespace Communication
 
     /* Functions */
 
-    /**
-     * @brief      Sets the device identifier.
-     *
-     * @param[in]  id    The identifier
-     */
-    void setDeviceId(uint8_t id);
+    // TODO
+    void setup(
+        const uint8_t id,
+        const bool *reset_ptr,
+        const bool *consensus_ptr,
+        const float *lower_bound_ptr);
 
     /**
      * @brief      Empty callback function to ignore
@@ -100,20 +100,11 @@ namespace Communication
      */
     void onRequest();
 
-    /**
-     * @brief      Sends an acknowledge packet.
-     *
-     * @param[in]  dest    The destination id
-     */
-    void sendAck(uint8_t dest);
+    // TODO
+    void sendPacket(uint8_t dest, uint8_t type);
 
-    /**
-     * @brief      Sends a consensus packet.
-     *
-     * @param[in]  dest  The destination id     
-     * @param      d_i   The d i
-     */
-    void sendConsensus(uint8_t dest, float *d_i);
+    // TODO
+    void sendConsensus(uint8_t dest, bool start, float *d_i);
 
     /**
      * @brief      Reads a consensus packet.

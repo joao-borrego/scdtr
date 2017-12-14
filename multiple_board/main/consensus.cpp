@@ -101,7 +101,7 @@ void getCopies(uint8_t id, float *d_i_best)
         if (j == id){
             for (int k = 0; k < N; k++){
                 if (k != id){
-                    Communication::sendConsensus(k, d_i_best);
+                    Communication::sendConsensus(k, false, d_i_best);
                 }
             }
         } else {
