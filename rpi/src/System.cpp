@@ -15,31 +15,37 @@ void System::start(const std::string & serial, const std::string & i2c)
 {
     boost::system::error_code error;
 
+    // Only compile if provided Raspberry Pi flag (debug purposes)
+    #ifdef RPI
+    
     // Initialise Serial connection
-    /*
     serial_port_.open(serial, error);
     if (error){ errPrintTrace(error.message() << ": " << serial); exit(-1); }
     serial_port_.set_option(
         boost::asio::serial_port_base::baud_rate(SERIAL_BAUDRATE), error);
     if (error){ errPrintTrace(error.message()); exit(-1); }
-    */
-
-    //debugPrintTrace("Opened Serial connection with system.");
+    debugPrintTrace("Opened Serial connection with system.");
+    
+    #endif
 
     // Initialise read from I2C fifo
-
     debugPrintTrace("Waiting for writer in I2C pipe" + i2c);
     i2c_fd_ = open(i2c.c_str(), O_RDONLY);
     if (i2c_fd_ == -1){
         errPrintTrace("Failed to open I2C pipe: " + i2c);
         exit(EXIT_FAILURE);
     }
-    
-    i2c_.assign(i2c_fd_);
+    try {
+        i2c_.assign(i2c_fd_);
+    } catch (std::exception & e){
+        errPrintTrace("Could not assign file descriptor to I2C pipe " << e.what());
+        exit(EXIT_FAILURE);   
+    }
+    debugPrintTrace("Opened I2C FIFO for reading.");
 
+    // Initialise reader actor
     startRead();
     
-    debugPrintTrace("Opened I2C FIFO for reading.");
     debugPrintTrace("System initialised.");
 }
 
@@ -135,7 +141,7 @@ void System::insertEntry(
     size_t id,
     std::time_t timestamp,
     float lux,
-    int duty_cycle,
+    float duty_cycle,
     float lux_reference)
 {
     boost::unique_lock<boost::shared_mutex> lock(mutex_);

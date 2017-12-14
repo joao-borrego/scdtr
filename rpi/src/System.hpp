@@ -166,7 +166,7 @@ public:
         size_t id,
         std::time_t timestamp,
         float lux,
-        int duty_cycle,
+        float duty_cycle,
         float lux_reference);
 
     /* Get */
