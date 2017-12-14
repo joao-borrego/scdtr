@@ -171,7 +171,7 @@ void System::getValuesInPeriod(
     std::string & response)
 {
     response = "";
-    std::string value;
+    std::string value = "";
 
     try
     {
@@ -185,12 +185,12 @@ void System::getValuesInPeriod(
                 response += (value + ", "); 
             }
         }
+        if (!response.empty()) response.erase(response.size() - 2);
     }
     catch (const std::out_of_range & e)
     {
         errPrintTrace(e.what());
     }
-    response.erase(response.size() - 2);
 
 }
 
