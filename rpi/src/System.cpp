@@ -15,9 +15,6 @@ void System::start(const std::string & serial, const std::string & i2c)
 {
     boost::system::error_code error;
 
-    // Only compile if provided Raspberry Pi flag (debug purposes)
-    #ifdef RPI
-    
     // Initialise Serial connection
     serial_port_.open(serial, error);
     if (error){ errPrintTrace(error.message() << ": " << serial); exit(-1); }
@@ -25,8 +22,6 @@ void System::start(const std::string & serial, const std::string & i2c)
         boost::asio::serial_port_base::baud_rate(SERIAL_BAUDRATE), error);
     if (error){ errPrintTrace(error.message()); exit(-1); }
     debugPrintTrace("Opened Serial connection with system.");
-    
-    #endif
 
     // Initialise read from I2C fifo
     debugPrintTrace("Waiting for writer in I2C pipe" + i2c);
@@ -111,7 +106,6 @@ void System::handleRead(const boost::system::error_code & error,
                     errPrintTrace(e.what());
                 }
                 insertEntry((size_t) id, timestamp, lux, dc, ref);
-                // TODO - Update remaining variables
             }
         }
         startRead();
@@ -129,7 +123,8 @@ void System::runI2C(){
 int System::writeSerial(const std::string & msg)
 {
     boost::system::error_code error;
-    int bytes = boost::asio::write(serial_port_, boost::asio::buffer(msg), error);
+    std::string serial = msg + "\n";
+    int bytes = boost::asio::write(serial_port_, boost::asio::buffer(serial), error);
     if (error){ errPrintTrace(error.message()); }
     return bytes;
 }
