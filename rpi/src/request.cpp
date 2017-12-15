@@ -189,6 +189,7 @@ void parseRequest(
                         int id = std::stoi(cmd);
                         if (id < 0 || id >= system->getNodes()) throw std::exception();
                         bool val = std::stoi(arg);
+                        std::string serial_msg("")
                         system->writeSerial(request);
                         response = ACK;
                     }

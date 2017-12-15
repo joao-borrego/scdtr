@@ -84,11 +84,11 @@ const unsigned long STATUS_DELAY = 500;
  */
 
 /** Reset system */
-const char CMD_RESET[10]       = "reset";
+const char CMD_RESET[10]       = "r";
 /** Change occupancy command */
-const char CMD_OCCUPANCY[10]   = "occupancy";
+const char CMD_OCCUPANCY[10]   = "s";
 /** Change lower bound command */
-const char CMD_LOWER_BOUND[10] = "lower_bound";
+const char CMD_LOWER_BOUND[10] = "l";
 
 /*
  * Other
