@@ -1,16 +1,20 @@
 /**
  * @file communication.hpp
- * 
- * @brief Communication protocol headers
- * 
+ *
+ * @brief I2C communication protocol headers
+ *
  * Messages can be exchanged using essentially 4 types of packets
  * 1. Header-only, e.g ACKs and RESet packets,
  * 2. Consensus,
  * 3. Info.
- * 
- * Header       = [ Id | Type ]
- * Consensus    = [ Header | d_i_1 d_i_2 ... d_i_N ]
- * Info         = [ Header | lux | dc | lb | ext | ref | occ ]
+ *
+ * Header       [ Id | Type ]
+ *
+ * Consensus    [ Header | d_i_1 d_i_2 ... d_i_N ],
+ *  CON (during consensus) d_i is the solution vector for a given iteration
+ *  ICO (before consessus) d_i is actually the lower_bound vector
+ *
+ * Info         [ Header | lux | dc | lb | ext | ref | occ ]
  */
 
 #pragma once
@@ -52,12 +56,12 @@ namespace Communication
 {
     /**
      * @brief Converts float to byte array and vice-versa.
-     * 
+     *
      * As seen in <a href="http://mbed.org/forum/helloworld/topic/2053/">link</a>
      */
-    typedef union float_to_bytes_t{    
-        float f; 
-        byte b[sizeof(float)]; 
+    typedef union float_to_bytes_t{
+        float f;
+        byte b[sizeof(float)];
     } float_bytes;
 
     /* Functions */
@@ -67,7 +71,8 @@ namespace Communication
         const uint8_t id,
         const bool *reset_ptr,
         const bool *consensus_ptr,
-        const float *lower_bound_ptr);
+        const float *lower_bound_ptr,
+        const bool *occupancy_ptr);
 
     /**
      * @brief      Empty callback function to ignore

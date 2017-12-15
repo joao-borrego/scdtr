@@ -22,12 +22,13 @@ namespace Communication
     /* Pointers to important variables */
 
     /** Reset flag pointer */
-    volatile bool *reset;
+    volatile bool *reset {NULL};
     /** Start consensus flag pointer */
-    volatile bool *consensus;
+    volatile bool *consensus {NULL};
     /** Illuminance lower bound pointer */
-    volatile float *lower_bound;
-
+    volatile float *lower_bound {NULL};
+    /** Occupancy pointer */
+    volatile bool *occupancy {NULL};
 
     /* Functions */
 
@@ -37,12 +38,14 @@ namespace Communication
         const uint8_t id,
         const bool *reset_ptr,
         const bool *consensus_ptr,
-        const float *lower_bound_ptr)
+        const float *lower_bound_ptr,
+        const bool *occupancy_ptr)
     {
-        dev_id = id;
-        reset = reset_ptr;
-        consensus = consensus_ptr;
+        dev_id  = id;
+        reset   = reset_ptr;
+        consensus   = consensus_ptr;
         lower_bound = lower_bound_ptr;
+        occupancy   = occupancy_ptr;
     }
 
     void barrier(uint8_t id)
@@ -191,12 +194,6 @@ namespace Communication
 
         if (read > 0){
             
-            // DEBUG
-            Serial.print("[I2C] Received ");
-            Serial.print(read);
-            Serial.print(" bytes from ");
-            Serial.println(buffer[ID]);
-            
             uint8_t type = buffer[TYPE];
             switch (type)
             {
@@ -207,9 +204,10 @@ namespace Communication
                     // Update lower bound
                     float_bytes fb;
                     for (int i = 0; i < sizeof(float); i++){
-                        fb.b[i] = buffer[i + dev_id * sizeof(float)];    
+                        fb.b[i] = buffer[2+ i + dev_id * sizeof(float)];    
                     }
                     *lower_bound = fb.f;
+                    *occupancy = (*lower_bound <= LOW_LUX)? false : true;
                     *consensus = true;
                     break;
             }

@@ -25,7 +25,7 @@ uint8_t id{0};
 /** Row i of K parameter matrix */
 float k_i[N]    {0.0};
 /** LUX value for complete darkness */
-float o_i       {0.0};
+float ext       {0.0};
 
 /* System I/O */
 
@@ -41,9 +41,9 @@ volatile float out          {0.0};
 /* Real-time control */
 
 /** Lux lower bound */
-volatile float lower_bound  {0.0};
+volatile float lower_bound  {LOW_LUX};
 /** Lux reference */
-volatile float ref          {20.0};
+volatile float ref          {0.0};
 /** Occupancy */
 volatile bool occupancy     {false};
 
@@ -84,8 +84,9 @@ void setup() {
     Serial.println((int) id);
 
     // Setup I2C communication
-    Communication::setup(id, &reset, &consensus, &lower_bound);
+    Communication::setup(id, &reset, &consensus, &lower_bound, &occupancy);
     Wire.begin(id);
+    Wire.onReceive(Communication::onReceive);
 
     // Setup timer interrupt
     setupTimerInt();
@@ -96,7 +97,7 @@ void setup() {
     // Determine K matrix and external illuminance
     Wire.onReceive(Calibration::onReceive);
     Wire.onRequest(Calibration::onRequest);
-    Calibration::execute(k_i, &o_i, id);
+    Calibration::execute(k_i, &ext, id);
     // Setup I2C communication for main loop
     Wire.onReceive(Communication::onReceive);
     */
@@ -126,15 +127,11 @@ void loop() {
         // Packets have to be acknowledged in order to be sniffed:
         // Each device acks a single packet
         Communication::sendInfo((id + 1) % N,
-        lux, out / 255.0, 30.0, 20.0, 50.0, id == 0);
+            lux, out / 255.0, lower_bound, ext, ref, occupancy);
 
         // DEBUG
-        Serial.print(ref);
-        Serial.print("\t");
-        Serial.print((floor(out)) / 255.0 );
-        Serial.print("\t");
-        Serial.print(lux);
-        Serial.println(current_millis);
+        printState();
+
     }
 
     // if start consensus
@@ -153,6 +150,23 @@ void loop() {
     */
 }
 
+// DEBUG
+void printState(){
+    Serial.print(lux);
+    Serial.print("\t");
+    Serial.print((floor(out)) / 255.0 );
+    Serial.print("\t");
+    Serial.print(lower_bound);
+    Serial.print("\t");
+    Serial.print(ext);
+    Serial.print("\t");
+    Serial.print(ref);
+    Serial.print("\t");
+    Serial.print(occupancy);
+    Serial.print("\t");
+    Serial.println(current_millis);
+}
+
 /**
  * @brief      Updates the current state.
  */
@@ -161,10 +175,14 @@ void updateState(){
     if (reset) {
         reset = false;
         state = CALIBRATION;
+        // TODO - Calibrate
+        Serial.println("[Calibration]");
     } else if (state == CONTROL) {
         if (consensus){
             consensus = false;
             state = CONSENSUS;
+            // TODO - Consensus
+            Serial.println("[Consensus]");
         }
     }
 }
@@ -214,9 +232,9 @@ void processCommand(){
     char *value = strtok(NULL, " \n");
 
     int i = (param)? atoi(param) : ND;
-    float f = (value)? atof(param) : ND;
+    float f = (value)? atof(value) : ND;
 
-    if (!strcmp(command, "reset")) {
+    if (!strcmp(command, CMD_RESET)) {
         
         for (int j = 0; j < N; j++) {
             if (j != MASTER) {
@@ -226,25 +244,35 @@ void processCommand(){
         reset = true;
 
     } else {
-        
-        if ((!strcmp(command, "occupancy") || !strcmp(command, "reference"))
+
+        if ( (!strcmp(command, CMD_OCCUPANCY) || !strcmp(command, CMD_LOWER_BOUND) )
             && i >= 0 && i < N && f != ND) {
             
             float tmp_lower_bound[N] = {ND};
             
-            if (i == MASTER) lower_bound = f;
-            else tmp_lower_bound[i] = f;
-
+            // Occupancy argument is binary, convert to float lux value
+            if (!strcmp(command, CMD_OCCUPANCY)) {
+                f = (atoi(value) == 0)? LOW_LUX : HIGH_LUX;
+            }
+            // Master can update its local estimate
+            if (i == MASTER) {
+                lower_bound = f;
+                occupancy = (lower_bound <= LOW_LUX)? false : true;
+            } else {
+                tmp_lower_bound[i] = f;
+            }
+            // Broadcast estimate to other nodes and initiate consensus
             for (int j = 0; j < N; j++) {
                 if (j != MASTER) {
                     Communication::sendConsensus(j, true, tmp_lower_bound);
+                    // DEBUG
+                    Serial.println(tmp_lower_bound[1]);
                 }
             }
             consensus = true;
         }
     }
 }
-
 
 /**
  * @brief      Sets up timer interrupts
