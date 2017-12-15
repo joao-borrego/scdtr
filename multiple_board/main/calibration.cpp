@@ -113,7 +113,7 @@ namespace Calibration{
                 if (i == id){
                     analogWrite(pin_led, (int) output[s]);
                 }
-                delay(100);
+                delay(300);
 
                 if (id == MASTER){
                     for (int j = 0; j < N; j++){

@@ -139,7 +139,7 @@ void onReceive(int bytes)
     }
 }
 
-int solve(size_t id, float L, float* K_i, float o)
+float solve(size_t id, float L, float* K_i, float o)
 {
 
     // Duty cycle for current iteration
@@ -211,6 +211,7 @@ int solve(size_t id, float L, float* K_i, float o)
         k_r_squared_two_norm += (K_i_r[j] * K_i_r[j]);
     }
 
+    debugPrint(&L, 1, -1, "L");
     debugPrint(K_i, N, -1, "K_i");
     debugPrint(P_i, N, -1, "P_i");
     debugPrint(&n_i, 1, -1, "n_i");
@@ -218,6 +219,8 @@ int solve(size_t id, float L, float* K_i, float o)
     debugPrint(&k_r_squared_two_norm, 1, -1, "‖k_r‖_2 ^ 2");
 
     for (int it = 0; it < ITERATIONS; it++){
+
+        cost_best = INFINITY;
 
         for (int j = 0; j < N; j++){
             Z_i[j] = rho * d_i_avg[j] - y_i[j] - ((j == id)? c_i : 0);
@@ -319,7 +322,8 @@ int solve(size_t id, float L, float* K_i, float o)
         sum(y_i, d_i, y_i, N, 1);
     }
 
-    return round(d_i_best[id]);
+    elemMul(K_i, d_i_best, d_i, N, 1);
+    return d_i[id];
 }
 
 }

@@ -43,7 +43,7 @@ volatile float out          {0.0};
 /** Lux lower bound */
 volatile float lower_bound  {LOW_LUX};
 /** Lux reference */
-volatile float ref          {0.0};
+volatile float ref          {LOW_LUX};
 /** Occupancy */
 volatile bool occupancy     {false};
 
@@ -59,11 +59,9 @@ unsigned long last_millis       {0};
 /* Simple state machine */
 
 /** Current node state */
-volatile int state      {CONTROL};
+volatile int state      {CALIBRATION};
 /** Reset trigger */
 volatile bool reset     {false};
-/** Calibration trigger */
-volatile bool calibrate {false};
 /** Consensus trigger */
 volatile bool consensus {false};
 
@@ -93,15 +91,6 @@ void setup() {
 
     // Configure controller features
     controller.configureFeatures(true, true, true);
-    /*
-    // Determine K matrix and external illuminance
-    Wire.onReceive(Calibration::onReceive);
-    Wire.onRequest(Calibration::onRequest);
-    Calibration::execute(k_i, &ext, id);
-    // Setup I2C communication for main loop
-    Wire.onReceive(Communication::onReceive);
-    */
-
 }
 
 /**
@@ -125,7 +114,7 @@ void loop() {
         last_millis = current_millis;
 
         // Packets have to be acknowledged in order to be sniffed:
-        // Each device acks a single packet
+        // Each node acks a single packet
         Communication::sendInfo((id + 1) % N,
             lux, out / 255.0, lower_bound, ext, ref, occupancy);
 
@@ -133,21 +122,6 @@ void loop() {
         printState();
 
     }
-
-    // if start consensus
-
-    /*
-    Wire.onReceive(Communication::nop);
-
-    float k_i_tmp[N][N] = {{2.0, 1.0}, {1.0, 2.0}};
-    int d_best;
-    if (id == 0){
-        d_best = Consensus::solve(id, 150.0, k_i_tmp[0], 30.0);
-    }else{
-        d_best = Consensus::solve(id, 80.0,  k_i_tmp[1],  0.0);
-    }
-    Serial.println(d_best);
-    */
 }
 
 // DEBUG
@@ -167,6 +141,7 @@ void printState(){
     Serial.println(current_millis);
 }
 
+
 /**
  * @brief      Updates the current state.
  */
@@ -175,17 +150,39 @@ void updateState(){
     if (reset) {
         reset = false;
         state = CALIBRATION;
-        // TODO - Calibrate
-        Serial.println("[Calibration]");
     } else if (state == CONTROL) {
         if (consensus){
             consensus = false;
             state = CONSENSUS;
-            // TODO - Consensus
-            Serial.println("[Consensus]");
+            doConsensus();
+            state = CONTROL;
         }
+    } else if (state == CALIBRATION) {
+        calibrate();
+        state = CONTROL;
     }
 }
+
+void calibrate(){
+    // DEBUG
+    Serial.println("[Calibrate]");
+    if (id == MASTER) delay(1000);
+    Wire.onReceive(Calibration::onReceive);
+    Wire.onRequest(Calibration::onRequest);
+    Calibration::execute(k_i, &ext, id);
+    Wire.onReceive(Communication::onReceive);
+    Wire.onRequest(Communication::nop);
+}
+
+void doConsensus(){
+    // DEBUG
+    Serial.println("[Consensus]");
+    if (id == MASTER) delay(1000);
+    ref = Consensus::solve(id, lower_bound, k_i, ext);
+    Wire.onReceive(Communication::onReceive);
+    Wire.onRequest(Communication::nop);
+}
+
 
 /**
  * @brief      Reads a line from Serial.
