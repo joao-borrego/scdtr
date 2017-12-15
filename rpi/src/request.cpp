@@ -79,7 +79,7 @@ void parseRequest(
         {
             system->writeSerial(RESET);
             response = ACK;
-        }
+        }   
         else
         {
             if (cmd.size() == 1)
