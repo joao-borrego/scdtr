@@ -9,4 +9,4 @@ doc/
 *.swp
 *.swn
 *.swo
-
+multiple_board/consensus/*.csv

@@ -95,6 +95,8 @@ const char CMD_LOWER_BOUND[10] = "l";
  */
 
 /** Not defined */
-const int ND = -2;
+#define ND      	-2
+/** Max duty cycle (8-bit output) */
+const float MAX_DC  = 100.0; // %
 
 #endif

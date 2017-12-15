@@ -20,21 +20,38 @@ namespace Consensus{
     /* Functions */
 
     // TODO
-    float costFunction(float* d_i);
+    float costFunction(
+        uint8_t id,
+        float *d_i,
+        float *d_i_avg,
+        float q_i,
+        float c_i,
+        float *y_i, 
+        float rho);
 
     // TODO
-    bool checkConstraints(float *d_i, float *K_i, float L, float o);
-
-    // TODO
-    void updateBest(
+    bool checkConstraints(
         float *d_i,
         float *K_i,
         float L,
         float o,
+        bool check_linear);
+
+    // TODO
+    void updateBest(
+        uint8_t id,
+        float *d_i,
+        float *K_i,
+        float L,
+        float o,
+        bool check_linear, // Check linear constraint
         float *d_i_best,
         float *cost_best,
-        float *R_i,
-        float *Z_i);
+        float *d_i_avg,
+        float q_i,
+        float c_i,
+        float *y_i,
+        float rho);
 
     // TODO
     void getAverageSolution(uint8_t id, float *d_i_best);

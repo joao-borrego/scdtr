@@ -14,7 +14,7 @@ namespace Communication
     /* Global variables */
 
     /** Device Id */
-    uint8_t dev_id = 0;
+    uint8_t *dev_id;
 
     /* Barrier lock */
     volatile bool lock = false;
@@ -35,7 +35,7 @@ namespace Communication
     void nop(int bytes){}
 
     void setup(
-        const uint8_t id,
+        const uint8_t *id,
         const bool *reset_ptr,
         const bool *consensus_ptr,
         const float *lower_bound_ptr,
@@ -87,7 +87,7 @@ namespace Communication
     void sendPacket(uint8_t dest, uint8_t type)
     {
         byte packet[HEADER_SIZE];
-        packet[ID] = dev_id;
+        packet[ID] = *dev_id;
         packet[TYPE] = type;
         
         Wire.beginTransmission(dest);
@@ -101,7 +101,7 @@ namespace Communication
     {
         size_t size = HEADER_SIZE + DATA_CONSENSUS_SIZE;
         byte packet[size];
-        packet[ID] = dev_id;
+        packet[ID] = *dev_id;
         packet[TYPE] = (start)? ICO : CON;
         for (int j = 0; j < N; j++)
         {
@@ -131,7 +131,7 @@ namespace Communication
     {
         size_t size = HEADER_SIZE + DATA_INFO_SIZE;
         byte packet[size];
-        packet[ID] = dev_id;
+        packet[ID] = *dev_id;
         packet[TYPE] = INF;
         
         float_bytes fb;
@@ -204,10 +204,12 @@ namespace Communication
                     // Update lower bound
                     float_bytes fb;
                     for (int i = 0; i < sizeof(float); i++){
-                        fb.b[i] = buffer[2+ i + dev_id * sizeof(float)];    
+                        fb.b[i] = buffer[2 + i + *dev_id * sizeof(float)];    
                     }
-                    *lower_bound = fb.f;
-                    *occupancy = (*lower_bound <= LOW_LUX)? false : true;
+                    if (fb.f != ND){
+                        *lower_bound = fb.f;
+                        *occupancy = (*lower_bound <= LOW_LUX)? false : true;
+                    }
                     *consensus = true;
                     break;
             }

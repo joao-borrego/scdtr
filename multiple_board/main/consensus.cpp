@@ -34,53 +34,91 @@ void debugPrint(float *d, int size, int it, char* description)
     Serial.println("]");
 }
 
-float costFunction(float *d_i, float *R_i, float *Z_i)
+float costFunction(
+    uint8_t id,
+    float *d_i,
+    float *d_i_avg,
+    float q_i,
+    float c_i,
+    float *y_i, 
+    float rho)
 {
-    // Auxiliary variables
-    float A[N]      = {0.0};
-    // cost = 1/2 * cost_a - cost_b
-    float cost_a    = 0.0;
-    float cost_b    = 0.0;
+    // Auxiliary variables;
+    float a    = 0.0;
+    float b    = 0.0;
+    float c    = 0.0;
+    float d    = 0.0;
+    float e    = 0.0;
+    float A[N] = {0.0};
+    float cost = 0.0;
 
-    // aux A = R_i * d_i
-    elemMul(R_i, d_i, A, N, 1);
-    // cost_a = d_i' * R_i * d_i = d_i' * A
-    mul(d_i, A, &cost_a, 1, N, 1);
-    // cost b = d_i' * Z_i
-    mul(d_i, Z_i, &cost_b, 1, N, 1);
+    // a = 1/2 d_i' * Q_i * d_i
+    mul(d_i, d_i, &a, 1, N, 1);
+    a = q_i / 2.0 * a;
+    // b = d_i' * c_i
+    b = d_i[id] * c_i;
+    // c = d_i' * y_i
+    mul(d_i, y_i, &c, 1, N, 1);
+    // d = d_i_avg' * y_i
+    mul(d_i_avg, y_i, &d, 1, N, 1);
+    // A = d_i - d_i_avg
+    sub(d_i, d_i_avg, A, N, 1);
+    // e = rho/2 * (d_i - d_i_avg)' * (d_i - d_i_avg)
+    mul(A, A, &e, 1, N, 1);
+    e = rho / 2.0 * e;
 
-    return (0.5 * cost_a - cost_b);
+    cost = a + b + c - d + e;
+    return cost;
 }
 
-bool checkConstraints(float *d_i, float *K_i, float L, float o)
-{
-    float prod = 0.0;
-    float u = L - o;
-
-    for (int j = 0; j < N; j++){
-        if (d_i[j] > 100.0 || d_i[j] < 0.0) return false;
-    }
-    mul(K_i, d_i, &prod, 1, N, 1);
-    if (prod < u) return false;
-
-    return true;
-}
-
-void updateBest(
+bool checkConstraints(
     float *d_i,
     float *K_i,
     float L,
     float o,
+    bool check_linear)
+{
+    for (int j = 0; j < N; j++){
+        if (d_i[j] > MAX_DC || d_i[j] < 0.0){
+            return false;
+        }
+    }
+
+    if (check_linear){
+        float prod = 0.0;
+        float u = L - o;
+        mul(K_i, d_i, &prod, 1, N, 1);
+        if (prod < u){
+            Serial.print("Yup - ");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void updateBest( 
+    uint8_t id,
+    float *d_i,
+    float *K_i,
+    float L,
+    float o,
+    bool check_linear,
     float *d_i_best,
     float *cost_best,
-    float *R_i,
-    float *Z_i)
+    float *d_i_avg,
+    float q_i,
+    float c_i,
+    float *y_i,
+    float rho)
 {
     // Check if solution is feasable
-    bool feasable = checkConstraints(d_i, K_i, L, o);
-    if (!feasable) return;
+    bool feasable = checkConstraints(d_i, K_i, L, o, check_linear);
+    if (!feasable){
+        return;
+    }
     // Update minimum if cost is lower
-    float cost = costFunction(d_i, R_i, Z_i);
+    float cost = costFunction(id, d_i, d_i_avg, q_i, c_i, y_i, rho);
     if (cost < *cost_best){
         *cost_best = cost;
         copy(d_i, d_i_best, N, 1);
@@ -232,7 +270,8 @@ float solve(size_t id, float L, float* K_i, float o)
 
         debugPrint(d_i_0, N, it, "d_0");
 
-        updateBest(d_i_0, K_i, L, o, d_i_best, &cost_best, R_i, Z_i);
+        updateBest(id, d_i_0, K_i, L, o, true, d_i_best, &cost_best,
+            d_i_avg, q_i, c_i, y_i, rho);
 
         // Constrained linear boundary: u_1 = o_i - L_i
         aux_1 = o - L;
@@ -247,7 +286,8 @@ float solve(size_t id, float L, float* K_i, float o)
         
         debugPrint(d_i, N, it, "d_1");
 
-        updateBest(d_i, K_i, L, o, d_i_best, &cost_best, R_i, Z_i);
+        updateBest(id, d_i, K_i, L, o, false, d_i_best, &cost_best,
+            d_i_avg, q_i, c_i, y_i, rho);
 
         // Constrained 0 boundary: u_2 = 0
         for (int j = 0; j < N; j++){
@@ -256,16 +296,18 @@ float solve(size_t id, float L, float* K_i, float o)
 
         debugPrint(d_i, N, it, "d_2");
 
-        updateBest(d_i, K_i, L, o, d_i_best, &cost_best, R_i, Z_i);
+        updateBest(id, d_i, K_i, L, o, true, d_i_best, &cost_best,
+            d_i_avg, q_i, c_i, y_i, rho);
 
         // Constrained 100 boundary: u_3 = 100 (%)
         for (int j = 0; j < N; j++){
-            d_i[j] = (j == id)? 100.0 : d_i_0[j];
+            d_i[j] = (j == id)? MAX_DC : d_i_0[j];
         }
 
         debugPrint(d_i, N, it, "d_3");
 
-        updateBest(d_i, K_i, L, o, d_i_best, &cost_best, R_i, Z_i);
+        updateBest(id, d_i, K_i, L, o, true, d_i_best, &cost_best,
+            d_i_avg, q_i, c_i, y_i, rho);
 
         // d_4 Constrained to linear and 0 boundaries
         aux_2 = L - o;
@@ -276,7 +318,7 @@ float solve(size_t id, float L, float* K_i, float o)
         mul(K_i, &aux_3, aux_m_1, N, 1, 1);
 
         sub(d_i_aux, aux_m_1, d_i_aux, N, 1);
-        d_i_aux[id] = (k_r_squared_two_norm * Z_i[id]) / (rho + q_i);
+        d_i_aux[id] = (k_r_squared_two_norm * Z_i[id]) / (rho + q_i); // * -1.0 (?)
 
         aux_4 = g_i / rho;
         mul(d_i_aux, &aux_4, d_i, N, 1, 1);
@@ -285,17 +327,18 @@ float solve(size_t id, float L, float* K_i, float o)
 
         debugPrint(d_i, N, it, "d_4");
 
-        updateBest(d_i, K_i, L, o, d_i_best, &cost_best, R_i, Z_i);
+        updateBest(id, d_i, K_i, L, o, false, d_i_best, &cost_best,
+            d_i_avg, q_i, c_i, y_i, rho);
 
         // d_5 Constrained to linear and 100 boundaries
         mul(K_i, &aux_2, d_i, N, 1, 1);
 
-        aux_5 = 100.0  * K_i[id];
+        aux_5 = MAX_DC  * K_i[id];
         mul(K_i, &aux_5, aux_m_2, N, 1, 1);
 
         sub(d_i, aux_m_2, d_i, N, 1);
         sub(d_i, aux_m_1, d_i, N, 1);
-        d_i[id] = (100.0 * k_r_squared_two_norm)
+        d_i[id] = (MAX_DC * k_r_squared_two_norm)
             - (k_r_squared_two_norm * Z_i[id] / (rho + q_i));
 
         mul(d_i, &aux_4, d_i_aux, N, 1, 1);
@@ -303,7 +346,8 @@ float solve(size_t id, float L, float* K_i, float o)
 
         debugPrint(d_i, N, it, "d_5");
 
-        updateBest(d_i, K_i, L, o, d_i_best, &cost_best, R_i, Z_i);
+        updateBest(id, d_i, K_i, L, o, false, d_i_best, &cost_best,
+            d_i_avg, q_i, c_i, y_i, rho);
 
         debugPrint(d_i_best, N, it, "d_best");
 
@@ -320,6 +364,9 @@ float solve(size_t id, float L, float* K_i, float o)
         sub(d_i_best, d_i_avg, d_i_aux, N, 1);
         mul(d_i_aux, &rho, d_i, N, 1, 1);
         sum(y_i, d_i, y_i, N, 1);
+
+        debugPrint(y_i, N, it, "y_i");
+        debugPrint(&cost_best, 1, it, "cost_best");
     }
 
     elemMul(K_i, d_i_best, d_i, N, 1);

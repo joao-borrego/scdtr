@@ -82,7 +82,7 @@ void setup() {
     Serial.println((int) id);
 
     // Setup I2C communication
-    Communication::setup(id, &reset, &consensus, &lower_bound, &occupancy);
+    Communication::setup(&id, &reset, &consensus, &lower_bound, &occupancy);
     Wire.begin(id);
     Wire.onReceive(Communication::onReceive);
 
@@ -170,15 +170,25 @@ void calibrate(){
     Wire.onReceive(Calibration::onReceive);
     Wire.onRequest(Calibration::onRequest);
     Calibration::execute(k_i, &ext, id);
+    for (int j = 0; j < N; j++){
+        k_i[j] = k_i[j]; // * 255.0 / 100.0;
+    }
     Wire.onReceive(Communication::onReceive);
     Wire.onRequest(Communication::nop);
 }
 
 void doConsensus(){
-    // DEBUG
     Serial.println("[Consensus]");
     if (id == MASTER) delay(1000);
+    
     ref = Consensus::solve(id, lower_bound, k_i, ext);
+    
+    // DEBUG
+    //float k_tmp[N][N]   = { {2.0, 1.0}, {1.0, 2.0} };
+    //float lb_tmp[N]     = { 150.0, 80.0 };
+    //float ext_tmp[N]    = { 30.0, 0.0 };
+    //ref = Consensus::solve(id, lb_tmp[id], k_tmp[id], ext_tmp[id]);
+    
     Wire.onReceive(Communication::onReceive);
     Wire.onRequest(Communication::nop);
 }
@@ -245,8 +255,11 @@ void processCommand(){
         if ( (!strcmp(command, CMD_OCCUPANCY) || !strcmp(command, CMD_LOWER_BOUND) )
             && i >= 0 && i < N && f != ND) {
             
-            float tmp_lower_bound[N] = {ND};
-            
+            float tmp_lower_bound[N];
+            for (int j = 0; j < N; j++){
+                tmp_lower_bound[j] = ND;
+            }
+
             // Occupancy argument is binary, convert to float lux value
             if (!strcmp(command, CMD_OCCUPANCY)) {
                 f = (atoi(value) == 0)? LOW_LUX : HIGH_LUX;
@@ -262,8 +275,6 @@ void processCommand(){
             for (int j = 0; j < N; j++) {
                 if (j != MASTER) {
                     Communication::sendConsensus(j, true, tmp_lower_bound);
-                    // DEBUG
-                    Serial.println(tmp_lower_bound[1]);
                 }
             }
             consensus = true;

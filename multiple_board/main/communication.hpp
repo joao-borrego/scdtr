@@ -68,7 +68,7 @@ namespace Communication
 
     // TODO
     void setup(
-        const uint8_t id,
+        const uint8_t *id,
         const bool *reset_ptr,
         const bool *consensus_ptr,
         const float *lower_bound_ptr,
