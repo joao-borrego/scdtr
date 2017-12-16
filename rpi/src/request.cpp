@@ -56,7 +56,8 @@ void parseRequest(
     bool total = false;
 
     unsigned long now = system->millis();
-    unsigned long minute_ago = now - (60 * 1000);
+    long minute_ago = now - (60 * 1000);
+    if (minute_ago < 0) minute_ago = 0;
 
     if (!system)
     {
@@ -225,7 +226,7 @@ void parseRequest(
 
                         if (type == LAST_MINUTE)
                         {
-                            system->getValuesInPeriod(id, minute_ago, end, var, response);
+                            system->getValuesInPeriod(id, minute_ago, now, var, response);
                         }
                         else
                         {
