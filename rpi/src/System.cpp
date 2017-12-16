@@ -139,7 +139,7 @@ void System::handleRead(const boost::system::error_code & error,
         startRead();
     }
     else {
-        errPrintTrace("Lost connection to system!");
+        errPrintTrace("Lost connection to system (I2C Sniffer)!  Exiting...");
         exit(EXIT_FAILURE);
     }
 }
@@ -151,7 +151,8 @@ void System::runI2C(){
 void System::startWriteSerial(const std::string & msg)
 {
     boost::system::error_code error;
-    std::string serial = msg + "\n";
+    std::string serial = msg + "\r\n";
+    debugPrintTrace("[Serial] Message ready to be sent.");
     boost::asio::async_write(serial_port_, boost::asio::buffer(serial),
         boost::bind(& System::handleWriteSerial, this,
             boost::asio::placeholders::error,
@@ -163,11 +164,13 @@ void System::handleWriteSerial(const boost::system::error_code & error,
 {
     if (!error)
     {
-        debugPrintTrace("[Serial] Message written.");
+        debugPrintTrace("[Serial] Message sent.");
     }
     else
     {
         errPrintTrace(error.message());
+        errPrintTrace("Lost connection to system (Serial Port)! Exiting...");
+        exit(EXIT_FAILURE);
     }
 
 }

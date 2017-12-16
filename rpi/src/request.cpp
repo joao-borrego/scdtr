@@ -225,7 +225,7 @@ void parseRequest(
 
                         if (type == LAST_MINUTE)
                         {
-                            system->getValuesInPeriod(id, now, minute_ago, var, response);
+                            system->getValuesInPeriod(id, minute_ago, end, var, response);
                         }
                         else
                         {
