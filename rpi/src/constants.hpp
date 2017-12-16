@@ -23,7 +23,7 @@
 /** Size of receive buffer */
 #define RECV_BUFFER 1024
 /** Size of send buffer */
-#define SEND_BUFFER PACKET_SIZE
+#define SEND_BUFFER 1023
 /** Size of packet */
 #define PACKET_SIZE 50
 

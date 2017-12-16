@@ -216,11 +216,12 @@ void System::getValuesInPeriod(
     size_t id,
     unsigned long start,
     unsigned long end,
-    int var,
+    char var,
     std::string & response)
 {
     response = "";
-    std::string value = "";
+    std::string value_str = "";
+    float value = -1;
 
     boost::shared_lock<boost::shared_mutex> lock(mutex_);
     try
@@ -229,10 +230,14 @@ void System::getValuesInPeriod(
         {
             if (e.timestamp >= start && e.timestamp <= end)
             {
-                if (var == GET_LUX) value = std::to_string(e.lux);
-                else                value = std::to_string(e.duty_cycle);
+                if (var == LUX) value = e.lux;
+                else            value = e.duty_cycle;
                 
-                response += (value + ", "); 
+                std::stringstream stream;
+                stream << std::fixed << std::setprecision(2) << value;
+                value_str = stream.str();
+
+                response += (value + ", ");
             }
         }
         if (!response.empty()) response.erase(response.size() - 2);
