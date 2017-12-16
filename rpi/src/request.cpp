@@ -77,7 +77,7 @@ void parseRequest(
     {
         if (type == RESET)
         {
-            system->writeSerial(RESET);
+            system->startWriteSerial(RESET);
             response = ACK;
         }   
         else
@@ -190,7 +190,7 @@ void parseRequest(
                         if (id < 0 || id >= system->getNodes()) throw std::exception();
                         bool val = std::stoi(arg);
                         std::string serial_msg("");
-                        system->writeSerial(request);
+                        system->startWriteSerial(request);
                         response = ACK;
                     }
                     catch (std::exception e)

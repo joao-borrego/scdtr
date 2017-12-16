@@ -48,6 +48,7 @@ void System::start(const std::string & serial, const std::string & i2c)
 }
 
 void System::startRead(){
+    // TODO - Replace by async_read_until
     i2c_.async_read_some(boost::asio::buffer(i2c_buffer_, RECV_BUFFER),
         boost::bind(& System::handleRead, this, 
             boost::asio::placeholders::error,
@@ -124,13 +125,23 @@ void System::runI2C(){
     io_i2c_.run();
 }
 
-int System::writeSerial(const std::string & msg)
+void System::startWriteSerial(const std::string & msg)
 {
     boost::system::error_code error;
     std::string serial = msg + "\n";
-    int bytes = boost::asio::write(serial_port_, boost::asio::buffer(serial), error);
-    if (error){ errPrintTrace(error.message()); }
-    return bytes;
+    boost::asio::async_write(serial_port_, boost::asio::buffer(serial),
+        boost::bind(& System::handleWriteSerial, this,
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::bytes_transferred));
+}
+
+void System::handleWriteSerial(const boost::system::error_code & error,
+    size_t bytes_transferred)
+{
+    if (error)
+    {
+        errPrintTrace(error.message());
+    }
 }
 
 void System::insertEntry(

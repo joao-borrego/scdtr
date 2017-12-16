@@ -152,23 +152,21 @@ public:
     void start(const std::string & serial, const std::string & i2c);
 
     // TODO
-    void startRead();
+    void runI2C();
 
     // TODO
-    void runI2C();
+    void startRead();
 
     // TODO
     void handleRead(const boost::system::error_code & error,
         size_t bytes_transferred);
 
-    /**
-     * @brief      Writes a message to the Serial port.
-     *
-     * @param[in]  msg   The message
-     *
-     * @return     Bytes written
-     */
-    int writeSerial(const std::string & msg);
+    // TODO
+    void startWriteSerial(const std::string & msg);
+
+    // TODO
+    void handleWriteSerial(const boost::system::error_code & error,
+        size_t bytes_transferred);
 
     /**
      * @brief      Inserts a log entry
