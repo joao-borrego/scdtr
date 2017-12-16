@@ -199,6 +199,7 @@ void System::insertEntry(
 
 Entry *System::getLatestEntry(size_t id)
 {
+    boost::shared_lock<boost::shared_mutex> lock(mutex_);
     try
     {
         return (entries_.at(id).empty())?
@@ -221,6 +222,7 @@ void System::getValuesInPeriod(
     response = "";
     std::string value = "";
 
+    boost::shared_lock<boost::shared_mutex> lock(mutex_);
     try
     {
         for (auto & e : entries_.at(id))

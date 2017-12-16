@@ -123,7 +123,7 @@ void parseRequest(
                     float value_f = -1;
                     int value_i = -1;
                     bool value_b = 0;
-                    unsigned long value_l = -1;
+                    long value_l = -1;
 
                     std::string id_str(std::to_string(id));
 
