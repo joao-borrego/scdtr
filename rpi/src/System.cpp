@@ -110,15 +110,17 @@ void System::handleRead(const boost::system::error_code & error,
                 occupancy = data[5 * sizeof(float)];
                 timestamp = System::millis();
 
-                debugPrintTrace("[I2C]" << 
-                    " id " << (int) id <<
+                debugPrintTrace(
+                    std::setprecision(2) << std::fixed <<
+                    "[I2C]" << 
+                    " id "  << (int) id <<
                     " lux " << lux <<
-                    " dc  " << dc <<
-                    " lb  " << lb <<
+                    " dc "  << dc <<
+                    " lb "  << lb <<
                     " ext " << ext <<
                     " ref " << ref << 
                     " occ " << (bool) occupancy <<
-                    " t   " << timestamp);
+                    " t "   << timestamp);
 
                 // Update values in memory
                 try

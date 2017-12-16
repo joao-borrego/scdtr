@@ -134,9 +134,9 @@ void parseRequest(
                                 + " " + std::to_string(value_f);
                             break;
                         case DUTY_CYCLE:
-                            value_i = system->getDutyCycle(id);
+                            value_f = system->getDutyCycle(id);
                             response = std::string(1, DUTY_CYCLE) + " " + id_str
-                                + " " + std::to_string(value_i);
+                                + " " + std::to_string(value_f);
                             break;
                         case OCCUPANCY:
                             value_b = system->getOccupancy(id);
