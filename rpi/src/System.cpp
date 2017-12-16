@@ -52,15 +52,19 @@ void System::reset()
     // Start tracking execution time
     start_ = 0;
     start_ = System::millis();
-    // Clear variables
+    // Clear variables, but ensure size is kept
     boost::unique_lock<boost::shared_mutex> lock(mutex_);
     for (int i = 0; i < nodes_; i++)
     {
         entries_.at(i).clear();
+        entries_.resize(nodes_);
     }
     lux_lower_bound_.clear();
     lux_external_.clear();
     occupancy_.clear();
+    lux_lower_bound_.resize(nodes_);
+    lux_external_.resize(nodes_);
+    occupancy_.resize(nodes_);
 }
 
 void System::startRead()
