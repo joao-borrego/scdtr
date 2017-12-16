@@ -159,6 +159,9 @@ public:
     void runI2C();
 
     // TODO
+    void runSerial();
+
+    // TODO
     void startRead();
 
     // TODO

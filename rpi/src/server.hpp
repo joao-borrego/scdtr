@@ -15,8 +15,13 @@
 #include "System.hpp"
 #include "TCPServer.hpp"
 
+// TODO
 void tcpServer();
 
+// TODO
 void i2c();
+
+// TODO
+void serial();
 
 #endif

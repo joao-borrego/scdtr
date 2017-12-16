@@ -25,9 +25,11 @@ int main(int argc, char *argv[])
     
     std::thread t1(i2c);
     std::thread t2(tcpServer);
+    std::thread t3(serial);
 
     t1.join();
     t2.join();
+    t3.join();
 
     return 0;
 }
@@ -35,6 +37,11 @@ int main(int argc, char *argv[])
 void i2c()
 {
     system_->runI2C();
+}
+
+void serial()
+{
+    system_->runSerial();
 }
 
 void tcpServer()

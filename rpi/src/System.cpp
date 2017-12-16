@@ -148,6 +148,10 @@ void System::runI2C(){
     io_i2c_.run();
 }
 
+void System::runSerial(){
+    io_serial_.run();
+}
+
 void System::startWriteSerial(const std::string & msg)
 {
     boost::system::error_code error;
