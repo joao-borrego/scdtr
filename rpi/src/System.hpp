@@ -12,6 +12,7 @@
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <chrono>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/shared_ptr.hpp>
@@ -33,7 +34,7 @@ class Entry
 public:
 
     /** Entry timestamp */
-    std::time_t timestamp;
+    unsigned long timestamp;
     /** Registered lux value */
     float lux;
     /** Registered duty cycle */
@@ -42,18 +43,22 @@ public:
     float lux_reference;
 
     /**
-     * @brief      Constructor
+     * @brief      Constructs an entry.
      *
-     * @param[in]  t_s   The timestamp
-     * @param[in]  l     The registered lux value
-     * @param[in]  d_c   The registered duty cycle
-     * @param[in]  l_r   The reference illuminance
+     * @param[in]  timestamp_      The timestamp
+     * @param[in]  lux_            The lux
+     * @param[in]  duty_cycle_     The duty cycle
+     * @param[in]  lux_reference_  The lux reference
      */
-    Entry(std::time_t t_s, float l, float d_c, float l_r)
-        : timestamp(t_s),
-          lux(l),
-          duty_cycle(d_c),
-          lux_reference(l_r){}
+    Entry(
+        unsigned long timestamp_,
+        float lux_, 
+        float duty_cycle_,
+        float lux_reference_)
+        : timestamp(timestamp_),
+          lux(lux_),
+          duty_cycle(duty_cycle_),
+          lux_reference(lux_reference_){}
 };
 
 class System
@@ -69,6 +74,8 @@ private:
     size_t nodes_;
     /** Sampling period */
     float sample_period_;
+    /** System initialisation timestamp */
+    unsigned long start_ {0};
     
     /* Direct measurements */
 
@@ -120,6 +127,16 @@ public:
         start(serial, i2c);
     }
 
+    // TODO
+    unsigned long millis(){
+        auto now = std::chrono::system_clock::now();
+        auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+        auto value = now_ms.time_since_epoch();
+        unsigned long absolute = value.count();
+        unsigned long relative = absolute - start_;
+        return relative;
+    }
+
     /**
      * @brief      Gets the number of nodes in the system.
      *
@@ -164,7 +181,7 @@ public:
      */
     void insertEntry(
         size_t id,
-        std::time_t timestamp,
+        unsigned long timestamp,
         float lux,
         float duty_cycle,
         float lux_reference);
@@ -191,8 +208,8 @@ public:
      */
     void getValuesInPeriod(
         size_t id,
-        std::time_t start,
-        std::time_t end,
+        unsigned long start,
+        unsigned long end,
         int var,
         std::string & response);
 
@@ -316,12 +333,6 @@ public:
      * @return     The comfort variance.
      */
     float getComfortVariance(size_t id, bool total);
-
-    /* Set */
-
-    void reset();
-
-    void setOccupancy(size_t id, bool occupancy);
 
 };
 

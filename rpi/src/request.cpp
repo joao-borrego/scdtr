@@ -54,8 +54,8 @@ void parseRequest(
     int id = -1;
     bool total = false;
 
-    std::time_t now = std::time(nullptr);
-    std::time_t minute_ago = now - 60;
+    unsigned long now = system->millis();
+    unsigned long minute_ago = now - (60 * 1000);
 
     if (!system)
     {
@@ -189,7 +189,7 @@ void parseRequest(
                         int id = std::stoi(cmd);
                         if (id < 0 || id >= system->getNodes()) throw std::exception();
                         bool val = std::stoi(arg);
-                        std::string serial_msg("")
+                        std::string serial_msg("");
                         system->writeSerial(request);
                         response = ACK;
                     }

@@ -46,8 +46,6 @@ const uint8_t RES   = 0x0F;
 const size_t ID     = 0;
 const size_t TYPE   = 1;
 
-const int
-
 namespace Communication
 {
     /**

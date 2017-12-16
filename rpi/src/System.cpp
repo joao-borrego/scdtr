@@ -38,6 +38,9 @@ void System::start(const std::string & serial, const std::string & i2c)
     }
     debugPrintTrace("Opened I2C FIFO for reading.");
 
+    // Start tracking execution time
+    start_ = System::millis();
+;
     // Initialise reader actor
     startRead();
     
@@ -62,11 +65,13 @@ void System::handleRead(const boost::system::error_code & error,
             uint8_t type = i2c_buffer_[1];
             uint8_t *data = i2c_buffer_ + 2;
 
+            // TODO - Verify size
             if (type == INF /* && size*/){
                 
                 float lux, dc, lb, ext, ref;
                 uint8_t occupancy;
-                
+                unsigned long timestamp;
+
                 Communication::float_bytes fb;
                 for (int i = 0; i < 5; i++){
                     for (int j = 0; j< sizeof(float); j++){
@@ -81,9 +86,8 @@ void System::handleRead(const boost::system::error_code & error,
                     }
                 }
                 occupancy = data[5 * sizeof(float)];
-                std::time_t timestamp = std::time(nullptr);
-                
-                /*
+                timestamp = System::millis();
+
                 debugPrintTrace("[I2C]" << 
                     " id " << (int) id <<
                     " lux " << lux <<
@@ -91,8 +95,8 @@ void System::handleRead(const boost::system::error_code & error,
                     " lb  " << lb <<
                     " ext " << ext <<
                     " ref " << ref << 
-                    " occ " << (bool) occupancy);
-                */
+                    " occ " << (bool) occupancy <<
+                    " t   " << timestamp);
 
                 // Update values in memory
                 try
@@ -131,7 +135,7 @@ int System::writeSerial(const std::string & msg)
 
 void System::insertEntry(
     size_t id,
-    std::time_t timestamp,
+    unsigned long timestamp,
     float lux,
     float duty_cycle,
     float lux_reference)
@@ -163,8 +167,8 @@ Entry *System::getLatestEntry(size_t id)
 
 void System::getValuesInPeriod(
     size_t id,
-    std::time_t start,
-    std::time_t end,
+    unsigned long start,
+    unsigned long end,
     int var,
     std::string & response)
 {
@@ -301,7 +305,8 @@ float System::getPower(size_t id, bool total)
 
 float System::energyNode(size_t id)
 {
-    float d_prev, t_prev, t_cur, energy = 0.0;
+    float d_prev, energy = 0.0;
+    unsigned long t_cur, t_prev, t_diff;
     boost::shared_lock<boost::shared_mutex> lock(mutex_);
     
     int length = entries_.at(id).size();
@@ -310,7 +315,8 @@ float System::energyNode(size_t id)
         d_prev = entries_.at(id).at(i - 1).duty_cycle;
         t_prev = entries_.at(id).at(i - 1).timestamp;
         t_cur  = entries_.at(id).at(i).timestamp;
-        energy += d_prev * (t_prev - t_cur);
+        t_diff = t_cur - t_prev;
+        energy += d_prev * (t_diff * 1.0);
     }
     return energy;
 }
@@ -423,14 +429,4 @@ float System::getComfortVariance(size_t id, bool total)
         errPrintTrace(e.what());
         return -1;
     }
-}
-
-void System::reset()
-{
-    // TODO
-}
-
-void setOccupancy(size_t id, bool occupancy)
-{
-    // TODO
 }
