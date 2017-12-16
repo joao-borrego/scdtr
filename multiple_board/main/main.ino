@@ -119,7 +119,7 @@ void loop() {
             lux, out / 255.0, lower_bound, ext, ref, occupancy);
 
         // DEBUG
-        printState();
+        if (id != MASTER) printState();
 
     }
 }

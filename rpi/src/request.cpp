@@ -186,6 +186,7 @@ void parseRequest(
                             value_l  = system->getTimestamp(id);
                             response =  std::string(1, TIMESTAMP) + " " + id_str
                                 + " " + std::to_string(value_l);
+                            break;
                         default:
                             response = INVALID;
                     }
