@@ -230,14 +230,14 @@ void System::getValuesInPeriod(
         {
             if (e.timestamp >= start && e.timestamp <= end)
             {
-                if (var == LUX) value = e.lux;
+                if (var == 'l') value = e.lux;
                 else            value = e.duty_cycle;
                 
                 std::stringstream stream;
                 stream << std::fixed << std::setprecision(2) << value;
                 value_str = stream.str();
 
-                response += (value + ", ");
+                response += (value_str + ", ");
             }
         }
         if (!response.empty()) response.erase(response.size() - 2);

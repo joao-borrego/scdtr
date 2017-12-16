@@ -215,7 +215,7 @@ public:
         size_t id,
         unsigned long start,
         unsigned long end,
-        int var,
+        char var,
         std::string & response);
 
     /**
