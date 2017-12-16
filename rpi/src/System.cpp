@@ -230,6 +230,7 @@ void System::getValuesInPeriod(
         {
             if (e.timestamp >= start && e.timestamp <= end)
             {
+                // TODO - Use macro
                 if (var == 'l') value = e.lux;
                 else            value = e.duty_cycle;
                 

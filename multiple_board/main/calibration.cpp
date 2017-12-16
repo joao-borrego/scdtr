@@ -144,7 +144,7 @@ namespace Calibration{
 
         Serial.print("k_i = [");
         for (int j = 0; j < N; j++){
-            k_i[j] = (tmp_lux[N + j] - tmp_lux[j]) / (output[1] - output[0]);
+            k_i[j] = (tmp_lux[N + j] - tmp_lux[j]) / (output[1] - output[0]) * (255.0 / 100.0);
                 Serial.print(k_i[j], 3);
                 Serial.print(" ");
         }

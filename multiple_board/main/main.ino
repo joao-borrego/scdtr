@@ -119,7 +119,7 @@ void loop() {
             lux, out / 255.0, lower_bound, ext, ref, occupancy);
 
         // DEBUG
-        if (id != MASTER) printState();
+        printState();
 
     }
 }
@@ -150,6 +150,7 @@ void updateState(){
     if (reset) {
         reset = false;
         state = CALIBRATION;
+        analogWrite(pin_led, 0);
     } else if (state == CONTROL) {
         if (consensus){
             consensus = false;
@@ -171,7 +172,7 @@ void calibrate(){
     Wire.onRequest(Calibration::onRequest);
     Calibration::execute(k_i, &ext, id);
     for (int j = 0; j < N; j++){
-        k_i[j] = k_i[j]; // * 255.0 / 100.0;
+        k_i[j] = k_i[j];
     }
     Wire.onReceive(Communication::onReceive);
     Wire.onRequest(Communication::nop);
