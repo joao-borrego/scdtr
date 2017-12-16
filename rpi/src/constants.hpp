@@ -8,7 +8,7 @@
 /** Number of nodes in system */
 #define NODES   2
 /** System sampling period */
-#define T_S 0.001
+#define T_S 0.5
 
 /** Server host */
 #define HOST "127.0.0.1"

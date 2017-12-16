@@ -75,7 +75,7 @@ private:
     /** Sampling period */
     float sample_period_;
     /** System initialisation timestamp */
-    unsigned long start_ {0};
+    unsigned long start_;
     
     /* Direct measurements */
 
@@ -150,6 +150,9 @@ public:
      * @param[in]  serial  The serial port name
      */
     void start(const std::string & serial, const std::string & i2c);
+
+    // TODO
+    void reset();
 
     // TODO
     void runI2C();
@@ -332,6 +335,16 @@ public:
      */
     float getComfortVariance(size_t id, bool total);
 
+    /**
+     * @brief      Gets the time since last reset for a given node.
+     *
+     * This value should be roughly the same 
+     *
+     * @param[in]  timestamp  The node identifier
+     *
+     * @return     The time since last reset.
+     */
+    unsigned long getTimestamp(size_t id);
 };
 
 #endif

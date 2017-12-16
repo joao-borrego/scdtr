@@ -33,9 +33,8 @@ private:
 
     /* "Real-time" data stream */
 
-    // TODO - mutex?
     /** Timestamp of last update */
-    std::vector< std::time_t > last_update_;
+    std::vector< unsigned long > last_update_;
     /** Boolean flags */
     std::vector< bool > flags_;
     /** Timer */

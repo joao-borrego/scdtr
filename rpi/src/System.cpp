@@ -38,16 +38,33 @@ void System::start(const std::string & serial, const std::string & i2c)
     }
     debugPrintTrace("Opened I2C FIFO for reading.");
 
-    // Start tracking execution time
-    start_ = System::millis();
-;
+    // Clear internal variables
+    System::reset();
+
     // Initialise reader actor
     startRead();
     
     debugPrintTrace("System initialised.");
 }
 
-void System::startRead(){
+void System::reset()
+{
+    // Start tracking execution time
+    start_ = 0;
+    start_ = System::millis();
+    // Clear variables
+    boost::unique_lock<boost::shared_mutex> lock(mutex_);
+    for (int i = 0; i < nodes_; i++)
+    {
+        entries_.at(i).clear();
+    }
+    lux_lower_bound_.clear();
+    lux_external_.clear();
+    occupancy_.clear();
+}
+
+void System::startRead()
+{
     // TODO - Replace by async_read_until
     i2c_.async_read_some(boost::asio::buffer(i2c_buffer_, RECV_BUFFER),
         boost::bind(& System::handleRead, this, 
@@ -138,10 +155,15 @@ void System::startWriteSerial(const std::string & msg)
 void System::handleWriteSerial(const boost::system::error_code & error,
     size_t bytes_transferred)
 {
-    if (error)
+    if (!error)
+    {
+        debugPrintTrace("[Serial] Message written.");
+    }
+    else
     {
         errPrintTrace(error.message());
     }
+
 }
 
 void System::insertEntry(
@@ -326,8 +348,8 @@ float System::energyNode(size_t id)
         d_prev = entries_.at(id).at(i - 1).duty_cycle;
         t_prev = entries_.at(id).at(i - 1).timestamp;
         t_cur  = entries_.at(id).at(i).timestamp;
-        t_diff = t_cur - t_prev;
-        energy += d_prev * (t_diff * 1.0);
+        t_diff = t_cur - t_prev; // ms
+        energy += d_prev * (t_diff / 1000.0);
     }
     return energy;
 }
@@ -434,6 +456,21 @@ float System::getComfortVariance(size_t id, bool total)
             }
         }
         return comfort_variance;
+    }
+    catch (const std::out_of_range & e)
+    {
+        errPrintTrace(e.what());
+        return -1;
+    }
+}
+
+unsigned long System::getTimestamp(size_t id)
+{
+    boost::shared_lock<boost::shared_mutex> lock(mutex_);
+    try
+    {
+        return (entries_.at(id).empty())?
+            -1 : entries_.at(id).back().timestamp;
     }
     catch (const std::out_of_range & e)
     {

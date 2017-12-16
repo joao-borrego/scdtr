@@ -6,7 +6,7 @@
 
 void streamUpdate(
     System::ptr system,
-    std::vector< std::time_t > & timestamps,
+    std::vector< unsigned long > & timestamps,
     const std::vector< bool> & flags,
     std::string & response)
 {
@@ -45,6 +45,7 @@ void streamUpdate(
 
 void parseRequest(
     System::ptr system,
+    std::vector< unsigned long > & timestamps,
     std::vector< bool> & flags,
     const std::string & request,
     std::string & response)
@@ -78,6 +79,8 @@ void parseRequest(
         if (type == RESET)
         {
             system->startWriteSerial(RESET);
+            system->reset();
+            timestamps.clear();
             response = ACK;
         }   
         else
@@ -119,6 +122,7 @@ void parseRequest(
                     float value_f = -1;
                     int value_i = -1;
                     bool value_b = 0;
+                    unsigned long value_l = -1;
 
                     std::string id_str(std::to_string(id));
 
@@ -178,6 +182,10 @@ void parseRequest(
                                 ((id == -1 && total)? std::string(1, TOTAL) : id_str)
                                 + " " + std::to_string(value_f);
                             break;
+                        case TIMESTAMP:
+                            value_l  = system->getTimestamp(id);
+                            response =  std::string(1, TIMESTAMP) + " " + id_str
+                                + " " + std::to_string(value_l);
                         default:
                             response = INVALID;
                     }

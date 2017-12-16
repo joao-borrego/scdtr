@@ -44,7 +44,7 @@ void TCPSession::handleRead(const boost::system::error_code & error,
             std::string response;
             std::string request(request_str);
 
-            parseRequest(system_, flags_, request, response);
+            parseRequest(system_, last_update_, flags_, request, response);
 
             length = (response.size() < SEND_BUFFER - 1)? response.size() : SEND_BUFFER - 1;
             strncpy(send_buffer_, response.c_str(), length);

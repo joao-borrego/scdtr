@@ -48,8 +48,10 @@
 #define ENERGY          'e' // <i> or T
 /** Get accumulated comfort error at desk or total */
 #define COMFORT_ERR     'c' // <i> or T
-/** Get accumulated comfort varaince at desk or total */
+/** Get accumulated comfort variance at desk or total */
 #define COMFORT_VAR     'v' // <i> or T
+/** Get time since last restart at desk */
+#define TIMESTAMP       't' // <i>
 
 /** Total modifier parameter */
 #define TOTAL           'T'
@@ -66,6 +68,7 @@
 //TODO
 void parseRequest(
     System::ptr system,
+    std::vector< unsigned long > & timestamps,
     std::vector< bool> & flags,
     const std::string & request,
     std::string & response);
@@ -73,7 +76,7 @@ void parseRequest(
 //TODO
 void streamUpdate(
     System::ptr system,
-    std::vector< std::time_t > & timestamp,
+    std::vector< unsigned long > & timestamps,
     const std::vector< bool> & flags,
     std::string & response);
 
