@@ -1,4 +1,4 @@
-/** 
+/**
 * @file calibration.cpp
 * @brief Calibration utility implementation
 * @author João Borrego
@@ -22,7 +22,7 @@ namespace Calibration
     volatile float y_ext;
     /** Registered lux values */
     volatile float Y[N][NUM_SAMPLES];
-    
+
     int sample;
     uint8_t sender;
     uint8_t receiver;
@@ -51,7 +51,7 @@ namespace Calibration
                     y_ext = getLDRValue();
                 }
                 else if (state == STATE_ON)
-                { 
+                {
                     Y[sender][sample] = getLDRValue();
                     state = STATE_OFF;
                 }
@@ -101,7 +101,7 @@ namespace Calibration
             Communication::sendPacket(sender, ACK);
         }
         state = 1;
-        
+
         *o_i = y_ext;
         Serial.print("o_i = ");
         Serial.println(y_ext, 5);
@@ -111,7 +111,7 @@ namespace Calibration
             for (sender = 0; sender < N; sender++){
                 if (id == sender){
                     analogWrite(pin_led, X[sample]);
-                    delay(WAIT_LED);   
+                    delay(WAIT_LED);
                     Y[sender][sample] = getLDRValue();
                     for (receiver = 0; receiver < N; receiver++){
                         if (sender != receiver){
@@ -146,10 +146,10 @@ namespace Calibration
 
         // Calculate linear regression for each element of K
         // using least squares method
-        
+
         float x_avg = Utils::average(X, NUM_SAMPLES);
 
-        for (int i = 0; i < N; i++){            
+        for (int i = 0; i < N; i++){
             float y_avg = Utils::average(Y[i], NUM_SAMPLES);
 
             float num = 0.0;
@@ -157,7 +157,7 @@ namespace Calibration
 
             for (int sample = 0; sample < NUM_SAMPLES; sample++){
                 num += (X[sample] - x_avg) * (Y[i][sample] - y_avg);
-                den += (X[sample] - x_avg) * (X[sample] - x_avg); 
+                den += (X[sample] - x_avg) * (X[sample] - x_avg);
             }
 
             k_i[i] = num / den * (255.0 / 100.0);

@@ -1,6 +1,17 @@
 /**
  * @file consensus.hpp
+ *
+ * @brief Consensus algorithm headers
+ *
+ * Consensus distributed algorithm implementation for obtaining a the solution
+ * to a global optimisation problem.
+ *
+ * @author João Borrego
+ * @author António Almeida
  */
+
+#ifndef INO_CONSENSUS_HPP
+#define INO_CONSENSUS_HPP
 
 #include "matrix.hpp"
 #include "constants.hpp"
@@ -10,18 +21,28 @@ namespace Consensus{
 
     /** Total number of iterations */
     const float ITERATIONS = 50;
-    /** Rho */
+    /** Augmented Lagrangian method penalty parameter */
     const float RHO = 0.01;
-    /** TODO */
+    /** Quadratic terms coefficients */
     const float Q[N] = {0.0, 0.0};
-    /** TODO */
+    /** Linear terms coefficients */
     const float C[N] = {1.0, 1.0};
 
     /* Functions */
 
-    // TODO
+    /**
+     * @brief      Calculates the cost function.
+     *
+     * @param      d_i      The solution
+     * @param      d_i_avg  The average of nodes' solutions
+     * @param[in]  q_i      The q_i submatrix of Q
+     * @param[in]  c_i      The c i submatrix of C
+     * @param      y_i      The Lagrangian multipliers
+     * @param[in]  rho      The penalty parameter
+     *
+     * @return     The cost
+     */
     float costFunction(
-        uint8_t id,
         float *d_i,
         float *d_i_avg,
         float q_i,
@@ -29,7 +50,17 @@ namespace Consensus{
         float *y_i, 
         float rho);
 
-    // TODO
+    /**
+     * @brief      Checks if a solution is feasible.
+     *
+     * @param      d_i           The solution
+     * @param      K_i           The K_i submatrix of K
+     * @param[in]  L             The illuminance lower bound
+     * @param[in]  o             The external illuminance
+     * @param[in]  check_linear  Check linear constraint on minimum illuminance
+     *
+     * @return     Whether solution is feasible.
+     */
     bool checkConstraints(
         float *d_i,
         float *K_i,
@@ -37,9 +68,23 @@ namespace Consensus{
         float o,
         bool check_linear);
 
-    // TODO
+    /**
+     * @brief      Tries to update the best solution.
+     *
+     * @param      d_i           The solution
+     * @param      K_i           The K_i submatrix of K
+     * @param[in]  L             The illuminance lower bound
+     * @param[in]  o             The external illuminance
+     * @param[in]  check_linear  Check linear constraint on minimum illuminance
+     * @param      d_i_best      The best solution
+     * @param      cost_best     The cost of th best solution
+     * @param      d_i_avg       The average of nodes' solutions
+     * @param[in]  q_i           The q_i submatrix of Q
+     * @param[in]  c_i           The c i submatrix of C
+     * @param      y_i           The Lagrangian multipliers
+     * @param[in]  rho           The penalty parameter
+     */
     void updateBest(
-        uint8_t id,
         float *d_i,
         float *K_i,
         float L,
@@ -53,13 +98,32 @@ namespace Consensus{
         float *y_i,
         float rho);
 
-    // TODO
-    void getAverageSolution(uint8_t id, float *d_i_best);
+    /**
+     * @brief      Gets the average solution from neighbours.
+     *
+     * @param      d_i_best  The local best solution
+     */
+    void getAverageSolution(float *d_i_best);
 
-    // TODO
+    /**
+     * @brief      Callback function for receiving I2C messages.
+     *
+     * @param[in]  bytes  The number of bytes available
+     */
     void onReceive(int bytes);
 
-    // TODO
+    /**
+     * @brief      Executes consensus algorithm.
+     *
+     * @param[in]  id    The node identifier
+     * @param[in]  L     Target lower bound illuminance
+     * @param      K_i   The k i submatrix of K
+     * @param[in]  o     External illuminance
+     *
+     * @return     Output reference in lux units
+     */
     float solve(size_t id, float L, float* K_i, float o);
 
 }
+
+#endif

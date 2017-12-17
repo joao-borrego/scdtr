@@ -4,15 +4,17 @@
  * 
  * Proportional Integral Controller
  * 
- * @author António Almeida
  * @author João Borrego
+ * @author António Almeida
 */
+
+#ifndef INO_PI_HPP
+#define INO_PI_HPP
 
 #include "Arduino.h"
 
-/** Whether to just saturate the integrator term
- or to use a proper anti-windup feedback loop 
- and saturate the u output */
+/** Whether to just saturate the integrator term or to use a proper 
+ anti-windup feedback loop and saturate the u output */
 #define SIMPLE_ANTI_WINDUP false
 
 namespace PIController {
@@ -253,3 +255,5 @@ namespace PIController {
         void setAntiWindupSat(float sat_min, float sat_max);
     };
 }
+
+#endif

@@ -12,12 +12,16 @@
  *
  * Consensus    [ Header | d_i_1 d_i_2 ... d_i_N ],
  *  CON (during consensus) d_i is the solution vector for a given iteration
- *  ICO (before consessus) d_i is actually the lower_bound vector
+ *  ICO (before consessus) d_i is the lower_bound vector
  *
  * Info         [ Header | lux | dc | lb | ext | ref | occ ]
+ *
+ * @author João Borrego
+ * @author António Almeida
  */
 
-#pragma once
+#ifndef INO_COMMUNICATION_HPP
+#define INO_COMMUNICATION_HPP
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -66,7 +70,15 @@ namespace Communication
 
     /* Functions */
 
-    // TODO
+    /**
+     * @brief      Sets up important variables.
+     *
+     * @param[in]  id               The identifier
+     * @param[in]  reset_ptr        The reset pointer
+     * @param[in]  consensus_ptr    The consensus start flag pointer
+     * @param[in]  lower_bound_ptr  The lower bound pointer
+     * @param[in]  occupancy_ptr    The occupancy pointer
+     */
     void setup(
         const uint8_t *id,
         const bool *reset_ptr,
@@ -75,40 +87,37 @@ namespace Communication
         const bool *occupancy_ptr);
 
     /**
-     * @brief      Empty callback function to ignore
+     * @brief      Empty callback function to ignore I2C messages.
      *
      * @param[in]  bytes  The bytes to be read
      */
     void nop(int bytes);
 
     /**
-     * @brief      Synchronises every device.
+     * @brief      Sends a header-only packet.
      *
-     * @param[in]  id    The identifier
+     * @param[in]  dest  The destination
+     * @param[in]  type  The type
      */
-    void barrier(uint8_t id);
-
-    /**
-     * @brief   Waits until unlocked by device 0.
-     */
-    void waitSyn();
-
-    /**
-     * @brief      Waits for a device ack.
-     *
-     * @return     Whether an ack was NOT received
-     */
-    bool waitAck();
-
-    /**
-     * @brief   If acknowledgement requested.
-     */
-    void onRequest();
-
-    // TODO
     void sendPacket(uint8_t dest, uint8_t type);
 
-    // TODO
+    /**
+     * @brief      Reads a packet.
+     *
+     * @param      id_     The identifier
+     * @param      type    The type
+     * @param[in]  size    The size
+     * @param      packet  The packet
+     */
+    void readPacket(byte *id_, byte *type, size_t size, byte *packet);
+
+    /**
+     * @brief      Sends a consensus packet
+     *
+     * @param[in]  dest   The destination
+     * @param[in]  start  Whether consensus has started
+     * @param      d_i    The solution or lower_bound arrays accordingly
+     */
     void sendConsensus(uint8_t dest, bool start, float *d_i);
 
     /**
@@ -118,15 +127,6 @@ namespace Communication
      * @param      out     The array of read floats
      */
     void readConsensus(byte *buffer, float *out);
-
-    /**
-     * @brief      Reads to buffer.
-     *
-     * @param      buffer  The buffer
-     *
-     * @return     The amount of bytes read
-     */
-    size_t readToBuffer(byte *buffer);
 
     /**
      * @brief      Sends an information packet
@@ -155,8 +155,6 @@ namespace Communication
      */
     void onReceive(int bytes);
 
-
-    // TODO
-    void readPacket(byte *id, byte *type, size_t size, byte *packet);
-
 }
+
+#endif

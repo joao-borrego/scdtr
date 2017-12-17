@@ -1,8 +1,8 @@
 /**
  * @file main.ino
  * @brief Multiple board system main application
- * @author António Almeida
  * @author João Borrego
+ * @author António Almeida
  */
 
 #include <EEPROM.h>
@@ -87,10 +87,10 @@ void setup() {
     // Setup I2C communication
     Communication::setup(&id, &reset, &consensus, &lower_bound, &occupancy);
     Wire.begin(id);
-    //Wire.onReceive(Communication::onReceive);
+    Wire.onReceive(Communication::onReceive);
 
     // Setup timer interrupt
-    //setupTimerInt();
+    setupTimerInt();
 
     // Configure controller features
     controller.configureFeatures(true, true, true);
@@ -112,7 +112,7 @@ void loop() {
     updateState();
 
     // Broadcast information to I2C bus periodically
-    /*
+
     current_millis = millis();
     if (current_millis - last_millis >= STATUS_DELAY){
         last_millis = current_millis;
@@ -123,10 +123,8 @@ void loop() {
             lux, out / 255.0, lower_bound, ext, ref, occupancy);
 
         // DEBUG
-        printState();
-
+        //printState();
     }
-    */
 }
 
 // DEBUG
@@ -154,6 +152,8 @@ void updateState(){
 
     if (reset) {
         reset = false;
+        ref = LOW_LUX;
+        lower_bound = LOW_LUX;
         state = CALIBRATION;
     } else if (state == CONTROL) {
         if (consensus){
@@ -169,8 +169,7 @@ void updateState(){
 }
 
 void calibrate(){
-    
-    // DEBUG
+
     Serial.println("[Calibrate]");
     Wire.onReceive(Calibration::onReceive);
     Calibration::execute(id, k_i, &ext);
@@ -189,6 +188,8 @@ void doConsensus(){
     //float ext_tmp[N]    = { 30.0, 0.0 };
     //ref = Consensus::solve(id, lb_tmp[id], k_tmp[id], ext_tmp[id]);
     
+    printState();
+
     Wire.onReceive(Communication::onReceive);
     Wire.onRequest(Communication::nop);
 }

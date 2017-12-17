@@ -5,7 +5,8 @@
 * @author António Almeida
 */
 
-#pragma once
+#ifndef INO_CALIBRATION_HPP
+#define INO_CALIBRATION_HPP
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -14,35 +15,35 @@
 #include "constants.hpp"
 #include "communication.hpp"
 
-/** Minimum wait between I2C messages */
-#define WAIT        20
-/** Minimum wait between LED output value changes */
-#define WAIT_LED    150
-
-/** Maximum I2C packet size (bytes) */
-#define MAX_PACKET_SIZE 32
-
-/** Sample values of duty-cycle for which to obtain lux*/
-#define SAMPLES {\
-    111.0, 127.0, 143.0, 159.0, 175.0,\
-    191.0, 207.0, 223.0, 239.0, 255.0 \
-}
-/** Number of samples */
-#define NUM_SAMPLES 10
-
-/** Obtain external illuminance */
-#define STATE_EXT   0
-/** Obtain illuminance value */
-#define STATE_ON    1
-/** Wait */
-#define STATE_OFF   2
-
 namespace Calibration{
+    
+    /** Minimum wait between I2C messages */
+    #define WAIT        20
+    /** Minimum wait between LED output value changes */
+    #define WAIT_LED    150
+
+    /** Maximum I2C packet size (bytes) */
+    #define MAX_PACKET_SIZE 32
+
+    /** Sample values of duty-cycle for which to obtain lux */
+    #define SAMPLES {\
+        111.0, 127.0, 143.0, 159.0, 175.0,\
+        191.0, 207.0, 223.0, 239.0, 255.0 \
+    }
+    /** Number of samples */
+    #define NUM_SAMPLES 10
+
+    /** Obtain external illuminance */
+    #define STATE_EXT   0
+    /** Obtain illuminance value */
+    #define STATE_ON    1
+    /** Wait */
+    #define STATE_OFF   2
 
     /**
      * @brief      Callback function for receiving I2C messages.
      *
-     * @param[in]  bytes  The bytes
+     * @param[in]  bytes  The number of bytes available
      */
     void onReceive(int bytes);
 
@@ -62,3 +63,5 @@ namespace Calibration{
      */
     float getLDRValue();
 }
+
+#endif

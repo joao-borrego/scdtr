@@ -1,8 +1,8 @@
 /** 
 * @file utils.cpp
 * @brief Generic utilities
-* @author António Almeida
 * @author João Borrego
+* @author António Almeida
 */
 
 #include "utils.hpp"

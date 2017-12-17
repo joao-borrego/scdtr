@@ -1,7 +1,8 @@
 /**
- * @file matrix.cpp
- * 
+ * @file matrix.hpp
  * @brief Float matrix operations
+ * @author João Borrego
+ * @author António Almeida
  */
 
 #include "matrix.hpp"
@@ -60,16 +61,4 @@ void fill(float *A, float value, int n, int m)
 void copy(float *A, float *B, int n, int m)
 {
     memcpy(B, A, sizeof(float) * n * m);
-}
-
-void transpose(float *A, float *A_transpose, int n, int m)
-{
-    int i, j;
-
-    for (i = 0; i < m; i++){
-        for (j = 0; j < n; j++){
-            A_transpose[j*n + i] = A[i*m + j];
-        }
-    }
-
 }

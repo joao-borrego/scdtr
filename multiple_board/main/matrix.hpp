@@ -1,8 +1,12 @@
 /**
  * @file matrix.hpp
- * 
  * @brief Float matrix operations headers
+ * @author João Borrego
+ * @author António Almeida
  */
+
+#ifndef INO_MATRIX_HPP
+#define INO_MATRIX_HPP
 
 #include <stdio.h>
 #include <string.h>
@@ -74,12 +78,4 @@ void fill(float *A, float value, int n, int m);
  */
 void copy(float* A, float* B, int n, int m);
 
-/**
- * @brief      Transposes A and stores in A_transpose
- *
- * @param      A            (n x m) matrix
- * @param      A_transpose  A transpose
- * @param[in]  n            rows of A
- * @param[in]  m            cols of A
- */
-void transpose(float *A, float *A_transpose, int n, int m);
+#endif
