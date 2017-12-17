@@ -7,149 +7,167 @@
 
 #include "calibration.hpp"
 
-namespace Calibration{
+namespace Calibration
+{
 
-    /** Allows a slave to progress */
-    volatile bool calibration_ready{false};
-    /** $a$ parameter of ldr characteristic */
-    float lux_a{0};
-    /** $b$ parameter of ldr characteristic */
-    float lux_b{0};
+    /* Global variables */
 
-    /** */
-    volatile int idx{0};
-    /** */
-    volatile float tmp_lux[N * 2]; 
+    /** Node identifier */
+    int id;
+    /** Lock progression */
+    volatile bool ready;
+    /** Current state*/
+    volatile int  state;
+    /** Temporary copy of external lux */
+    volatile float y_ext;
+    /** Registered lux values */
+    volatile float Y[N][NUM_SAMPLES];
+    
+    int sample;
+    uint8_t sender;
+    uint8_t receiver;
 
-    void writeFloat(float var){
-        int size = sizeof(float);
-        byte packet[size];
-        float2bytes_t f2b;
-        f2b.f = var;
-        for (int i = 0; i < size; i++)
-            packet[i] = f2b.b[i];
-        Wire.write(packet, size);
-    }
+    /* Functions */
 
-    float readFloat(){
-        float2bytes_t b2f;
-        bool received = false;
-        int i = 0;
+    void onReceive(int bytes){
 
-        while (Wire.available()) { 
-            b2f.b[i++] = Wire.read();
-            received = true;
-        }
-        return (received)? b2f.f : -1;
-    }
+        byte p_id, p_type;
+        size_t p_size = bytes;
 
-    void inline sendReady(int destination){
-        byte value = 0;
-        Wire.beginTransmission(destination);
-        Wire.write(value);
-        Wire.endTransmission();
-    }
+        byte packet[MAX_SIZE];
+        Communication::readPacket(&p_id, &p_type, p_size, packet);
 
-    void inline waitReady(){
-        while (calibration_ready == false){}
-        calibration_ready = false;
-    }
-
-    void inline barrier(int id){
-        if (id == MASTER){
-            for (int i = 0; i < N; i++){
-                if (i != MASTER){
-                    sendReady(i);
-                }
+        if (id == sender)
+        {
+            if (p_id == receiver && p_type == ACK){
+                ready = true;
             }
-        } else {
-            waitReady();
+        }
+        else
+        {
+            if (p_id == sender && p_type == SYN){
+                if (state == STATE_EXT)
+                {
+                    y_ext = getLDRValue();
+                }
+                else if (state == STATE_ON)
+                { 
+                    Y[sender][sample] = getLDRValue();
+                    state = STATE_OFF;
+                }
+                else
+                {
+                    state = STATE_ON;
+                }
+                ready = true;
+            }
         }
     }
 
     float getLDRValue(){
         float ldr_in = analogRead(pin_ldr);
         float v_in = ldr_in * (VCC / 1023.0);
-        float input = Utils::convertToLux(v_in, lux_a, lux_b);
+        float input = Utils::convertToLux(v_in, LUX_A[id], LUX_B[id]);
         return input;
     }
 
-    void onReceive(int bytes){
+    void execute(int id_, float *k_i, float *o_i){
 
-        if (Wire.available() != 0){
-            if (bytes == 1){
-                byte value = Wire.read();
-                if (value == READY){
-                    calibration_ready = true;
+        float X[NUM_SAMPLES] = SAMPLES;
+
+        id      = id_;
+        ready   = false;
+        state   = STATE_EXT;
+        sender  = 0;
+
+        // Calculate external iluminance
+        analogWrite(pin_led, 0);
+        delay(WAIT_LED);
+        if (id == MASTER){
+            y_ext = getLDRValue();
+            for (receiver = 0; receiver < N; receiver++){
+                if (receiver != MASTER){
+                    while (!ready){
+                        Communication::sendPacket(receiver, SYN);
+                        delay(WAIT);
+                    }
+                    ready = false;
                 }
             }
+
+        } else {
+            while (!ready) { }
+            ready = false;
+            Communication::sendPacket(sender, ACK);
         }
-    }
-
-    void onRequest(){
-        float lux = getLDRValue();
-        tmp_lux[idx++] = lux;
-        writeFloat(lux);
-    }
-
-    void execute(float *k_i, float *o_i, uint8_t id){
-
-        float output[2] = {127.0, 255.0};
+        state = 1;
         
-        float value;
+        *o_i = y_ext;
+        Serial.print("o_i = ");
+        Serial.println(y_ext, 5);
 
-        lux_a = LUX_A[id];
-        lux_b = LUX_B[id];
-
-        *o_i = getLDRValue();
-
-        Serial.println("[Calibration] Started");
-        barrier(id);
-
-        for (int s = 0; s < 2; s++){
-            
-            for (int i = 0; i < N; i++){
-                // Turn system i led on
-                if (i == id){
-                    analogWrite(pin_led, (int) output[s]);
-                }
-                delay(300);
-
-                if (id == MASTER){
-                    for (int j = 0; j < N; j++){
-                        if (j == MASTER){
-                            value = getLDRValue();
-                            tmp_lux[idx++] = value;
-                        } else {
-                            Wire.requestFrom(j, 4);
-                            float tmp;
-                            while ((tmp = readFloat()) < 0){}
-                            //Serial.println(tmp);
+        // Obtain data points
+        for (sample = 0; sample < NUM_SAMPLES; sample++){
+            for (sender = 0; sender < N; sender++){
+                if (id == sender){
+                    analogWrite(pin_led, X[sample]);
+                    delay(WAIT_LED);   
+                    Y[sender][sample] = getLDRValue();
+                    for (receiver = 0; receiver < N; receiver++){
+                        if (sender != receiver){
+                            while(!ready){
+                                Communication::sendPacket(receiver, SYN);
+                                delay(WAIT);
+                            }
+                            ready = false;
                         }
                     }
-                }
-
-                barrier(id);
-
-                // Turn system i led off
-                if (i == id){
                     analogWrite(pin_led, 0);
+                    delay(WAIT_LED);
+                    for (receiver = 0; receiver < N; receiver++){
+                        if (sender != receiver){
+                            while(!ready){
+                                Communication::sendPacket(receiver, SYN);
+                                delay(WAIT);
+                            }
+                            ready = false;
+                        }
+                    }
+                } else {
+                    while (!ready) { }
+                    ready = false;
+                    Communication::sendPacket(sender, ACK);
+                    while (!ready) { }
+                    ready = false;
+                    Communication::sendPacket(sender, ACK);
                 }
-                delay(100);
             }
         }
 
-        Serial.print("o_i = ");
-        Serial.println(*o_i, 3);
+        // Calculate linear regression for each element of K
+        // using least squares method
+        
+        float x_avg = Utils::average(X, NUM_SAMPLES);
+
+        for (int i = 0; i < N; i++){            
+            float y_avg = Utils::average(Y[i], NUM_SAMPLES);
+
+            float num = 0.0;
+            float den = 0.0;
+
+            for (int sample = 0; sample < NUM_SAMPLES; sample++){
+                num += (X[sample] - x_avg) * (Y[i][sample] - y_avg);
+                den += (X[sample] - x_avg) * (X[sample] - x_avg); 
+            }
+
+            k_i[i] = num / den * (255.0 / 100.0);
+        }
 
         Serial.print("k_i = [");
         for (int j = 0; j < N; j++){
-            k_i[j] = (tmp_lux[N + j] - tmp_lux[j]) / (output[1] - output[0]) * (255.0 / 100.0);
-                Serial.print(k_i[j], 3);
-                Serial.print(" ");
+            Serial.print(k_i[j], 5);
+            Serial.print(" ");
         }
         Serial.println("]");
-
-        Serial.println("[Calibration] Done");
     }
 }

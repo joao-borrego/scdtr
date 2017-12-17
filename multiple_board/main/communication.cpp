@@ -87,14 +87,24 @@ namespace Communication
     void sendPacket(uint8_t dest, uint8_t type)
     {
         byte packet[HEADER_SIZE];
-        packet[ID] = *dev_id;
-        packet[TYPE] = type;
-        
+        packet[0] = *dev_id;
+        packet[1] = type;
+
+        /*
+        Serial.print("[I2C] Sending ");
+        Serial.print(type);
+        Serial.print(" to ");
+        Serial.print(dest);
+        Serial.println("...");
+        */
+
         Wire.beginTransmission(dest);
         Wire.write(packet, HEADER_SIZE);
         Wire.endTransmission();
 
-        Serial.println("[I2C] Sending header-only packet");
+        /*
+        Serial.println("[I2C] Sent!");
+        */
     }
 
     void sendConsensus(uint8_t dest, bool start, float *d_i)
@@ -215,4 +225,29 @@ namespace Communication
             }
         }
     }
+
+    void readPacket(byte *id, byte *type, size_t size, byte *packet){
+        
+        size_t read = 0;
+        while (Wire.available() && read < size) {
+            packet[read++] = Wire.read();
+        }
+        if (read >= 1) {
+            *id = packet[0];
+            *type = packet[1];
+        } else {
+            *id = -1;
+            *type = -1;
+        }
+    }
+
+
+
+
+
+
+
+
+
+    
 }

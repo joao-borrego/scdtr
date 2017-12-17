@@ -155,4 +155,8 @@ namespace Communication
      */
     void onReceive(int bytes);
 
+
+    // TODO
+    void readPacket(byte *id, byte *type, size_t size, byte *packet);
+
 }

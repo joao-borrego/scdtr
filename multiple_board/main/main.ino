@@ -73,6 +73,9 @@ char cmd_buffer[BUFFER_SIZE] {0};
  */
 void setup() {
 
+    // Setup output pins
+    pinMode(pin_led, OUTPUT);
+
     // Setup serial communication
     Serial.begin(BAUDRATE);
 
@@ -84,10 +87,10 @@ void setup() {
     // Setup I2C communication
     Communication::setup(&id, &reset, &consensus, &lower_bound, &occupancy);
     Wire.begin(id);
-    Wire.onReceive(Communication::onReceive);
+    //Wire.onReceive(Communication::onReceive);
 
     // Setup timer interrupt
-    setupTimerInt();
+    //setupTimerInt();
 
     // Configure controller features
     controller.configureFeatures(true, true, true);
@@ -109,6 +112,7 @@ void loop() {
     updateState();
 
     // Broadcast information to I2C bus periodically
+    /*
     current_millis = millis();
     if (current_millis - last_millis >= STATUS_DELAY){
         last_millis = current_millis;
@@ -122,6 +126,7 @@ void loop() {
         printState();
 
     }
+    */
 }
 
 // DEBUG
@@ -150,7 +155,6 @@ void updateState(){
     if (reset) {
         reset = false;
         state = CALIBRATION;
-        analogWrite(pin_led, 0);
     } else if (state == CONTROL) {
         if (consensus){
             consensus = false;
@@ -165,17 +169,12 @@ void updateState(){
 }
 
 void calibrate(){
+    
     // DEBUG
     Serial.println("[Calibrate]");
-    if (id == MASTER) delay(1000);
     Wire.onReceive(Calibration::onReceive);
-    Wire.onRequest(Calibration::onRequest);
-    Calibration::execute(k_i, &ext, id);
-    for (int j = 0; j < N; j++){
-        k_i[j] = k_i[j];
-    }
+    Calibration::execute(id, k_i, &ext);
     Wire.onReceive(Communication::onReceive);
-    Wire.onRequest(Communication::nop);
 }
 
 void doConsensus(){
