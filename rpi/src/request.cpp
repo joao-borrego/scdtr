@@ -186,7 +186,7 @@ void parseRequest(
                         case TIMESTAMP:
                             value_l  = system->getTimestamp(id);
                             response =  std::string(1, TIMESTAMP) + " " + id_str
-                                + " " + std::to_string(value_l);
+                                + " " + std::to_string((float) value_l / 1000.0);
                             break;
                         default:
                             response = INVALID;

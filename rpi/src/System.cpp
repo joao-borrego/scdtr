@@ -155,9 +155,11 @@ void System::runSerial(){
 void System::startWriteSerial(const std::string & msg)
 {
     boost::system::error_code error;
-    std::string serial = msg + "\r\n";
+    std::string crnl("\r\n");
+    std::string serial(msg);
+    std::string send = serial + crnl;
     debugPrintTrace("[Serial] Message ready to be sent.");
-    boost::asio::async_write(serial_port_, boost::asio::buffer(serial),
+    boost::asio::async_write(serial_port_, boost::asio::buffer(send.c_str(), send.size()),
         boost::bind(& System::handleWriteSerial, this,
             boost::asio::placeholders::error,
             boost::asio::placeholders::bytes_transferred));
