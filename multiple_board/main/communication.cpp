@@ -1,7 +1,8 @@
 /**
  * @file communication.cpp
- * 
- * @brief Communication protocol
+ * @brief I2C communication protocol
+ * @author João Borrego
+ * @author António Almeida
  */
 
 #include <Arduino.h>
@@ -32,7 +33,10 @@ namespace Communication
 
     /* Functions */
 
-    void nop(int bytes){}
+    void nop(int bytes)
+    {
+        // No OPeration
+    }
 
     void setup(
         const uint8_t *id,
@@ -48,53 +52,42 @@ namespace Communication
         occupancy   = occupancy_ptr;
     }
 
-    void barrier(uint8_t id)
-    {
-        Serial.println("[Barrier] Start");
-        if (id == MASTER){
-            for (int i = 0; i < N; i++){
-                if (i != MASTER){
-                    Wire.requestFrom(i, 1);
-                    while(waitAck());
-                }
-            }
-        } else {
-            waitSyn();
-        }
-        Serial.println("[Barrier] End");
-    }
-
-    void waitSyn()
-    {
-        while (lock == false){}
-        lock = false;
-    }
-
-    bool waitAck()
-    {
-        while (Wire.available()){
-            if (Wire.read()) return false;
-        }
-        return true;
-    }
-
-    void onRequest()
-    {
-        Wire.write(ACK);
-        lock = true;
-    }
-
     void sendPacket(uint8_t dest, uint8_t type)
     {
         byte packet[HEADER_SIZE];
-        packet[ID] = *dev_id;
-        packet[TYPE] = type;
-        
+        packet[0] = *dev_id;
+        packet[1] = type;
+
+        /*
+        Serial.print("[I2C] Sending ");
+        Serial.print(type);
+        Serial.print(" to ");
+        Serial.print(dest);
+        Serial.println("...");
+        */
+
         Wire.beginTransmission(dest);
         Wire.write(packet, HEADER_SIZE);
         Wire.endTransmission();
 
-        Serial.println("[I2C] Sending header-only packet");
+        /*
+        Serial.println("[I2C] Sent!");
+        */
+    }
+
+    void readPacket(byte *id, byte *type, size_t size, byte *packet){
+
+        size_t read = 0;
+        while (Wire.available() && read < size) {
+            packet[read++] = Wire.read();
+        }
+        if (read >= 1) {
+            *id = packet[0];
+            *type = packet[1];
+        } else {
+            *id = -1;
+            *type = -1;
+        }
     }
 
     void sendConsensus(uint8_t dest, bool start, float *d_i)
@@ -108,7 +101,7 @@ namespace Communication
             float_bytes d;
             d.f = d_i[j];
             for (int k = 0; k < sizeof(float); k++){
-                packet[2 + j * sizeof(float) + k] = d.b[k];    
+                packet[2 + j * sizeof(float) + k] = d.b[k];
             }
         }
 
@@ -116,8 +109,10 @@ namespace Communication
         Wire.write(packet, size);
         Wire.endTransmission();
 
+        /*
         if (start)  Serial.println("[I2C] Sending initiate consensus packet");
         else        Serial.println("[I2C] Sending consensus packet");
+        */
     }
 
     void sendInfo(
@@ -133,31 +128,31 @@ namespace Communication
         byte packet[size];
         packet[ID] = *dev_id;
         packet[TYPE] = INF;
-        
+
         float_bytes fb;
         fb.f = lux;
         uint8_t occupied = (occupancy)? 1 : 0;
         for (int j = 0; j < sizeof(float); j++){
-            packet[2 + j] = fb.b[j];    
+            packet[2 + j] = fb.b[j];
         }
         fb.f = duty_cycle;
         for (int j = 0; j < sizeof(float); j++){
-            packet[2 + sizeof(float) + j] = fb.b[j];    
+            packet[2 + sizeof(float) + j] = fb.b[j];
         }
         fb.f = lower_bound;
         for (int j = 0; j < sizeof(float); j++){
-            packet[2 + 2 * sizeof(float) + j] = fb.b[j];    
+            packet[2 + 2 * sizeof(float) + j] = fb.b[j];
         }
         fb.f = ext;
         for (int j = 0; j < sizeof(float); j++){
-            packet[2 + 3 * sizeof(float) + j] = fb.b[j];    
+            packet[2 + 3 * sizeof(float) + j] = fb.b[j];
         }
         fb.f = ref;
         for (int j = 0; j < sizeof(float); j++){
-            packet[2 + 4 * sizeof(float) + j] = fb.b[j];    
+            packet[2 + 4 * sizeof(float) + j] = fb.b[j];
         }
         packet[2 + 5 * sizeof(float)] = occupied;
-        
+
         Wire.beginTransmission(dest);
         Wire.write(packet, size);
         Wire.endTransmission();
@@ -168,19 +163,10 @@ namespace Communication
         for (int j = 0; j < N; j++){
             float_bytes d;
             for (int k = 0; k < sizeof(float); k++){
-                d.b[k] = buffer[k + j * sizeof(float)];    
+                d.b[k] = buffer[k + j * sizeof(float)];
             }
             out[j] = d.f;
         }
-    }
-
-    size_t readToBuffer(byte *buffer){
-
-        size_t read = 0;
-        while (Wire.available()) {
-            buffer[read++] = Wire.read();
-        }
-        return read;
     }
 
     void onReceive(int bytes)
@@ -193,7 +179,7 @@ namespace Communication
         }
 
         if (read > 0){
-            
+
             uint8_t type = buffer[TYPE];
             switch (type)
             {
@@ -204,7 +190,7 @@ namespace Communication
                     // Update lower bound
                     float_bytes fb;
                     for (int i = 0; i < sizeof(float); i++){
-                        fb.b[i] = buffer[2 + i + *dev_id * sizeof(float)];    
+                        fb.b[i] = buffer[2 + i + *dev_id * sizeof(float)];
                     }
                     if (fb.f != ND){
                         *lower_bound = fb.f;
@@ -215,4 +201,5 @@ namespace Communication
             }
         }
     }
+
 }

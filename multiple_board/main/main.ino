@@ -1,8 +1,8 @@
 /**
  * @file main.ino
  * @brief Multiple board system main application
- * @author António Almeida
  * @author João Borrego
+ * @author António Almeida
  */
 
 #include <EEPROM.h>
@@ -73,6 +73,9 @@ char cmd_buffer[BUFFER_SIZE] {0};
  */
 void setup() {
 
+    // Setup output pins
+    pinMode(pin_led, OUTPUT);
+
     // Setup serial communication
     Serial.begin(BAUDRATE);
 
@@ -109,6 +112,7 @@ void loop() {
     updateState();
 
     // Broadcast information to I2C bus periodically
+
     current_millis = millis();
     if (current_millis - last_millis >= STATUS_DELAY){
         last_millis = current_millis;
@@ -119,8 +123,7 @@ void loop() {
             lux, out / 255.0, lower_bound, ext, ref, occupancy);
 
         // DEBUG
-        printState();
-
+        //printState();
     }
 }
 
@@ -149,8 +152,9 @@ void updateState(){
 
     if (reset) {
         reset = false;
+        ref = LOW_LUX;
+        lower_bound = LOW_LUX;
         state = CALIBRATION;
-        analogWrite(pin_led, 0);
     } else if (state == CONTROL) {
         if (consensus){
             consensus = false;
@@ -165,17 +169,11 @@ void updateState(){
 }
 
 void calibrate(){
-    // DEBUG
+
     Serial.println("[Calibrate]");
-    if (id == MASTER) delay(1000);
     Wire.onReceive(Calibration::onReceive);
-    Wire.onRequest(Calibration::onRequest);
-    Calibration::execute(k_i, &ext, id);
-    for (int j = 0; j < N; j++){
-        k_i[j] = k_i[j];
-    }
+    Calibration::execute(id, k_i, &ext);
     Wire.onReceive(Communication::onReceive);
-    Wire.onRequest(Communication::nop);
 }
 
 void doConsensus(){
@@ -190,6 +188,8 @@ void doConsensus(){
     //float ext_tmp[N]    = { 30.0, 0.0 };
     //ref = Consensus::solve(id, lb_tmp[id], k_tmp[id], ext_tmp[id]);
     
+    printState();
+
     Wire.onReceive(Communication::onReceive);
     Wire.onRequest(Communication::nop);
 }

@@ -1,11 +1,12 @@
 /** 
 * @file utils.hpp
 * @brief Generic utilities
-* @author António Almeida
 * @author João Borrego
+* @author António Almeida
 */
 
-#pragma once
+#ifndef INO_UTILS_HPP
+#define INO_UTILS_HPP
 
 #include <math.h>
 #include <Arduino.h>
@@ -16,7 +17,7 @@ namespace Utils {
 
 
     /**
-     * @brief Converts the measured tension of an LDR to a LUX measurement
+     * @brief Converts the measured tension of an LDR to a LUX measurement.
      *
      * r_ldr = r * ((v_max / v_in) - 1)
      * lux = 10 ^ ((log_10(r_ldr) - b) / a)
@@ -31,4 +32,15 @@ namespace Utils {
      */
     float convertToLux(float v_in, float a, float b, float v_max=VCC, float r=LUX_R);
 
+    /**
+     * @brief      Calculates the average of a float array.
+     *
+     * @param      array  The array
+     * @param[in]  size   The size
+     *
+     * @return     The average
+     */
+    float average(float *array, int size);
 }
+
+#endif

@@ -5,83 +5,63 @@
 * @author António Almeida
 */
 
-#pragma once
+#ifndef INO_CALIBRATION_HPP
+#define INO_CALIBRATION_HPP
 
 #include <Arduino.h>
 #include <Wire.h>
 
 #include "utils.hpp"
 #include "constants.hpp"
-
-// convert float to byte array  source: http://mbed.org/forum/helloworld/topic/2053/
-typedef union float2bytes_t{    
-    float f; 
-    byte b[sizeof(float)]; 
-}; 
+#include "communication.hpp"
 
 namespace Calibration{
-
-    /** Ready flag */
-    #define READY 0
-
-    /**
-     * @brief      Executes calibration
-     *
-     * @param      k_i   The ith row of matrix K
-     * @param      o_i   The ith member of o array
-     * @param[in]  id    The identifier
-     */
-    void execute(float *k_i, float *o_i, uint8_t id);
     
+    /** Minimum wait between I2C messages */
+    #define WAIT        20
+    /** Minimum wait between LED output value changes */
+    #define WAIT_LED    150
+
+    /** Maximum I2C packet size (bytes) */
+    #define MAX_PACKET_SIZE 32
+
+    /** Sample values of duty-cycle for which to obtain lux */
+    #define SAMPLES {\
+        111.0, 127.0, 143.0, 159.0, 175.0,\
+        191.0, 207.0, 223.0, 239.0, 255.0 \
+    }
+    /** Number of samples */
+    #define NUM_SAMPLES 10
+
+    /** Obtain external illuminance */
+    #define STATE_EXT   0
+    /** Obtain illuminance value */
+    #define STATE_ON    1
+    /** Wait */
+    #define STATE_OFF   2
+
     /**
-     * @brief      Slave callback function for receiving data
+     * @brief      Callback function for receiving I2C messages.
      *
-     * @param[in]  bytes  The size of the message in bytes
+     * @param[in]  bytes  The number of bytes available
      */
     void onReceive(int bytes);
 
     /**
-     * @brief      Slave callback function for receiving a request
+     * @brief      Executes calibration.
+     *
+     * @param[in]  id_   The node identifier
+     * @param      k_i   The K_i sub-matrix
+     * @param      o_i   The external lux
      */
-    void onRequest();
+    void execute(int id_, float *k_i, float *o_i);
 
     /**
-     * @brief      Gets the ldr value in LUX.
+     * @brief      Gets the ldr value in lux.
      *
-     * @return     The ldr value in LUX units.
+     * @return     The ldr value (lux).
      */
     float getLDRValue();
-
-    /**
-     * @brief      Slave waits until master allows it to progress
-     */
-    void inline waitReady();
-
-    /**
-     * @brief      Master allows all slaves to progress
-     */
-    void inline sendReady(int destination);
-
-
-    /**
-     * @brief      Explicit barrier
-     * 
-     * All slave devices block until master releases them, thus
-     * implementing a synchronisation point
-     */
-    void inline barrier(int id);
-
-    /**
-     * @brief      Reads a float from I2C bus
-     *
-     * @return     The value read
-     */
-    float readFloat();
-
-    /**
-     * @brief      Writes a float to I2X bus
-     *
-     * @param[in]  var   The variable to be written
-     */
-    void writeFloat(float var);
 }
+
+#endif
