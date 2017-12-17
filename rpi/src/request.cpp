@@ -25,7 +25,7 @@ void streamUpdate(
                     if (var != -1){
                         response += "c " + std::string(1, LUX) + " "
                             + std::to_string(i) + " " + std::to_string(var)
-                            + " " + std::to_string(entry->timestamp) + "\n";
+                            + " " + std::to_string(entry->timestamp) + " ";
                     }
                 }
                 if (flags[STREAM_FLAGS * i + 1]){
@@ -33,7 +33,7 @@ void streamUpdate(
                     if (var != -1){
                         response += "c " + std::string(1, DUTY_CYCLE) + " "
                             + std::to_string(i) + " " + std::to_string(var)
-                            + " " + std::to_string(entry->timestamp) + "\n";
+                            + " " + std::to_string(entry->timestamp) + " ";
                     }
                 }
                 timestamps[i] = entry->timestamp;
@@ -82,6 +82,7 @@ void parseRequest(
             system->startWriteSerial(RESET);
             system->reset();
             timestamps.clear();
+            timestamps.resize(system->getNodes());
             response = ACK;
         }
         else if (type == DISTRIBUTED_ON)

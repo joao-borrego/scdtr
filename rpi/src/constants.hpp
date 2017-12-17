@@ -8,7 +8,7 @@
 /** Number of nodes in system */
 #define NODES   2
 /** System sampling period */
-#define T_S 0.5
+#define T_S 0.1
 
 /** Server host */
 #define HOST "127.0.0.1"
@@ -30,7 +30,12 @@
 /** Serial communication Baudrate */
 #define SERIAL_BAUDRATE 115200
 
-/* Stream flags */
+
+/* TCP Stream */
+
+/** Stream period (ms) */
+#define STREAM_PERIOD 300
+/** Stream flags (one per shown variable) */
 #define STREAM_FLAGS 2
 
 #endif
