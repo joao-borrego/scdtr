@@ -9,7 +9,7 @@ void TCPSession::start()
     // Start the receiver actor and recv send loop
     startRead();
     // Start the timer
-    timer_.expires_from_now(boost::posix_time::seconds(1));
+    timer_.expires_from_now(boost::posix_time::milliseconds(STREAM_PERIOD));
     timer_.async_wait(boost::bind(& TCPSession::handleTimer, this,
         boost::asio::placeholders::error));
 }
@@ -138,7 +138,7 @@ void TCPSession::handleTimer(const boost::system::error_code & error)
         }
 
         // Reschedule the timer
-        timer_.expires_at(timer_.expires_at() + boost::posix_time::seconds(1));
+        timer_.expires_at(timer_.expires_at() + boost::posix_time::milliseconds(STREAM_PERIOD));
         // Post the timer event
         timer_.async_wait(boost::bind(& TCPSession::handleTimer, this,
             boost::asio::placeholders::error));
