@@ -103,8 +103,11 @@ namespace Calibration
         state = 1;
 
         *o_i = y_ext;
-        Serial.print("o_i = ");
-        Serial.println(y_ext, 5);
+
+        if (id != MASTER){
+            Serial.print("o_i = ");
+            Serial.println(y_ext, 5);
+        }
 
         // Obtain data points
         for (sample = 0; sample < NUM_SAMPLES; sample++){
@@ -163,11 +166,13 @@ namespace Calibration
             k_i[i] = num / den * (255.0 / 100.0);
         }
 
-        Serial.print("k_i = [");
-        for (int j = 0; j < N; j++){
-            Serial.print(k_i[j], 5);
-            Serial.print(" ");
+        if (id != MASTER){
+            Serial.print("k_i = [");
+            for (int j = 0; j < N; j++){
+                Serial.print(k_i[j], 5);
+                Serial.print(" ");
+            }
+            Serial.println("]");
         }
-        Serial.println("]");
     }
 }

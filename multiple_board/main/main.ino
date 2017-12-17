@@ -83,8 +83,11 @@ void setup() {
 
     // Read device ID from EEPROM
     id = EEPROM.read(ID_ADDR);
-    Serial.print("[I2C] Registered with id ");
-    Serial.println((int) id);
+
+    if (id != MASTER){
+        Serial.print("[I2C] Registered with id ");
+        Serial.println((int) id);
+    }
 
     // Setup I2C communication
     Communication::setup(&id, &reset, &changed, &ref,
@@ -132,21 +135,23 @@ void loop() {
 
 // DEBUG
 void printState(){
-    Serial.print(lux);
-    Serial.print("\t");
-    Serial.print((floor(out)) / 255.0 );
-    Serial.print("\t");
-    Serial.print(lower_bound);
-    Serial.print("\t");
-    Serial.print(ext);
-    Serial.print("\t");
-    Serial.print(ref);
-    Serial.print("\t");
-    Serial.print(occupancy);
-    Serial.print("\t");
-    Serial.print(distributed);
-    Serial.print("\t");
-    Serial.println(current_millis);
+    if (id != MASTER){
+        Serial.print(lux);
+        Serial.print("\t");
+        Serial.print((floor(out)) / 255.0 );
+        Serial.print("\t");
+        Serial.print(lower_bound);
+        Serial.print("\t");
+        Serial.print(ext);
+        Serial.print("\t");
+        Serial.print(ref);
+        Serial.print("\t");
+        Serial.print(occupancy);
+        Serial.print("\t");
+        Serial.print(distributed);
+        Serial.print("\t");
+        Serial.println(current_millis);
+    }
 }
 
 
@@ -178,14 +183,14 @@ void updateState(){
 
 void calibrate(){
 
-    Serial.println("[Calibrate]");
+    if (id != MASTER) Serial.println("[Calibrate]");
     Wire.onReceive(Calibration::onReceive);
     Calibration::execute(id, k_i, &ext);
     Wire.onReceive(Communication::onReceive);
 }
 
 void doConsensus(){
-    Serial.println("[Consensus]");
+    if (id != MASTER) Serial.println("[Consensus]");
     if (id == MASTER) delay(1000);
     
     ref = Consensus::solve(id, lower_bound, k_i, ext);
@@ -195,8 +200,6 @@ void doConsensus(){
     //float lb_tmp[N]     = { 150.0, 80.0 };
     //float ext_tmp[N]    = { 30.0, 0.0 };
     //ref = Consensus::solve(id, lb_tmp[id], k_tmp[id], ext_tmp[id]);
-    
-    printState();
 
     Wire.onReceive(Communication::onReceive);
     Wire.onRequest(Communication::nop);

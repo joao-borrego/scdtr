@@ -77,7 +77,7 @@ const int CALIBRATION   = 1;
 const int CONSENSUS     = 2;
 
 /** I2C information (minimum) broadcast period (ms) */
-const unsigned long STATUS_DELAY = 500;
+const unsigned long STATUS_DELAY = 100;
 
 /*
  * Serial commands
