@@ -59,11 +59,13 @@ unsigned long last_millis       {0};
 /* Simple state machine */
 
 /** Current node state */
-volatile int state      {CALIBRATION};
+volatile int state          {CALIBRATION};
 /** Reset trigger */
-volatile bool reset     {false};
-/** Consensus trigger */
-volatile bool consensus {false};
+volatile bool reset         {false};
+/** Occupancy changed trigger */
+volatile bool changed       {false};
+/** Distributed control */
+volatile bool distributed   {true};
 
 /** Command line buffer for Serial input */
 char cmd_buffer[BUFFER_SIZE] {0};
@@ -85,7 +87,8 @@ void setup() {
     Serial.println((int) id);
 
     // Setup I2C communication
-    Communication::setup(&id, &reset, &consensus, &lower_bound, &occupancy);
+    Communication::setup(&id, &reset, &changed, &ref,
+        &lower_bound, &occupancy, &distributed);
     Wire.begin(id);
     Wire.onReceive(Communication::onReceive);
 
@@ -123,7 +126,7 @@ void loop() {
             lux, out / 255.0, lower_bound, ext, ref, occupancy);
 
         // DEBUG
-        //printState();
+        printState();
     }
 }
 
@@ -141,6 +144,8 @@ void printState(){
     Serial.print("\t");
     Serial.print(occupancy);
     Serial.print("\t");
+    Serial.print(distributed);
+    Serial.print("\t");
     Serial.println(current_millis);
 }
 
@@ -155,11 +160,14 @@ void updateState(){
         ref = LOW_LUX;
         lower_bound = LOW_LUX;
         state = CALIBRATION;
+        distributed = true;
     } else if (state == CONTROL) {
-        if (consensus){
-            consensus = false;
-            state = CONSENSUS;
-            doConsensus();
+        if (changed){
+            changed = false;
+            if (distributed){
+                state = CONSENSUS;
+                doConsensus();
+            }
             state = CONTROL;
         }
     } else if (state == CALIBRATION) {
@@ -242,16 +250,37 @@ void processCommand(){
     int i = (param)? atoi(param) : ND;
     float f = (value)? atof(value) : ND;
 
-    if (!strcmp(command, CMD_RESET)) {
+    if (!strcmp(command, CMD_RESET))
+    {
         
-        for (int j = 0; j < N; j++) {
-            if (j != MASTER) {
-                Communication::sendPacket(j, RES);
+        for (int receiver = 0; receiver < N; receiver++) {
+            if (receiver != MASTER) {
+                Communication::sendPacket(receiver, RES);
             }
         }
         reset = true;
 
-    } else {
+    }
+    else if (!strcmp(command, CMD_DISTRIBUTED_ON))
+    {
+        for (int receiver = 0; receiver < N; receiver++) {
+            if (receiver != MASTER) {
+                Communication::sendPacket(receiver, DON);
+            }
+        }
+        distributed = true;
+    }
+    else if (!strcmp(command, CMD_DISTRIBUTED_OFF))
+    {
+        for (int receiver = 0; receiver < N; receiver++) {
+            if (receiver != MASTER) {
+                Communication::sendPacket(receiver, DOF);
+            }
+        }
+        distributed = false;
+    }
+    else
+    {
 
         if ( (!strcmp(command, CMD_OCCUPANCY) || !strcmp(command, CMD_LOWER_BOUND) )
             && i >= 0 && i < N && f != ND) {
@@ -267,18 +296,19 @@ void processCommand(){
             }
             // Master can update its local estimate
             if (i == MASTER) {
+                if (!distributed) ref = f;
                 lower_bound = f;
                 occupancy = (lower_bound <= LOW_LUX)? false : true;
             } else {
                 tmp_lower_bound[i] = f;
             }
-            // Broadcast estimate to other nodes and initiate consensus
-            for (int j = 0; j < N; j++) {
-                if (j != MASTER) {
-                    Communication::sendConsensus(j, true, tmp_lower_bound);
+            // Broadcast estimate to other nodes
+            for (int receiver = 0; receiver < N; receiver++) {
+                if (receiver != MASTER) {
+                    Communication::sendConsensus(receiver, true, tmp_lower_bound);
                 }
             }
-            consensus = true;
+            changed = true;
         }
     }
 }

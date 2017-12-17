@@ -49,6 +49,10 @@ const byte CON      = 0x02;
 const byte ICO      = 0x04;
 /** INFo */
 const byte INF      = 0x05;
+/** Distributed ON */
+const byte DON      = 0x06;
+/** Distributed OFf */
+const byte DOF      = 0x07;
 /** RESet */
 const byte RES      = 0x0F;
 
@@ -73,18 +77,22 @@ namespace Communication
     /**
      * @brief      Sets up important variables.
      *
-     * @param[in]  id               The identifier
+     * @param[in]  id               The node identifier
      * @param[in]  reset_ptr        The reset pointer
-     * @param[in]  consensus_ptr    The consensus start flag pointer
+     * @param[in]  changed_ptr      The changed pointer
+     * @param[in]  ref_ptr          The reference pointer
      * @param[in]  lower_bound_ptr  The lower bound pointer
      * @param[in]  occupancy_ptr    The occupancy pointer
+     * @param[in]  distributed_ptr  The distributed control flag pointer
      */
     void setup(
         const uint8_t *id,
         const bool *reset_ptr,
-        const bool *consensus_ptr,
+        const bool *changed_ptr,
+        const float *ref_ptr,
         const float *lower_bound_ptr,
-        const bool *occupancy_ptr);
+        const bool *occupancy_ptr,
+        const bool  *distributed_ptr);
 
     /**
      * @brief      Empty callback function to ignore I2C messages.

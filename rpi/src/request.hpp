@@ -28,6 +28,11 @@
 /** Stop "real-time" stream of given variable */
 #define STOP_STREAM     "d"
 
+/** Activate distributed control */
+#define DISTRIBUTED_ON 	"A"
+/** Deactivate distributed control */
+#define DISTRIBUTED_OFF "D"
+
 /* Get requests */
 
 /** Get current measured illuminance at desk */

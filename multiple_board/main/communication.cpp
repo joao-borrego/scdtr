@@ -23,13 +23,17 @@ namespace Communication
     /* Pointers to important variables */
 
     /** Reset flag pointer */
-    volatile bool *reset {NULL};
-    /** Start consensus flag pointer */
-    volatile bool *consensus {NULL};
+    volatile bool *reset        {NULL};
+    /** Occupancy changed pointer */
+    volatile bool *changed      {NULL};
+    /** Illuminance reference pointer */
+    volatile float *ref         {NULL};
     /** Illuminance lower bound pointer */
     volatile float *lower_bound {NULL};
     /** Occupancy pointer */
-    volatile bool *occupancy {NULL};
+    volatile bool *occupancy    {NULL};
+    /** Use distributed control flag pointer */
+    volatile bool *distributed  {NULL};
 
     /* Functions */
 
@@ -40,16 +44,20 @@ namespace Communication
 
     void setup(
         const uint8_t *id,
-        const bool *reset_ptr,
-        const bool *consensus_ptr,
+        const bool  *reset_ptr,
+        const bool  *changed_ptr,
+        const float *ref_ptr,
         const float *lower_bound_ptr,
-        const bool *occupancy_ptr)
+        const bool  *occupancy_ptr,
+        const bool  *distributed_ptr)
     {
-        dev_id  = id;
-        reset   = reset_ptr;
-        consensus   = consensus_ptr;
+        dev_id      = id;
+        reset       = reset_ptr;
+        changed     = changed_ptr;
         lower_bound = lower_bound_ptr;
+        ref         = ref_ptr;
         occupancy   = occupancy_ptr;
+        distributed = distributed_ptr;
     }
 
     void sendPacket(uint8_t dest, uint8_t type)
@@ -193,10 +201,19 @@ namespace Communication
                         fb.b[i] = buffer[2 + i + *dev_id * sizeof(float)];
                     }
                     if (fb.f != ND){
+                        if (!*distributed){
+                            *ref = fb.f;
+                        }
                         *lower_bound = fb.f;
                         *occupancy = (*lower_bound <= LOW_LUX)? false : true;
                     }
-                    *consensus = true;
+                    *changed = true;
+                    break;
+                case DON:
+                    *distributed = true;
+                    break;
+                case DOF:
+                    *distributed = false;
                     break;
             }
         }

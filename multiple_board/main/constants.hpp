@@ -84,18 +84,22 @@ const unsigned long STATUS_DELAY = 500;
  */
 
 /** Reset system */
-const char CMD_RESET[10]       = "r";
+const char CMD_RESET[10]            = "r";
 /** Change occupancy command */
-const char CMD_OCCUPANCY[10]   = "s";
+const char CMD_OCCUPANCY[10]        = "s";
 /** Change lower bound command */
-const char CMD_LOWER_BOUND[10] = "l";
+const char CMD_LOWER_BOUND[10]      = "l";
+/** Activate distributed control */
+const char CMD_DISTRIBUTED_ON[10]   = "A";
+/** Deactivate distributed control */
+const char CMD_DISTRIBUTED_OFF[10]  = "D";
 
 /*
  * Other
  */
 
 /** Not defined */
-#define ND      	-2
+#define ND          -2
 /** Max duty cycle (8-bit output) */
 const float MAX_DC  = 100.0; // %
 

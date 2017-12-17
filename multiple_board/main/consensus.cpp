@@ -202,6 +202,8 @@ float solve(size_t id_, float L, float* K_i, float o)
     float d_i_best[N]   = {0.0};
     // Averaged best solution
     float d_i_avg[N]    = {0.0};
+    // New lux reference
+    float output        = 0.0;
 
     // Unconstrained solution
     float d_i_0[N]      = {0.0};
@@ -383,8 +385,8 @@ float solve(size_t id_, float L, float* K_i, float o)
         debugPrint(&cost_best, 1, it, "cost_best");
     }
 
-    elemMul(K_i, d_i_best, d_i, N, 1);
-    return d_i[id];
+    mul(K_i, d_i_best, &output, 1, N, 1);
+    return output;
 }
 
 }

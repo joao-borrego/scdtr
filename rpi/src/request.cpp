@@ -23,7 +23,7 @@ void streamUpdate(
                 if (flags[STREAM_FLAGS * i]){
                     var = entry->lux;
                     if (var != -1){
-                        response += "c " + std::string(1, LUX) + " " 
+                        response += "c " + std::string(1, LUX) + " "
                             + std::to_string(i) + " " + std::to_string(var)
                             + " " + std::to_string(entry->timestamp) + "\n";
                     }
@@ -83,7 +83,15 @@ void parseRequest(
             system->reset();
             timestamps.clear();
             response = ACK;
-        }   
+        }
+        else if (type == DISTRIBUTED_ON)
+        {
+            system->startWriteSerial(DISTRIBUTED_ON);
+        }
+        else if (type == DISTRIBUTED_OFF)
+        {
+            system->startWriteSerial(DISTRIBUTED_OFF);
+        }
         else
         {
             if (cmd.size() == 1)
@@ -240,7 +248,7 @@ void parseRequest(
                                     break;
                                 default:
                                     response = INVALID;
-                            } 
+                            }
                         }
                     }
                 }
