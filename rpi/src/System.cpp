@@ -455,10 +455,9 @@ float System::comfortVarianceNode(size_t id)
         lux_1 = entries_.at(id).at(i-1).lux_reference;
         lux_2 = entries_.at(id).at(i-2).lux_reference;
 
-        comfort_variance += (std::abs(lux - 2*lux_1 + lux_2)) /
-            (std::pow(sample_period_,2));
+        comfort_variance += (std::abs(lux - 2*lux_1 + lux_2));
     }
-    return comfort_variance / nodes_;
+    return comfort_variance / (nodes_ * std::pow(sample_period_, 2));
 }
 
 float System::getComfortVariance(size_t id, bool total)
