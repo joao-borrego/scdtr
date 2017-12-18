@@ -81,8 +81,12 @@ void parseRequest(
         {
             system->startWriteSerial(RESET);
             system->reset();
-            timestamps.clear();
-            timestamps.resize(system->getNodes());
+            for (int i = 0; i < system->getNodes(); i++){
+                timestamps.at(i) = 0;
+                for (int j = 0; j < STREAM_FLAGS; j++){
+                    flags.at(i * STREAM_FLAGS + j) = false; 
+                }
+            }
             response = ACK;
         }
         else if (type == DISTRIBUTED_ON)

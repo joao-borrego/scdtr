@@ -51,7 +51,7 @@ public:
      */
     TCPSession(boost::asio::io_service & io_service, System::ptr system)
         :   socket_(io_service),
-            flags_(STREAM_FLAGS),
+            flags_(STREAM_FLAGS * system->getNodes()),
             last_update_(system->getNodes()),
             timer_(io_service)
     {
