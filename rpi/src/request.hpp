@@ -29,9 +29,12 @@
 #define STOP_STREAM     "d"
 
 /** Activate distributed control */
-#define DISTRIBUTED_ON 	"A"
+#define DISTRIBUTED_ON  "A"
 /** Deactivate distributed control */
 #define DISTRIBUTED_OFF "D"
+
+/** Dump stored entries to file */
+#define SAVE            "S"
 
 /* Get requests */
 

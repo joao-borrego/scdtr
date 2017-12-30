@@ -133,7 +133,9 @@ void System::handleRead(const boost::system::error_code & error,
                 {
                     errPrintTrace(e.what());
                 }
-                insertEntry((size_t) id, timestamp, lux, dc, ref);
+                float c_err = getComfortError(id, false);
+                float c_var = getComfortVariance(id, false);
+                insertEntry((size_t) id, timestamp, lux, dc, ref, c_err, c_var);
             }
         }
         startRead();
@@ -186,17 +188,47 @@ void System::insertEntry(
     unsigned long timestamp,
     float lux,
     float duty_cycle,
-    float lux_reference)
+    float lux_reference,
+    float c_err,
+    float c_var)
 {
     boost::unique_lock<boost::shared_mutex> lock(mutex_);
     try
     {
-        entries_.at(id).emplace_back(timestamp, lux, duty_cycle, lux_reference);
+        entries_.at(id).emplace_back(timestamp, lux, duty_cycle, lux_reference, c_err, c_var);
     }
     catch (const std::out_of_range & e)
     {
         errPrintTrace(e.what());
     }
+}
+
+void System::saveEntries(){
+
+    for (int id = 0; id < nodes_; id++)
+    {
+        std::string filename(std::to_string(id) + ".csv");
+        std::ofstream output(filename.c_str());
+        if (!output.is_open())
+        {
+            return;
+        }
+
+        boost::shared_lock<boost::shared_mutex> lock(mutex_);
+        for (auto & e : entries_.at(id))
+        {
+            output <<
+            e.timestamp     << "," <<
+            e.lux           << "," <<
+            e.duty_cycle    << "," <<
+            e.lux_reference << "," <<
+            e.c_err         << "," <<
+            e.c_var         << "\n";
+
+        }
+        output.close();
+    }
+
 }
 
 Entry *System::getLatestEntry(size_t id)
