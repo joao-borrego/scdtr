@@ -446,7 +446,7 @@ float System::comfortErrorNode(size_t id)
         lux = entries_.at(id).at(i).lux;
         comfort_error += std::max(lux_ref - lux, 0.0f);
     }
-    return comfort_error / nodes_;
+    return comfort_error / length;
 }
 
 float System::getComfortError(size_t id, bool total)
@@ -489,7 +489,7 @@ float System::comfortVarianceNode(size_t id)
 
         comfort_variance += (std::abs(lux - 2*lux_1 + lux_2));
     }
-    return comfort_variance / (nodes_ * std::pow(sample_period_, 2));
+    return comfort_variance / (length * std::pow(sample_period_, 2));
 }
 
 float System::getComfortVariance(size_t id, bool total)
