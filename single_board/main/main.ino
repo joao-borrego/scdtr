@@ -1,8 +1,8 @@
 /** 
  * @file main.ino
  * @brief Single board system main application
- * @author António Almeida
  * @author João Borrego
+ * @author António Almeida
  */
 
 #include "utils.hpp"
@@ -82,6 +82,10 @@ unsigned long current_millis {0};
 /** Previously recorded elapsed milliseconds since startup */
 unsigned long last_millis {0};
 
+// Aux triggers for testing
+bool triggered_1 {false};
+bool triggered_2 {false};
+
 /**
  * @brief      Arduino setup
  */
@@ -92,6 +96,8 @@ void setup() {
     setupTimerInt();
     /* Configure controller features */
     controller.configureFeatures(use_feedforward, true, true);
+    /* Setup initial reference */
+    reference = LOW_LUX;
 }
 
 /**
@@ -108,10 +114,38 @@ void loop() {
     current_millis = millis();
     if (current_millis - last_millis >= STATUS_DELAY){
         last_millis = current_millis;
+
+        //if (current_millis >= 4000 && current_millis <= 6000) { listVariables(); }
         listVariables();
-        /* Optional: lower CPU usage */
-        delay(0.7 * STATUS_DELAY);
     }
+
+    /*
+    // Feedforward experiment
+    if (millis() >= 5000 && !triggered_1) {
+        triggered_1 = true;
+        reference = HIGH_LUX;
+    }
+    */
+
+    /*
+    // Anti-windup experiment
+    if (millis() >= 5000 && !triggered_1) {
+        triggered_1 = true;
+        reference = 100;
+    }
+    if (millis() >= 7000 && !triggered_2) {
+        triggered_2 = true;
+        reference = LOW_LUX;
+    }
+    */
+
+    /*
+    // Deadzone experiment
+    if (millis() >= 5000 && !triggered_1) {
+        triggered_1 = true;
+        reference = 50;
+    }
+    */
 }
 
 /**
