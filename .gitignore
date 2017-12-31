@@ -9,4 +9,7 @@ doc/
 *.swp
 *.swn
 *.swo
+# Debug data files
 multiple_board/consensus/*.csv
+# Generated figures
+figures/
