@@ -1,5 +1,7 @@
 %% Configs
-set(gca, 'FontName', 'Arial')
+
+set(0,'DefaultTextFontname', 'CMU Serif')
+set(0,'DefaultAxesFontName', 'CMU Serif')
 
 %% h) Feedforward comparison
 
@@ -10,7 +12,7 @@ names = ["h.1) FF K_F = 0",
          "h.2) FF K_F = 0.5",
          "h.3) FF K_F = 1"];
 args = {'interpreter','latex','FontSize',14};
-     
+
 for i = 1:3
     data = csvread(strcat("data/",files(i),".csv"));
     time = (data(:,5) / 1000.0) - 4.0;
