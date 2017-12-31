@@ -1,4 +1,6 @@
-### CSV Data files description
+## CSV Data files description
+
+### Calibration and fine-tune 
 
 First of all, here's the description of each parameter:
 - *T* is the sample period, i.e. the minimum delay between samples.
@@ -44,3 +46,37 @@ The response in LUX has a lot of oscillation, which makes it a poor candidate to
 estimation.
 The numerical method in MATLAB to estimate the linearized system fails after 20 iterations
 while achieving little to no progress in minimizing the cost function.
+
+### Controller features
+
+#### h) Feedforward comparison
+
+| File            | Descritption                        |
+|-----------------|-------------------------------------|
+|`fig_h_0.csv`    | Feedforward off                     |
+|`fig_h_0_5.csv`  | Feedforward on, K_FF = 0.5          |
+|`fig_h_1.csv`    | Feedforward on, K_FF = 1.0          |
+
+#### i) FF + PI reference delay comparison
+
+| File            | Descritption                        |
+|-----------------|-------------------------------------|
+|`fig_i_1.csv`    | 1 Sample delay                      |
+|`fig_i_2.csv`    | 2 Samples delay                     |
+|`fig_i_3.csv`    | 3 Samples delay                     |
+
+#### j) Anti-windup comparison
+
+| File            | Descritption                        |
+|-----------------|-------------------------------------|
+|`fig_j_1.csv`    | Anti-windup off                     |
+|`fig_j_2.csv`    | Simple Anti-windup                  |
+|`fig_j_3.csv`    | Feedback Anti-windup K_SAT = 0.5    |
+
+#### k) Error deadzone comparison
+
+| File            | Descritption                        |
+|-----------------|-------------------------------------|
+|`fig_k_1.csv`    | Error deadzone off                  |
+|`fig_k_2.csv`    | Error deadzone [-0.5,0.5]           |
+|`fig_k_3.csv`    | Error deadzone [-1.6,1.6]           |
