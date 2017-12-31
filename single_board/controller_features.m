@@ -121,8 +121,8 @@ for i = 1:3
     plot(time, out);
     hold off;
     xlabel("Time [s]", args{:});
-    ylim([20, 110])
-    legend({'ref(t)','y(t)'}, 'Location','southeast',args{:});
+    ylim([30, 100])
+    legend({'ref(t)','out(t)'}, 'Location','southeast',args{:});
     output_name = sprintf("figures/%s.pdf",files(i));
     fig.PaperPositionMode = 'auto';
     fig_pos = fig.PaperPosition;
