@@ -11,7 +11,7 @@ files = ["fig_h_0",
 names = ["h.1) FF K_F = 0",
          "h.2) FF K_F = 0.5",
          "h.3) FF K_F = 1"];
-args = {'interpreter','latex','FontSize',14};
+args = {'interpreter','latex','FontSize',24};
 
 for i = 1:3
     data = csvread(strcat("data/",files(i),".csv"));
@@ -23,6 +23,7 @@ for i = 1:3
     plot(time, ref);
     plot(time, lx);
     hold off;
+    set(gca,'FontSize',18);
     xlabel("Time [s]", args{:});
     ylabel("Illuminance [lx]", args{:});
     legend({'ref(t)','y(t)'}, 'Location','southeast',args{:});
@@ -41,7 +42,7 @@ files = ["fig_i_1",
 names = ["i.1) Delay = 1 Sample, FF K_F = 0.5",
          "i.2) Delay = 2 Samples, FF K_F = 0.5",
          "i.3) Delay = 3 Samples, FF K_F = 0.5"];
-args = {'interpreter','latex','FontSize',14};
+args = {'interpreter','latex','FontSize',24};
 
 for i = 1:3
     data = csvread(strcat("data/",files(i),".csv"));
@@ -53,6 +54,7 @@ for i = 1:3
     plot(time, ref);
     plot(time, lx);
     hold off;
+    set(gca,'FontSize',18);
     xlabel("Time [s]", args{:});
     ylabel("Illuminance [lx]", args{:});
     legend({'ref(t)','y(t)'}, 'Location','southeast',args{:});
@@ -71,7 +73,7 @@ files = ["fig_j_1",
 names = ["j.1) Anti-windup off",
          "j.2) Simple Anti-windup",
          "j.3) Feedback Anti-windup"];
-args = {'interpreter','latex','FontSize',14};
+args = {'interpreter','latex','FontSize',24};
 
 for i = 1:3
     data = csvread(strcat("data/",files(i),".csv"));
@@ -83,6 +85,7 @@ for i = 1:3
     plot(time, ref);
     plot(time, lx);
     hold off;
+    set(gca,'FontSize',18);
     xlabel("Time [s]", args{:});
     ylabel("Illuminance [lx]", args{:});
     ylim([20, 110])
@@ -102,7 +105,7 @@ files = ["fig_k_1",
 names = ["k.1) Error deadzone off",
          "k.2) Error deadzone [-0.5,0.5]",
          "k.3) Error deadzone [-1.6,1.6]"];
-args = {'interpreter','latex','FontSize',14};
+args = {'interpreter','latex','FontSize',24};
 
 for i = 1:3
     data = csvread(strcat("data/",files(i),".csv"));
@@ -120,6 +123,7 @@ for i = 1:3
     ylabel("Duty cycle [\%]", args{:});
     plot(time, out);
     hold off;
+    set(gca,'FontSize',18);
     xlabel("Time [s]", args{:});
     ylim([30, 100])
     legend({'ref(t)','out(t)'}, 'Location','southeast',args{:});
