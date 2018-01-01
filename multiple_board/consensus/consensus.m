@@ -1,15 +1,20 @@
 close all, clear all;
 
 iterations = 50;
+debug_output = false;
 
 % The system
-k11 = 2; k12 = 1; k21 = 1; k22 = 2;
-L1 = 150; o1 = 30; L2 = 80; o2 = 0;
+k11 = 2; k12 = 1;
+k21 = 1; k22 = 2;
+L1 = 150; o1 = 30;
+L2 = 80;  o2 = 0;
+
 K = [k11, k12 ; k21 , k22];
 L = [L1;L2]; o = [o1;o2];
 
 % The cost function
-c1 = 1; c2 = 1; q1 = 0.0; q2 = 0.0;
+c1 = 1.8; c2 = 1.0;
+q1 = 0.0; q2 = 0.0;
 c = [c1 c2]; Q = [q1 0; 0 q2];
 
 % Preallocate arrays
@@ -33,8 +38,8 @@ d1_avg = zeros(iterations, 2);
 d2_avg = zeros(iterations, 2);
 y_1 = zeros(iterations, 2);
 y_2 = zeros(iterations, 2);
-min_best_1 = zeros(iterations, 2);
-min_best_2 = zeros(iterations, 2);
+min_best_1 = zeros(iterations,1);
+min_best_2 = zeros(iterations,1);
 
 % SOLVE WITH CONSENSUS
 rho = 0.01;
@@ -206,7 +211,7 @@ for i=1:iterations
        if min_linear_100 < min_best_1(i)
            d11_best = d11u;
            d12_best = d12u;
-           min_best_1_(i) = min_linear100;
+           min_best_1(i) = min_linear100;
        end
    end
    %store data and save for next cycle
@@ -405,27 +410,114 @@ for i=1:iterations
 
 end
 
-% Write values to file
-folder = "";
-csvwrite(folder + "d_0_1.csv", d_0_1);
-csvwrite(folder + "d_1_1.csv", d_1_1);
-csvwrite(folder + "d_2_1.csv", d_2_1);
-csvwrite(folder + "d_3_1.csv", d_3_1);
-csvwrite(folder + "d_4_1.csv", d_4_1);
-csvwrite(folder + "d_5_1.csv", d_5_1);
-csvwrite(folder + "d_0_2.csv", d_0_2);
-csvwrite(folder + "d_1_2.csv", d_1_2);
-csvwrite(folder + "d_2_2.csv", d_2_2);
-csvwrite(folder + "d_3_2.csv", d_3_2);
-csvwrite(folder + "d_4_2.csv", d_4_2);
-csvwrite(folder + "d_5_2.csv", d_5_2);
-csvwrite(folder + "d1_best.csv", d1_best);
-csvwrite(folder + "d2_best.csv", d2_best);
-csvwrite(folder + "z1.csv", z1);
-csvwrite(folder + "z2.csv", z2);
-csvwrite(folder + "d1_avg.csv", d1_avg);
-csvwrite(folder + "d2_avg.csv", d2_avg);
-csvwrite(folder + "y_1.csv", y_1);
-csvwrite(folder + "y_2.csv", y_2);
-csvwrite(folder + "min_best_1.csv", min_best_1);
-csvwrite(folder + "min_best_2.csv", min_best_2);
+
+%% Debug output
+
+if debug_output
+    folder = "data/";
+    csvwrite(folder + "d_0_1.csv", d_0_1);
+    csvwrite(folder + "d_1_1.csv", d_1_1);
+    csvwrite(folder + "d_2_1.csv", d_2_1);
+    csvwrite(folder + "d_3_1.csv", d_3_1);
+    csvwrite(folder + "d_4_1.csv", d_4_1);
+    csvwrite(folder + "d_5_1.csv", d_5_1);
+    csvwrite(folder + "d_0_2.csv", d_0_2);
+    csvwrite(folder + "d_1_2.csv", d_1_2);
+    csvwrite(folder + "d_2_2.csv", d_2_2);
+    csvwrite(folder + "d_3_2.csv", d_3_2);
+    csvwrite(folder + "d_4_2.csv", d_4_2);
+    csvwrite(folder + "d_5_2.csv", d_5_2);
+    csvwrite(folder + "d1_best.csv", d1_best);
+    csvwrite(folder + "d2_best.csv", d2_best);
+    csvwrite(folder + "z1.csv", z1);
+    csvwrite(folder + "z2.csv", z2);
+    csvwrite(folder + "d1_avg.csv", d1_avg);
+    csvwrite(folder + "d2_avg.csv", d2_avg);
+    csvwrite(folder + "y_1.csv", y_1);
+    csvwrite(folder + "y_2.csv", y_2);
+    csvwrite(folder + "min_best_1.csv", min_best_1);
+    csvwrite(folder + "min_best_2.csv", min_best_2);
+end
+
+%% Plot figures
+
+% Configs
+set(0,'DefaultTextFontname', 'CMU Serif');
+set(0,'DefaultAxesFontName', 'CMU Serif');
+args = {'interpreter','latex','FontSize',22};
+
+%% d1 and d2 solutions over time
+
+files = ["fig_d_1_best","fig_d_2_best"];
+names = ["d_1_best","d_2_best"];
+
+time = 1:iterations;
+for i = 1:2
+    fig = figure('Name',names(i));
+    if (i == 1)
+        plot(time, d1_best);
+    else
+        plot(time,d2_best);
+    end
+    set(gca,'FontSize',18);
+    xlabel("Iterations", args{:});
+    ylabel("Duty Cycle [\%]", args{:});
+    legend({'$d_{1}$','$d_{2}$'}, 'Location','northeast','Orientation','horizontal',args{:});
+    output_name = sprintf("figures/%s.pdf", files(i));
+    fig.PaperPositionMode = 'auto';
+    fig_pos = fig.PaperPosition;
+    fig.PaperSize = [fig_pos(3) fig_pos(4)];
+    print(fig,'-dpdf','-r300',char(output_name));
+end
+
+%% Cost function
+
+time = 1:iterations;
+fig = figure('Name','Cost function');
+hold on;
+plot(time,min_best_1);
+plot(time,min_best_2);
+hold off;
+set(gca,'FontSize',18);
+xlabel("Iterations", args{:});
+ylabel("Cost", args{:});
+legend({'cost$_{1}$','cost$_{2}$'}, 'Location','northeast','Orientation','horizontal',args{:});
+output_name = "figures/fig_min_cost.pdf";
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+print(fig,'-dpdf','-r300',char(output_name));
+
+%% Scatter plot of solutions d_2(d_1)
+
+time = 1:100;
+fig = figure('Name','Solution evolution');
+hold on;
+
+% Cost function contour lines
+[x,y] = meshgrid(time,time);
+z = c1*x+c2*y+q1*x.^2+q2*y.^2;
+contour(x,y,z);
+% Constraint lines
+ct1_1 = (L1-o1)/k12-(k11/k12)*time;
+ct1_2 = (L2-o2)/k22-(k21/k22)*time;
+plot(time,ct1_1, time,ct1_2, 'LineWidth',2);
+% Solutions over time - d1_avg = d2_avg
+plot(d1_avg(:,1),d2_avg(:,2),'-','LineWidth',2);
+%plot(d1_avg(:,1),d2_avg(:,2),'bx');
+% Optimum solution
+plot(d1_avg(end,1),d2_avg(end,2),'k*','MarkerSize',10,'LineWidth',1.3)
+optimum_str = sprintf("(%.2f, %.2f)", d1_avg(end,1), d2_avg(end,2));
+args = {'HorizontalAlignment','left','interpreter','latex','FontSize',18};
+text(d1_avg(end,1)+4,d2_avg(end,2)+4,char(optimum_str), args{:});
+% Labels
+xlabel("$d_1$ [\%]", args{:});
+ylabel("$d_2$ [\%]", args{:});
+axis([0,100,0,100]);
+hold off;
+% Save
+output_name = "figures/fig_scatter.pdf";
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+print(fig,'-dpdf','-r300',char(output_name));
