@@ -4,8 +4,8 @@
  * 
  * Proportional Integral Controller
  * 
- * @author António Almeida
  * @author João Borrego
+ * @author António Almeida
 */
 
 #include "Arduino.h"
@@ -18,15 +18,15 @@
 namespace PIController {
 
     /** Default feedforward gain */
-    const float K_FF                 =  0.5; // 1.0;
+    const float K_FF                 = 0.5;
     /** Feedforward approximated linear characteristic m parameter */
     const float M_FF                 =  0.4330;
     /** Feedforward approximated linear characteristic b parameter */
     const float B_FF                 =  -4.6204;
     /** Default anti-windup loop gain */
-    const float K_SAT                =  1.0;
+    const float K_SAT                =  0.5;
     /** Default anti-windup negative saturation threshold */
-    const float ANTI_WINDUP_SAT_MIN  =  0.0;
+    const float ANTI_WINDUP_SAT_MIN  =  -255.0; // Should be -255 for complex, 0 for simple
     /** Default anti-windup positive saturation threshold */
     const float ANTI_WINDUP_SAT_MAX  =  255.0;
     /** Default error deadzone minimum threshold */
@@ -56,6 +56,15 @@ namespace PIController {
         volatile float *out;
         /** Pointer to reference var */
         volatile float *ref;
+
+        /* Delayed samples */
+        
+        /** Reference delayed by 1 sample */
+        float d_ref_1; 
+        /** Reference delayed by 2 samples */
+        float d_ref_2;
+        /** Reference delayed by 3 samples */
+        float d_ref_3;
 
         /* Coefficients */
 

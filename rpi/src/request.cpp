@@ -97,6 +97,10 @@ void parseRequest(
         {
             system->startWriteSerial(DISTRIBUTED_OFF);
         }
+        else if (type == SAVE)
+        {
+            system->saveEntries();
+        }
         else
         {
             if (cmd.size() == 1)

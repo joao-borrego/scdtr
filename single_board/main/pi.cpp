@@ -4,8 +4,8 @@
  *
  * Proportional Integral Controller
  *
- * @author António Almeida
  * @author João Borrego
+ * @author António Almeida
 */
 
 #include "pi.hpp"
@@ -52,6 +52,8 @@ namespace PIController {
 
         //this->k_1 = k_p * b;
         this->k_2 = k_i * T / 2.0;
+
+        d_ref_1 = d_ref_2 = d_ref_3 = 0.0;
     }
 
     Controller::configureFeatures(
@@ -69,8 +71,12 @@ namespace PIController {
         /* Sample input and reference */
         float y_sampled = *(in);
         float ref_sampled = *(ref);
+
         float err_new = ref_sampled - y_sampled;
-        
+        //float err_new = d_ref_1 - y_sampled; // Delay 1 sample
+        //float err_new = d_ref_2 - y_sampled; // Delay 2 samples
+        //float err_new = d_ref_3 - y_sampled; // Delay 3 samples
+
         /* Apply error deadzone to reduce output jitter */
         if (use_deadzone){
             err_new = applyDeadzone(err_new);
@@ -91,7 +97,7 @@ namespace PIController {
             /* Simple anti-windup only saturates the integrator term */
             #if SIMPLE_ANTI_WINDUP
                 i_new = applySaturation(i_new);
-                u_new = u_new = p_new + i_new;
+                u_new = p_new + i_new;
                 *(this->out) = u_new;
             /* Real anti-windup has a feedback loop */
             #else
@@ -109,7 +115,6 @@ namespace PIController {
         updateFcn();
 
         /* Update old values */
-        this->y = y_sampled;
         this->err = err_new;
         this->i = i_new;
         this->u = u_new;
@@ -118,6 +123,11 @@ namespace PIController {
                 this->u_sat = u_sat_new;
             }
         #endif
+
+        // Delay reference for PI block input
+        this->d_ref_3 = d_ref_2;
+        this->d_ref_2 = d_ref_1;
+        this->d_ref_1 = ref_sampled;
     }
 
     inline float Controller::applySaturation(float output){

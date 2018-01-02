@@ -8,7 +8,9 @@
 #define SYSTEM_HPP
 
 #include <string>
+#include <iostream>
 #include <iomanip>
+#include <fstream>
 #include <ctime>
 #include <vector>
 #include <list>
@@ -42,6 +44,10 @@ public:
     float duty_cycle;
     /** Reference illuminance */
     float lux_reference;
+    /** Comfort error */
+    float c_err;
+    /** Comfort variance */
+    float c_var;
 
     /**
      * @brief      Constructs an entry.
@@ -55,11 +61,15 @@ public:
         unsigned long timestamp_,
         float lux_, 
         float duty_cycle_,
-        float lux_reference_)
+        float lux_reference_,
+        float c_err_,
+        float c_var_)
         : timestamp(timestamp_),
           lux(lux_),
           duty_cycle(duty_cycle_),
-          lux_reference(lux_reference_){}
+          lux_reference(lux_reference_),
+          c_err(c_err_),
+          c_var(c_var_){}
 };
 
 class System
@@ -176,20 +186,27 @@ public:
         size_t bytes_transferred);
 
     /**
-     * @brief      Inserts a log entry
+     * @brief      TODO
      *
      * @param[in]  id             The identifier
      * @param[in]  timestamp      The timestamp
      * @param[in]  lux            The lux
      * @param[in]  duty_cycle     The duty cycle
      * @param[in]  lux_reference  The lux reference
+     * @param[in]  c_err          The c error
+     * @param[in]  c_var          The c variable
      */
     void insertEntry(
         size_t id,
         unsigned long timestamp,
         float lux,
         float duty_cycle,
-        float lux_reference);
+        float lux_reference,
+        float c_err,
+        float c_var);
+
+    // TODO
+    void saveEntries();
 
     /* Get */
 
