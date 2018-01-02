@@ -4,16 +4,16 @@ iterations = 50;
 debug_output = false;
 
 % The system
-k11 = 2; k12 = 1;
-k21 = 1; k22 = 2;
-L1 = 150; o1 = 30;
-L2 = 80;  o2 = 0;
+k11 = 0.64815; k12 = 0.24545;
+k21 = 0.20696; k22 = 1.26932;
+L1 = 100/3; o1 = 0.19328;
+L2 = 200/3; o2 = 0.20200;
 
 K = [k11, k12 ; k21 , k22];
 L = [L1;L2]; o = [o1;o2];
 
 % The cost function
-c1 = 1.8; c2 = 1.0;
+c1 = 1.0; c2 = 1.0;
 q1 = 0.0; q2 = 0.0;
 c = [c1 c2]; Q = [q1 0; 0 q2];
 
@@ -444,7 +444,7 @@ end
 % Configs
 set(0,'DefaultTextFontname', 'CMU Serif');
 set(0,'DefaultAxesFontName', 'CMU Serif');
-args = {'interpreter','latex','FontSize',22};
+args = {'interpreter','latex','FontSize',24};
 
 %% d1 and d2 solutions over time
 
@@ -459,10 +459,11 @@ for i = 1:2
     else
         plot(time,d2_best);
     end
-    set(gca,'FontSize',18);
+    set(gca,'FontSize',22);
     xlabel("Iterations", args{:});
     ylabel("Duty Cycle [\%]", args{:});
-    legend({'$d_{1}$','$d_{2}$'}, 'Location','northeast','Orientation','horizontal',args{:});
+    axis([0,50,0,100]);
+    legend({'$d_{1}$','$d_{2}$'}, 'Location','southeast','Orientation','horizontal',args{:});
     output_name = sprintf("figures/%s.pdf", files(i));
     fig.PaperPositionMode = 'auto';
     fig_pos = fig.PaperPosition;
@@ -478,10 +479,11 @@ hold on;
 plot(time,min_best_1);
 plot(time,min_best_2);
 hold off;
-set(gca,'FontSize',18);
+set(gca,'FontSize',22);
 xlabel("Iterations", args{:});
 ylabel("Cost", args{:});
-legend({'cost$_{1}$','cost$_{2}$'}, 'Location','northeast','Orientation','horizontal',args{:});
+axis([0,50,0,70]);
+legend({'cost$_{1}$','cost$_{2}$'}, 'Location','southeast','Orientation','horizontal',args{:});
 output_name = "figures/fig_min_cost.pdf";
 fig.PaperPositionMode = 'auto';
 fig_pos = fig.PaperPosition;
@@ -497,7 +499,7 @@ hold on;
 % Cost function contour lines
 [x,y] = meshgrid(time,time);
 z = c1*x+c2*y+q1*x.^2+q2*y.^2;
-contour(x,y,z);
+contour(x,y,z,10);
 % Constraint lines
 ct1_1 = (L1-o1)/k12-(k11/k12)*time;
 ct1_2 = (L2-o2)/k22-(k21/k22)*time;
@@ -508,9 +510,10 @@ plot(d1_avg(:,1),d2_avg(:,2),'-','LineWidth',2);
 % Optimum solution
 plot(d1_avg(end,1),d2_avg(end,2),'k*','MarkerSize',10,'LineWidth',1.3)
 optimum_str = sprintf("(%.2f, %.2f)", d1_avg(end,1), d2_avg(end,2));
-args = {'HorizontalAlignment','left','interpreter','latex','FontSize',18};
+args = {'HorizontalAlignment','left','interpreter','latex','FontSize',24};
 text(d1_avg(end,1)+4,d2_avg(end,2)+4,char(optimum_str), args{:});
 % Labels
+set(gca,'FontSize',22);
 xlabel("$d_1$ [\%]", args{:});
 ylabel("$d_2$ [\%]", args{:});
 axis([0,100,0,100]);
