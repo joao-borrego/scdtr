@@ -1,3 +1,9 @@
+/**
+ * @file    lookup.hpp
+ * @brief   Lookup table
+ */
+
+/** Output lx lookup table for input pwm */
 #define LOOKUP_TABLE {\
 0.02,\
 0.08,\

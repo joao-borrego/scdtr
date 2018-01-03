@@ -1,5 +1,5 @@
 /**
- * @file    multiple_board/main/pi.cpp
+ * @file    multiple_board/main/pi.hpp
  * @brief   PI Controller headers
  *
  * Proportional Integral Controller class headers
