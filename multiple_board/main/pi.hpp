@@ -1,12 +1,12 @@
-/** 
- * @file pi.hpp
- * @brief PI Controller headers
- * 
- * Proportional Integral Controller
- * 
- * @author João Borrego
- * @author António Almeida
-*/
+/**
+ * @file    multiple_board/main/pi.hpp
+ * @brief   PI Controller headers
+ *
+ * Proportional Integral Controller class headers
+ *
+ * @author  João Borrego
+ * @author  António Almeida
+ */
 
 #ifndef INO_PI_HPP
 #define INO_PI_HPP
@@ -26,15 +26,15 @@ namespace PIController {
     /** Feedforward approximated linear characteristic b parameter */
     const float B_FF                 =  -4.6204;
     /** Default anti-windup loop gain */
-    const float K_SAT                =  1.0;
+    const float K_SAT                =  0.5;
     /** Default anti-windup negative saturation threshold */
     const float ANTI_WINDUP_SAT_MIN  =  0.0;
     /** Default anti-windup positive saturation threshold */
     const float ANTI_WINDUP_SAT_MAX  =  255.0;
     /** Default error deadzone minimum threshold */
-    const float ERR_DEADZONE_MIN     =  -4.0;
+    const float ERR_DEADZONE_MIN     =  -3.0;
     /** Default error deadzone maximum threshold */
-    const float ERR_DEADZONE_MAX     =  4.0;
+    const float ERR_DEADZONE_MAX     =  3.0;
 
     /**
      * @brief      PI Controller class with additional features for smoother performance.
@@ -103,12 +103,6 @@ namespace PIController {
         float deadzone_min;
         /** Error deadzone maximum threshold */
         float deadzone_max;
-
-        /**
-         * k_1 = k_p * b
-         * p = k_p * b - k_p * y
-         */
-        //float k_1;
 
         /**
          * k_2 = k_p * k_i * T / 2

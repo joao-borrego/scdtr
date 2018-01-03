@@ -444,7 +444,7 @@ end
 % Configs
 set(0,'DefaultTextFontname', 'CMU Serif');
 set(0,'DefaultAxesFontName', 'CMU Serif');
-args = {'interpreter','latex','FontSize',24};
+args = {'interpreter','latex','FontSize',20};
 
 %% d1 and d2 solutions over time
 
@@ -459,7 +459,7 @@ for i = 1:2
     else
         plot(time,d2_best);
     end
-    set(gca,'FontSize',22);
+    set(gca,'FontSize',18);
     xlabel("Iterations", args{:});
     ylabel("Duty Cycle [\%]", args{:});
     axis([0,50,0,100]);
@@ -479,7 +479,7 @@ hold on;
 plot(time,min_best_1);
 plot(time,min_best_2);
 hold off;
-set(gca,'FontSize',22);
+set(gca,'FontSize',18);
 xlabel("Iterations", args{:});
 ylabel("Cost", args{:});
 axis([0,50,0,70]);
@@ -510,10 +510,10 @@ plot(d1_avg(:,1),d2_avg(:,2),'-','LineWidth',2);
 % Optimum solution
 plot(d1_avg(end,1),d2_avg(end,2),'k*','MarkerSize',10,'LineWidth',1.3)
 optimum_str = sprintf("(%.2f, %.2f)", d1_avg(end,1), d2_avg(end,2));
-args = {'HorizontalAlignment','left','interpreter','latex','FontSize',24};
+args = {'HorizontalAlignment','left','interpreter','latex','FontSize',20};
 text(d1_avg(end,1)+4,d2_avg(end,2)+4,char(optimum_str), args{:});
 % Labels
-set(gca,'FontSize',22);
+set(gca,'FontSize',18);
 xlabel("$d_1$ [\%]", args{:});
 ylabel("$d_2$ [\%]", args{:});
 axis([0,100,0,100]);

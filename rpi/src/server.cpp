@@ -1,15 +1,26 @@
 /**
- * @file server.cpp
+ * @file    rpi/src/server.cpp
  * 
- * @brief Main RPi server application
+ * @brief   Main RPi server application implementation
+ * 
+ * @author  João Borrego
  */
 
 #include "server.hpp"
 
 using boost::asio::ip::tcp;
 
+/** Global system shared pointer */
 System::ptr system_;
 
+/**
+ * @brief      Server main application.
+ *
+ * @param[in]  argc  The argc
+ * @param      argv  The argv
+ *
+ * @return     0 on success, EXIT_FAILURE otherwise.
+ */
 int main(int argc, char *argv[])
 {
 

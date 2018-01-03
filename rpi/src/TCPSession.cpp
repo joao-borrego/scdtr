@@ -1,5 +1,9 @@
 /**
- * @file TCPSession.cpp
+ * @file    rpi/src/TCPSession.cpp
+ * 
+ * @brief   TCP session class implementation
+ * 
+ * @author  João Borrego
  */
 
 #include "TCPSession.hpp"

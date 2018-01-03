@@ -1,5 +1,10 @@
 /**
- * constants.hpp
+ * @file    rpi/src/constants.hpp
+ * 
+ * @brief  	Relevant system constants
+ * 
+ * @author  João Borrego
+ * @author  António Almeida
  */
 
 #ifndef CONSTANTS_HPP
@@ -7,7 +12,7 @@
 
 /** Number of nodes in system */
 #define NODES   2
-/** System sampling period */
+/** System sampling period (seconds) */
 #define T_S 0.1
 
 /** Server host */
@@ -29,7 +34,6 @@
 
 /** Serial communication Baudrate */
 #define SERIAL_BAUDRATE 115200
-
 
 /* TCP Stream */
 

@@ -1,7 +1,9 @@
 /**
- * @file server.hpp
+ * @file  	rpi/src/server.hpp
  * 
- * @brief Main RPi server application headers
+ * @brief 	Main RPi server application headers
+ * 
+ * @author 	João Borrego
  */
 
 #ifndef SERVER_HPP
@@ -15,13 +17,19 @@
 #include "System.hpp"
 #include "TCPServer.hpp"
 
-// TODO
+/**
+ * @brief      Runs the TCP server application.
+ */
 void tcpServer();
 
-// TODO
+/**
+ * @brief      Runs the System's I2C packet listener service.
+ */
 void i2c();
 
-// TODO
+/**
+ * @brief      Launches a separate handle for Serial connections.
+ */
 void serial();
 
 #endif

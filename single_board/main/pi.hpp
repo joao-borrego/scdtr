@@ -1,11 +1,11 @@
 /** 
- * @file pi.hpp
- * @brief PI Controller headers
+ * @file    single_board/main/pi.hpp
+ * @brief   PI Controller headers
  * 
  * Proportional Integral Controller
  * 
- * @author João Borrego
- * @author António Almeida
+ * @author  João Borrego
+ * @author  António Almeida
 */
 
 #include "Arduino.h"
@@ -26,7 +26,7 @@ namespace PIController {
     /** Default anti-windup loop gain */
     const float K_SAT                =  0.5;
     /** Default anti-windup negative saturation threshold */
-    const float ANTI_WINDUP_SAT_MIN  =  -255.0; // Should be -255 for complex, 0 for simple
+    const float ANTI_WINDUP_SAT_MIN  =  0.0;
     /** Default anti-windup positive saturation threshold */
     const float ANTI_WINDUP_SAT_MAX  =  255.0;
     /** Default error deadzone minimum threshold */
@@ -110,12 +110,6 @@ namespace PIController {
         float deadzone_min;
         /** Error deadzone maximum threshold */
         float deadzone_max;
-
-        /**
-         * k_1 = k_p * b
-         * p = k_p * b - k_p * y
-         */
-        //float k_1;
 
         /**
          * k_2 = k_p * k_i * T / 2

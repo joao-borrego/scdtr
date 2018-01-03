@@ -1,16 +1,13 @@
 /**
- * @file communication.hpp
+ * @file    rpi/src/communication.hpp
  * 
- * @brief Communication protocol headers
+ * @brief   I2C communication protocol headers
  * 
- * Messages can be exchanged using essentially 4 types of packets
- * 1. Header-only, e.g ACKs and RESet packets,
- * 2. Consensus,
- * 3. Info.
- * 
- * Header       = [ Id | Type ]
- * Consensus    = [ Header | d_i_1 d_i_2 ... d_i_N ]
- * Info         = [ Header | d_i | l_i | r_i | o_i ]
+ * Important constants for parsing I2C messages.
+ * Check protocol definition in multiple_board/main/communication.hpp.
+ *
+ * @author  João Borrego
+ * @author  António Almeida
  */
 
 #ifndef COMMUNICATION_HPP
@@ -43,19 +40,24 @@ const uint8_t INF   = 0x05;
 const uint8_t RES   = 0x0F;
 
 /* Packet offsets */
+
+/** ID header field offset */
 const size_t ID     = 0;
+/** TYPE header field offset */
 const size_t TYPE   = 1;
 
 namespace Communication
 {
     /**
      * @brief Converts float to byte array and vice-versa.
-     * 
+     *
      * As seen in <a href="http://mbed.org/forum/helloworld/topic/2053/">link</a>
      */
-    typedef union float_to_bytes_t{    
-        float f; 
-        unsigned char b[sizeof(float)]; 
+    typedef union float_to_bytes_t{
+        /** Float variable */
+        float f;
+        /** Float byte array */
+        unsigned char b[sizeof(float)];
     } float_bytes;
 
 }

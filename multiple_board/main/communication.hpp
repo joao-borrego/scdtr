@@ -1,12 +1,15 @@
 /**
- * @file communication.hpp
+ * @file    multiple_board/main/communication.hpp
+ * 
+ * @brief   I2C communication protocol headers
  *
- * @brief I2C communication protocol headers
- *
- * Messages can be exchanged using essentially 4 types of packets
- * 1. Header-only, e.g ACKs and RESet packets,
- * 2. Consensus,
- * 3. Info.
+ * Defines I2C communication protocol.
+ * Implements functions to send supported packets.
+ * 
+ * Messages can be exchanged using essentially 4 types of packets:
+ *  1. Header-only, e.g ACKs and RESet packets;
+ *  2. Consensus;
+ *  3. Info.
  *
  * Header       [ Id | Type ]
  *
@@ -16,8 +19,8 @@
  *
  * Info         [ Header | lux | dc | lb | ext | ref | occ ]
  *
- * @author João Borrego
- * @author António Almeida
+ * @author  João Borrego
+ * @author  António Almeida
  */
 
 #ifndef INO_COMMUNICATION_HPP
@@ -57,7 +60,10 @@ const byte DOF      = 0x07;
 const byte RES      = 0x0F;
 
 /* Packet offsets */
+
+/** ID header field offset */
 const size_t ID     = 0;
+/** TYPE header field offset */
 const size_t TYPE   = 1;
 
 namespace Communication
@@ -68,7 +74,9 @@ namespace Communication
      * As seen in <a href="http://mbed.org/forum/helloworld/topic/2053/">link</a>
      */
     typedef union float_to_bytes_t{
+        /** Float variable */
         float f;
+        /** Float byte array */
         byte b[sizeof(float)];
     } float_bytes;
 

@@ -1,8 +1,13 @@
 /**
-* @file calibration.cpp
-* @brief Calibration utility implementation
-* @author João Borrego
-* @author António Almeida
+ * @file    multiple_board/main/calibration.cpp
+ * 
+ * @brief   Calibration utility implementation
+ * 
+ * Provides a calibration utility meant to run at system startup
+ * Calculates external illuminance and K_i vector
+ * 
+ * @author  João Borrego
+ * @author  António Almeida
 */
 
 #include "calibration.hpp"
@@ -23,8 +28,11 @@ namespace Calibration
     /** Registered lux values */
     volatile float Y[N][NUM_SAMPLES];
 
+    /** Current sample */
     int sample;
+    /** Current sender id */
     uint8_t sender;
+    /** Current receiver id */
     uint8_t receiver;
 
     /* Functions */

@@ -1,5 +1,10 @@
 /**
- * @file request.cpp
+ * @file    rpi/src/request.cpp
+ * @brief   Server request implementation
+ * 
+ * Implements server request parsing and response functions
+ * 
+ * @author João Borrego
  */
 
 #include "request.hpp"

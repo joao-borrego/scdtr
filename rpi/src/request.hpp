@@ -1,5 +1,10 @@
 /**
- * @file request.hpp
+ * @file 	rpi/src/request.hpp
+ * @brief 	Server request headers
+ * 
+ * Provides definitions for server request functions
+ * 
+ * @author 	João Borrego
  */
 
 #ifndef REQUEST_HPP
@@ -73,7 +78,15 @@
 
 /* Functions */
 
-//TODO
+/**
+ * @brief      Performs a request and produces a response.
+ *
+ * @param[in]  system      The system shared pointer
+ * @param      timestamps  The timestamps vector
+ * @param      flags       The flags vector
+ * @param[in]  request     The request string
+ * @param      response    The response string
+ */
 void parseRequest(
     System::ptr system,
     std::vector< unsigned long > & timestamps,
@@ -81,7 +94,14 @@ void parseRequest(
     const std::string & request,
     std::string & response);
 
-//TODO
+/**
+ * @brief      Produces a stream update string.
+ *
+ * @param[in]  system      The system shared pointer
+ * @param      timestamps  The timestamps vector
+ * @param[in]  flags       The flags vector
+ * @param      response    The response string
+ */
 void streamUpdate(
     System::ptr system,
     std::vector< unsigned long > & timestamps,

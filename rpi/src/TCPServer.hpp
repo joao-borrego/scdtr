@@ -1,5 +1,9 @@
 /**
- * @file TCPServer.hpp
+ * @file    rpi/src/TCPServer.hpp
+ * 
+ * @brief   TCP Server class headers
+ * 
+ * @author  João Borrego
  */
 
 #ifndef TCP_SERVER_HPP
@@ -17,7 +21,7 @@ using boost::asio::ip::tcp;
 #include "constants.hpp"
 
 /**
- * @brief      Class for tcp server.
+ * @brief      Class for TCP server.
  */
 class TCPServer
 {

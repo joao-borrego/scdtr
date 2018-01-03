@@ -1,8 +1,9 @@
 /**
- * @file matrix.hpp
- * @brief Float matrix operations headers
- * @author João Borrego
- * @author António Almeida
+ * @file    multiple_board/main/matrix.cpp
+ * 
+ * @brief   Float matrix operations implementation
+ * 
+ * @author  João Borrego
  */
 
 #ifndef INO_MATRIX_HPP
@@ -12,6 +13,8 @@
 #include <string.h>
 
 #include <Arduino.h>
+
+namespace Matrix {
 
 /**
  * @brief      Sums A and B and stores in C.
@@ -77,5 +80,7 @@ void fill(float *A, float value, int n, int m);
  * @param[in]  m     cols of A
  */
 void copy(float* A, float* B, int n, int m);
+
+}
 
 #endif

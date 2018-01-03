@@ -1,13 +1,13 @@
 /**
- * @file consensus.hpp
+ * @file    multiple_board/main/consensus.hpp
  *
- * @brief Consensus algorithm headers
+ * @brief   Consensus algorithm headers
  *
- * Consensus distributed algorithm implementation for obtaining a the solution
+ * Consensus distributed algorithm implementation for obtaining a solution
  * to a global optimisation problem.
  *
- * @author João Borrego
- * @author António Almeida
+ * @author  João Borrego
+ * @author  António Almeida
  */
 
 #ifndef INO_CONSENSUS_HPP
@@ -31,12 +31,12 @@ namespace Consensus{
     /* Functions */
 
     /**
-     * @brief      Calculates the cost function.
+     * @brief      Evaluates the cost function.
      *
      * @param      d_i      The solution
      * @param      d_i_avg  The average of nodes' solutions
-     * @param[in]  q_i      The q_i submatrix of Q
-     * @param[in]  c_i      The c i submatrix of C
+     * @param[in]  q_i      The q_i non-zero element of Q
+     * @param[in]  c_i      The c_i non-zero element of C
      * @param      y_i      The Lagrangian multipliers
      * @param[in]  rho      The penalty parameter
      *
@@ -79,8 +79,8 @@ namespace Consensus{
      * @param      d_i_best      The best solution
      * @param      cost_best     The cost of th best solution
      * @param      d_i_avg       The average of nodes' solutions
-     * @param[in]  q_i           The q_i submatrix of Q
-     * @param[in]  c_i           The c i submatrix of C
+     * @param[in]  q_i           The q_i non-zero element of Q
+     * @param[in]  c_i           The c_i non-zero element of C
      * @param      y_i           The Lagrangian multipliers
      * @param[in]  rho           The penalty parameter
      */
@@ -89,7 +89,7 @@ namespace Consensus{
         float *K_i,
         float L,
         float o,
-        bool check_linear, // Check linear constraint
+        bool check_linear,
         float *d_i_best,
         float *cost_best,
         float *d_i_avg,
@@ -124,6 +124,22 @@ namespace Consensus{
      */
     float solve(size_t id, float L, float* K_i, float o);
 
+    /**
+     * @brief      Prints debug information to Serial.
+     *
+     * @param      d            The variable array
+     * @param[in]  size         The size of the array
+     * @param[in]  it           The current iteration of consensus
+     * @param      description  The description of the variable array
+     */
+    void debugPrint(float *d, int size, int it, char* description);
+
+    /**
+     * @brief      Ensure every node has every other nodes' solutions.
+     *
+     * @param      d_i_best  The current node's solution
+     */
+    void getCopies(float *d_i_best);
 }
 
 #endif
