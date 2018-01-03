@@ -14,6 +14,8 @@
 
 #include <Arduino.h>
 
+namespace Matrix {
+
 /**
  * @brief      Sums A and B and stores in C.
  *
@@ -78,5 +80,7 @@ void fill(float *A, float value, int n, int m);
  * @param[in]  m     cols of A
  */
 void copy(float* A, float* B, int n, int m);
+
+}
 
 #endif

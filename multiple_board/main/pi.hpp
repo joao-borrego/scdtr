@@ -26,15 +26,15 @@ namespace PIController {
     /** Feedforward approximated linear characteristic b parameter */
     const float B_FF                 =  -4.6204;
     /** Default anti-windup loop gain */
-    const float K_SAT                =  1.0;
+    const float K_SAT                =  0.5;
     /** Default anti-windup negative saturation threshold */
     const float ANTI_WINDUP_SAT_MIN  =  0.0;
     /** Default anti-windup positive saturation threshold */
     const float ANTI_WINDUP_SAT_MAX  =  255.0;
     /** Default error deadzone minimum threshold */
-    const float ERR_DEADZONE_MIN     =  -4.0;
+    const float ERR_DEADZONE_MIN     =  -3.0;
     /** Default error deadzone maximum threshold */
-    const float ERR_DEADZONE_MAX     =  4.0;
+    const float ERR_DEADZONE_MAX     =  3.0;
 
     /**
      * @brief      PI Controller class with additional features for smoother performance.

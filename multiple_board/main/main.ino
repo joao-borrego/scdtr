@@ -63,7 +63,7 @@ unsigned long last_millis       {0};
 /* Simple state machine */
 
 /** Current node state */
-volatile int state          {CALIBRATION};
+volatile int state          {CONTROL};
 /** Reset trigger */
 volatile bool reset         {false};
 /** Occupancy changed trigger */

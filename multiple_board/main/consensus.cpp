@@ -12,6 +12,8 @@
 
 #include "consensus.hpp"
 
+using namespace Matrix;
+
 namespace Consensus{
 
 /* Global variables */

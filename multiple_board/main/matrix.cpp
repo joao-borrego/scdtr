@@ -8,6 +8,8 @@
 
 #include "matrix.hpp"
 
+namespace Matrix {
+
 void sum(float* A, float* B, float* C, int n, int m)
 {
     int i, j;
@@ -62,4 +64,6 @@ void fill(float *A, float value, int n, int m)
 void copy(float *A, float *B, int n, int m)
 {
     memcpy(B, A, sizeof(float) * n * m);
+}
+
 }
