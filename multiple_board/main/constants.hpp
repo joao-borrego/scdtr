@@ -1,6 +1,8 @@
 /**
- * @file    constants.hpp
+ * @file    multiple_board/main/constants.hpp
+ * 
  * @brief   Multiple board system constants
+ * 
  * @author  João Borrego
  * @author  António Almeida
  */
@@ -98,7 +100,7 @@ const char CMD_DISTRIBUTED_OFF[10]  = "D";
  * Other
  */
 
-/** Not defined */
+/** Variable not defined */
 #define ND          -2
 /** Max duty cycle (8-bit output) */
 const float MAX_DC  = 100.0; // %

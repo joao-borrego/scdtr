@@ -1,8 +1,13 @@
 /**
- * @file communication.cpp
- * @brief I2C communication protocol
- * @author João Borrego
- * @author António Almeida
+ * @file    multiple_board/main/communication.cpp
+ * 
+ * @brief   I2C communication protocol implementation
+ * 
+ * Defines I2C communication protocol.
+ * Implements functions to send supported packets.
+ * 
+ * @author  João Borrego
+ * @author  António Almeida
  */
 
 #include <Arduino.h>
@@ -17,7 +22,7 @@ namespace Communication
     /** Device Id */
     uint8_t *dev_id;
 
-    /* Barrier lock */
+    /** Barrier lock */
     volatile bool lock = false;
 
     /* Pointers to important variables */

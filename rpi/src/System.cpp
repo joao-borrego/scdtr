@@ -1,7 +1,13 @@
 /**
- * @file  System.cpp
+ * @file    rpi/src/System.cpp
  *
- * @brief System main class
+ * @brief   System main class implementation
+ * 
+ * Provides access to the distributed system.
+ * Keeps track of current state and logs heuristics.
+ * 
+ * @author  João Borrego
+ * 
  */
 
 #include "System.hpp"

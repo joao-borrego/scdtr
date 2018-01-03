@@ -1,8 +1,12 @@
 /**
- * @file main.ino
- * @brief Multiple board system main application
- * @author João Borrego
- * @author António Almeida
+ * @file    multiple_board/main/main.ino
+ * 
+ * @brief   Multiple board system main application
+ * 
+ * Main application for multiple board system.
+ * 
+ * @author  João Borrego
+ * @author  António Almeida
  */
 
 #include <EEPROM.h>
@@ -128,12 +132,15 @@ void loop() {
         Communication::sendInfo((id + 1) % N,
             lux, out / 255.0, lower_bound, ext, ref, occupancy);
 
-        // DEBUG
         printState();
     }
 }
 
-// DEBUG
+/**
+ * @brief      Prints the current state to Serial.
+ * 
+ * Used mostly for debug purposes
+ */
 void printState(){
     if (id != MASTER){
         Serial.print(lux);
@@ -181,6 +188,9 @@ void updateState(){
     }
 }
 
+/**
+ * @brief      Calibrates the system.
+ */
 void calibrate(){
 
     if (id != MASTER) Serial.println("[Calibrate]");
@@ -189,13 +199,16 @@ void calibrate(){
     Wire.onReceive(Communication::onReceive);
 }
 
+/**
+ * @brief      Executes the consensus algorithm.
+ */
 void doConsensus(){
     if (id != MASTER) Serial.println("[Consensus]");
     if (id == MASTER) delay(1000);
     
     ref = Consensus::solve(id, lower_bound, k_i, ext);
     
-    // DEBUG
+    // DEBUG scenario
     //float k_tmp[N][N]   = { {2.0, 1.0}, {1.0, 2.0} };
     //float lb_tmp[N]     = { 150.0, 80.0 };
     //float ext_tmp[N]    = { 30.0, 0.0 };

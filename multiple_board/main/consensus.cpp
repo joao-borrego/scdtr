@@ -1,13 +1,13 @@
 /**
- * @file consensus.cpp
+ * @file    multiple_board/main/consensus.cpp
  *
- * @brief Consensus algorithm
+ * @brief   Consensus algorithm implementation
  *
- * Consensus distributed algorithm implementation for obtaining a the solution
+ * Consensus distributed algorithm implementation for obtaining a solution
  * to a global optimisation problem.
  *
- * @author João Borrego
- * @author António Almeida
+ * @author  João Borrego
+ * @author  António Almeida
  */
 
 #include "consensus.hpp"
@@ -25,8 +25,9 @@ volatile bool ready = false;
 volatile float d_tmp[N]     = {0.0};
 /** Sum of neighbours' solutions */
 volatile float d_copies[N]  = {0.0};
-
+/** Current sender id */
 uint8_t sender;
+/** Current receiver id */
 uint8_t receiver;
 
 /* Functions */

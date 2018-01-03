@@ -1,9 +1,11 @@
 /** 
-* @file utils.cpp
-* @brief Generic utilities
-* @author João Borrego
-* @author António Almeida
-*/
+ * @file    multiple_board/main/utils.cpp
+ * 
+ * @brief   Generic utilities implementation
+ * 
+ * @author  João Borrego
+ * @author  António Almeida
+ */
 
 #include "utils.hpp"
 

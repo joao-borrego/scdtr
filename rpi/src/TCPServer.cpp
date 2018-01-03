@@ -1,5 +1,9 @@
 /**
- * @file TCPServer.cpp
+ * @file    rpi/src/TCPServer.cpp
+ * 
+ * @brief   TCP Server class implementation
+ * 
+ * @author  João Borrego
  */
 
 #include "TCPServer.hpp"

@@ -1,7 +1,7 @@
 /*
- * @file pig2i2c.c
+ * @file    pig2i2c.c
  * 
- * @brief I2C Sniffer for Raspberry Pi using pigpio library
+ * @brief   I2C Sniffer for Raspberry Pi using pigpio library
  * 
  * As seen in http://abyz.me.uk/rpi/pigpio/examples.html
  */
@@ -53,21 +53,36 @@ e.g. ./pig2i2c 3  2 </dev/pigpio0 # Rev.2 I2C gpios
 e.g. ./pig2i2c 9 11 </dev/pigpio0 # monitor external bus 
 */
 
+/** gpio Report RS */
 #define RS (sizeof(gpioReport_t))
 
+/** Clock falling */
 #define SCL_FALLING 0
+/** Clock rising */
 #define SCL_RISING  1
+/** Clock steady */
 #define SCL_STEADY  2
 
+/** Data falling */
 #define SDA_FALLING 0
+/** Data rising */
 #define SDA_RISING  4
+/** Data steady */
 #define SDA_STEADY  8
 
+/** Standby */
 #define STANDBY     0
+/** Packet read */
 #define READ        1
 
+/** Maximum packet size */
 #define MAX_SIZE    32
 
+/**
+ * @brief      Gets the current timestamp.
+ *
+ * @return     The buffer holding the timestamp string.
+ */
 static char * timeStamp()
 {
     static char buf[32];
@@ -83,11 +98,25 @@ static char * timeStamp()
     return buf;
 }
 
-typedef union float_bytes_t{
+/**
+ * @brief Converts float to byte array and vice-versa.
+ *
+ * As seen in <a href="http://mbed.org/forum/helloworld/topic/2053/">link</a>
+ */
+typedef union float_to_bytes_t{
+    /** Float variable */
     float f;
-    unsigned char b[sizeof(float)];
+    /** Float byte array */
+    byte b[sizeof(float)];
 } float_bytes;
 
+/**
+ * @brief      Writes a packet to a file.
+ *
+ * @param[in]  fd      The file descriptor.
+ * @param      packet  The packet
+ * @param[in]  size    The size
+ */
 void writePacket(int fd, uint8_t *packet, size_t size)
 {
     if (size >=  2){
@@ -95,6 +124,18 @@ void writePacket(int fd, uint8_t *packet, size_t size)
     }
 }
 
+/**
+ * @brief      Parses I2C, one byte at a time
+ *
+ * @param[in]  SCL    The scl (clock)
+ * @param[in]  SDA    The sda (data)
+ * @param      valid  Whether the byte is valid
+ * @param      start  Whether it is the end of a packet
+ * @param      end    Whether it is the end of a packet
+ * @param      acked  Whether byte was acked
+ *
+ * @return     Reads a byte
+ */
 uint8_t parse_I2C( int SCL, int SDA, bool & valid,
                bool & start, bool & end, bool & acked)
 {
@@ -206,7 +247,14 @@ uint8_t parse_I2C( int SCL, int SDA, bool & valid,
     return rv;
 }
 
-
+/**
+ * @brief      Executes the main loop.
+ *
+ * @param[in]  argc  The argc
+ * @param      argv  The argv
+ *
+ * @return     0 on success, -1 otherwise
+ */
 int main(int argc, char * argv[])
 {
     int gSCL, gSDA, SCL, SDA, xSCL;

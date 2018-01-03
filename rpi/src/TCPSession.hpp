@@ -1,5 +1,9 @@
 /**
- * @file TCPSession.hpp
+ * @file    rpi/src/TCPSession.hpp
+ * 
+ * @brief   TCP session class headers
+ * 
+ * @author  João Borrego
  */
 
 #include <iostream>
@@ -48,6 +52,7 @@ public:
      * @brief      Constructor
      *
      * @param      io_service  The i/o service
+     * @param      system      The system shared pointer
      */
     TCPSession(boost::asio::io_service & io_service, System::ptr system)
         :   socket_(io_service),

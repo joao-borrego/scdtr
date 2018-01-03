@@ -1,11 +1,11 @@
 /** 
- * @file pi.hpp
- * @brief PI Controller headers
+ * @file    single_board/main/pi.hpp
+ * @brief   PI Controller headers
  * 
  * Proportional Integral Controller
  * 
- * @author João Borrego
- * @author António Almeida
+ * @author  João Borrego
+ * @author  António Almeida
 */
 
 #include "Arduino.h"

@@ -1,8 +1,9 @@
 /**
- * @file matrix.hpp
- * @brief Float matrix operations headers
- * @author João Borrego
- * @author António Almeida
+ * @file    multiple_board/main/matrix.cpp
+ * 
+ * @brief   Float matrix operations implementation
+ * 
+ * @author  João Borrego
  */
 
 #ifndef INO_MATRIX_HPP

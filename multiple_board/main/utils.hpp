@@ -1,9 +1,11 @@
 /** 
-* @file utils.hpp
-* @brief Generic utilities
-* @author João Borrego
-* @author António Almeida
-*/
+ * @file    multiple_board/main/utils.hpp
+ * 
+ * @brief   Generic utilities headers
+ * 
+ * @author  João Borrego
+ * @author  António Almeida
+ */
 
 #ifndef INO_UTILS_HPP
 #define INO_UTILS_HPP
@@ -14,7 +16,6 @@
 #include "constants.hpp" 
 
 namespace Utils {
-
 
     /**
      * @brief Converts the measured tension of an LDR to a LUX measurement.

@@ -1,7 +1,13 @@
 /**
- * @file  System.hpp
+ * @file    rpi/src/System.hpp
+ *
+ * @brief   System main class headers
  * 
- * @brief System main class headers 
+ * Provides access to the distributed system.
+ * Keeps track of current state and logs heuristics.
+ * 
+ * @author  João Borrego
+ * 
  */
 
 #ifndef SYSTEM_HPP
@@ -31,6 +37,9 @@
 /** Flag for obtaining duty cycle values */
 #define GET_DUTY_CYCLE  1
 
+/**
+ * @brief      Class for entry.
+ */
 class Entry
 {
 
@@ -56,6 +65,8 @@ public:
      * @param[in]  lux_            The lux
      * @param[in]  duty_cycle_     The duty cycle
      * @param[in]  lux_reference_  The lux reference
+     * @param[in]  c_err_          The comfort error
+     * @param[in]  c_var_          The comfort variance
      */
     Entry(
         unsigned long timestamp_,
@@ -72,11 +83,15 @@ public:
           c_var(c_var_){}
 };
 
+/**
+ * @brief      Class for system.
+ */
 class System
 {
 
 public:
 
+    /** System shared pointer public type definition */
     typedef boost::shared_ptr< System > ptr;
 
 private:
@@ -120,7 +135,14 @@ private:
 
 public:
 
-    //TODO
+    /**
+     * @brief      Constructs a system.
+     *
+     * @param[in]  nodes   The number of nodes in the system
+     * @param[in]  t_s     The period of the system information feed
+     * @param[in]  serial  The Serial port identifier
+     * @param[in]  i2c     The I2C packet stream FIFO path
+     */
     System(
         size_t nodes,
         float t_s,
@@ -138,7 +160,11 @@ public:
         start(serial, i2c);
     }
 
-    // TODO
+    /**
+     * @brief      Obtains the number of milliseconds since last reset.
+     *
+     * @return     The number of milliseconds since last reset.
+     */
     unsigned long millis(){
         auto now = std::chrono::system_clock::now();
         auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
@@ -158,35 +184,61 @@ public:
     /**
      * @brief      Initialises System interfaces.
      *
-     * @param[in]  serial  The serial port name
+     * @param[in]  serial  The Serial port name
+     * @param[in]  i2c     The I2C packet stream FIFO
      */
     void start(const std::string & serial, const std::string & i2c);
 
-    // TODO
+    /**
+     * @brief      Resets the system.
+     * 
+     * Resets the physical system and clears logs.
+     * 
+     */
     void reset();
 
-    // TODO
+    /**
+     * @brief      Run I2C dedicated I/O service handle
+     */
     void runI2C();
 
-    // TODO
+    /**
+     * @brief      Run Serial dedicated I/O service handle
+     */
     void runSerial();
 
-    // TODO
+    /**
+     * @brief      Starts an I2C read.
+     */
     void startRead();
 
-    // TODO
+    /**
+     * @brief      Prepares an I2C read operation
+     *
+     * @param[in]  error              The error
+     * @param[in]  bytes_transferred  The bytes transferred
+     */
     void handleRead(const boost::system::error_code & error,
         size_t bytes_transferred);
 
-    // TODO
+    /**
+     * @brief      Starts a write to Serial.
+     *
+     * @param[in]  msg   The message
+     */
     void startWriteSerial(const std::string & msg);
 
-    // TODO
+    /**
+     * @brief      Handles a write to Serial
+     *
+     * @param[in]  error              The error
+     * @param[in]  bytes_transferred  The bytes transferred
+     */
     void handleWriteSerial(const boost::system::error_code & error,
         size_t bytes_transferred);
 
     /**
-     * @brief      TODO
+     * @brief      Inserts an entry in the log.
      *
      * @param[in]  id             The identifier
      * @param[in]  timestamp      The timestamp
@@ -205,7 +257,9 @@ public:
         float c_err,
         float c_var);
 
-    // TODO
+    /**
+     * @brief      Saves entries to disk.
+     */
     void saveEntries();
 
     /* Get */
@@ -220,7 +274,7 @@ public:
     Entry *getLatestEntry(size_t id);
 
     /**
-     * @brief      Gets the values of lux or duty cycke in a time period.
+     * @brief      Gets the values of lux or duty cycle in a time period.
      *
      * @param[in]  id        The node identifier
      * @param[in]  start     The start
@@ -359,9 +413,7 @@ public:
     /**
      * @brief      Gets the time since last reset for a given node.
      *
-     * This value should be roughly the same 
-     *
-     * @param[in]  timestamp  The node identifier
+     * @param[in]  id  The node identifier
      *
      * @return     The time since last reset.
      */

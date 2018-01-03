@@ -1,12 +1,12 @@
-/** 
- * @file pi.hpp
- * @brief PI Controller headers
- * 
- * Proportional Integral Controller
- * 
- * @author João Borrego
- * @author António Almeida
-*/
+/**
+ * @file    multiple_board/main/pi.cpp
+ * @brief   PI Controller headers
+ *
+ * Proportional Integral Controller class headers
+ *
+ * @author  João Borrego
+ * @author  António Almeida
+ */
 
 #ifndef INO_PI_HPP
 #define INO_PI_HPP
@@ -103,12 +103,6 @@ namespace PIController {
         float deadzone_min;
         /** Error deadzone maximum threshold */
         float deadzone_max;
-
-        /**
-         * k_1 = k_p * b
-         * p = k_p * b - k_p * y
-         */
-        //float k_1;
 
         /**
          * k_2 = k_p * k_i * T / 2

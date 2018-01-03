@@ -1,8 +1,9 @@
 /**
- * @file matrix.hpp
- * @brief Float matrix operations
- * @author João Borrego
- * @author António Almeida
+ * @file    multiple_board/main/matrix.hpp
+ * 
+ * @brief   Float matrix operations headers
+ * 
+ * @author  João Borrego
  */
 
 #include "matrix.hpp"

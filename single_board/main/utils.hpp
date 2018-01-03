@@ -1,9 +1,11 @@
 /** 
-* @file utils.hpp
-* @brief Generic utilities
-* @author António Almeida
-* @author João Borrego
-*/
+ * @file    single_board/main/utils.hpp
+ * 
+ * @brief   Generic utilities
+ * 
+ * @author  João Borrego
+ * @author  António Almeida
+ */
 
 #include <math.h>
 
