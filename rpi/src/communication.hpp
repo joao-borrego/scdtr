@@ -57,7 +57,7 @@ namespace Communication
         /** Float variable */
         float f;
         /** Float byte array */
-        byte b[sizeof(float)];
+        unsigned char b[sizeof(float)];
     } float_bytes;
 
 }
