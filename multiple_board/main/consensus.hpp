@@ -119,10 +119,11 @@ namespace Consensus{
      * @param[in]  L     Target lower bound illuminance
      * @param      K_i   The k i submatrix of K
      * @param[in]  o     External illuminance
+     * @param[in]  onComplete  On iteration complete custom function pointer
      *
      * @return     Output reference in lux units
      */
-    float solve(size_t id, float L, float* K_i, float o);
+    float solve(size_t id, float L, float* K_i, float o, void (*onComplete)(void));
 
     /**
      * @brief      Prints debug information to Serial.

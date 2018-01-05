@@ -1,13 +1,13 @@
 close all, clear all;
 
 iterations = 50;
-debug_output = false;
+debug_output = true;
 
 % The system
-k11 = 0.64815; k12 = 0.24545;
-k21 = 0.20696; k22 = 1.26932;
-L1 = 100/3; o1 = 0.19328;
-L2 = 200/3; o2 = 0.20200;
+k11 = 0.70325; k12 = 0.23473;
+k21 = 0.22177; k22 = 1.29555;
+L1 = 200/3; o1 = 0.18675;
+L2 = 100/3; o2 = 0.19534;
 
 K = [k11, k12 ; k21 , k22];
 L = [L1;L2]; o = [o1;o2];
@@ -89,7 +89,7 @@ for i=1:iterations
    d_0_1(i, :) = [d11u; d12u];
 
    %check feasibility of unconstrained minimum using local constraints
-   if (d11u < 0), sol_unconstrained = 0; end
+   if (d11u < 0),   sol_unconstrained = 0; end
    if (d11u > 100), sol_unconstrained = 0; end
    if (k11*d11u + k12*d12u < L1-o1), sol_unconstrained = 0; end
    
@@ -110,8 +110,8 @@ for i=1:iterations
    d_1_1(i, :) = [d11bl; d12bl];
 
    %check feasibility of minimum constrained to linear boundary
-   if (d11bl < 0), sol_boundary_linear = 0; end
-   if (d11bl > 100), sol_boundary_linear = 0; end
+   if (d11bl < 0),      sol_boundary_linear = 0; end
+   if (d11bl > 100),    sol_boundary_linear = 0; end
    % compute function value and if best store new optimum
    if sol_boundary_linear 
         min_boundary_linear = 0.5*q1*d11bl^2 + c1*d11bl + y1(1)*(d11bl-d1_av(1)) + ...
@@ -129,7 +129,6 @@ for i=1:iterations
    d_2_1(i, :) = [d11b0; d12b0];
 
    %check feasibility of minimum constrained to 0 boundary
-   if (d11b0 > 100), sol_boundary_0 = 0; end
    if (k11*d11b0 + k12*d12b0 < L1-o1), sol_boundary_0 = 0; end
    % compute function value and if best store new optimum
    if sol_boundary_0 
@@ -148,7 +147,6 @@ for i=1:iterations
    d_3_1(i, :) = [d11b100; d12b100];
 
    %check feasibility of minimum constrained to 100 boundary
-   if (d11b0 < 0), sol_boundary_100 = 0; end
    if (k11*d11b100 + k12*d12b100 < L1-o1), sol_boundary_100 = 0; end
    % compute function value and if best store new optimum
    if sol_boundary_100 
@@ -176,7 +174,8 @@ for i=1:iterations
    d_4_1(i, :) = [d11l0; d12l0];
 
    %check feasibility
-   if (d11l0 > 100), sol_linear_0 = 0; end
+   if (d11l0 < 0),      sol_linear_0 = 0; end
+   if (d11l0 > 100),    sol_linear_0 = 0; end
    % compute function value and if best store new optimum
    if sol_linear_0 
         min_linear_0 = 0.5*q1*d11l0^2 + c1*d11l0 + y1(1)*(d11l0-d1_av(1)) + ...
@@ -203,7 +202,8 @@ for i=1:iterations
    d_5_1(i, :) = [d11l100; d12l100];
 
    %check feasibility
-   if (d11l100 < 0), sol_linear_100 = 0; end
+   if (d11l100 < 0),      sol_linear_100 = 0; end
+   if (d11l100 > 100),    sol_linear_100 = 0; end
    % compute function value and if best store new optimum
    if sol_linear_100 
         min_linear_100 = 0.5*q1*d11l100^2 + c1*d11l100 + y1(1)*(d11l100-d1_av(1)) + ...
@@ -211,7 +211,7 @@ for i=1:iterations
        if min_linear_100 < min_best_1(i)
            d11_best = d11u;
            d12_best = d12u;
-           min_best_1(i) = min_linear100;
+           min_best_1(i) = min_linear_100;
        end
    end
    %store data and save for next cycle
@@ -253,7 +253,7 @@ for i=1:iterations
    d_0_2(i, :) = [d21u; d22u];
 
    %check feasibility of unconstrained minimum using local constraints
-   if (d22u < 0), sol_unconstrained = 0; end
+   if (d22u < 0),   sol_unconstrained = 0; end
    if (d22u > 100), sol_unconstrained = 0; end
    if (k21*d21u + k22*d22u < L2-o2), sol_unconstrained = 0; end
 
@@ -274,8 +274,8 @@ for i=1:iterations
    d_1_2(i, :) = [d21bl; d22bl];
 
    %check feasibility of minimum constrained to linear boundary
-   if (d22bl < 0), sol_boundary_linear = 0; end
-   if (d22bl > 100), sol_boundary_linear = 0; end
+   if (d22bl < 0),      sol_boundary_linear = 0; end
+   if (d22bl > 100),    sol_boundary_linear = 0; end
    % compute function value and if best store new optimum
    if sol_boundary_linear 
         min_boundary_linear = 0.5*q2*d22bl^2 + c2*d22bl + y2(1)*(d21bl-d2_av(1)) + ...
@@ -293,8 +293,8 @@ for i=1:iterations
    d_2_2(i, :) = [d21b0; d22b0];
 
    %check feasibility of minimum constrained to 0 boundary
+   if (d22b0 > 100),    sol_boundary_0 = 0; end
    if (k21*d21b0 + k22*d22b0 < L2-o2), sol_boundary_0 = 0; end
-   if (d22b0 > 100), sol_boundary_0 = 0; end
    % compute function value and if best store new optimum
    if sol_boundary_0 
         min_boundary_0 = 0.5*q2*d22b0^2 + c2*d22b0 + y2(1)*(d21b0-d2_av(1)) + ...
@@ -312,8 +312,8 @@ for i=1:iterations
    d_3_2(i, :) = [d21b100; d22b100];
 
    %check feasibility of minimum constrained to 100 boundary
+   if (d22b100 < 0),    sol_boundary_100 = 0; end
    if (k21*d21b100 + k22*d22b100 < L2-o2), sol_boundary_100 = 0; end
-   if (d22b100 < 0), sol_boundary_100 = 0; end
    % compute function value and if best store new optimum
    if sol_boundary_100 
         min_boundary_100 = 0.5*q2*d22b100^2 + c2*d22b100 + y2(1)*(d21b100-d2_av(1)) + ...
@@ -340,6 +340,7 @@ for i=1:iterations
    d_4_2(i, :) = [d21l0; d22l0];
 
    %check feasibility
+   if(d22l0 < 0),   sol_linear_0 = 0; end
    if(d22l0 > 100), sol_linear_0 = 0; end
    % compute function value and if best store new optimum
    if sol_linear_0 
@@ -367,7 +368,8 @@ for i=1:iterations
    d_5_2(i, :) = [d21l100; d22l100];
 
    %check feasibility
-   if (d22l100 < 0), sol_linear_100 = 0; end
+   if (d22l100 < 0),    sol_linear_100 = 0; end
+   if (d22l100 > 100),  sol_linear_100 = 0; end
    %now must choose the minimum among the feasible solutions
    % compute function value and if best store new optimum
    if sol_linear_100 

@@ -32,9 +32,9 @@ namespace PIController {
     /** Default anti-windup positive saturation threshold */
     const float ANTI_WINDUP_SAT_MAX  =  255.0;
     /** Default error deadzone minimum threshold */
-    const float ERR_DEADZONE_MIN     =  -3.0;
+    const float ERR_DEADZONE_MIN     =  -1.5;
     /** Default error deadzone maximum threshold */
-    const float ERR_DEADZONE_MAX     =  3.0;
+    const float ERR_DEADZONE_MAX     =  1.5;
 
     /**
      * @brief      PI Controller class with additional features for smoother performance.

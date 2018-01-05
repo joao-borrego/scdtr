@@ -57,6 +57,8 @@ PIController::Controller controller(
 
 /** Latest elapsed milliseconds since startup */
 unsigned long current_millis    {0};
+/** Timestamp of last system reset */
+unsigned long start_millis      {0};
 /** Previously recorded elapsed milliseconds since startup */
 unsigned long last_millis       {0};
 
@@ -64,12 +66,12 @@ unsigned long last_millis       {0};
 
 /** Current node state */
 volatile int state          {CONTROL};
+/** Distributed control */
+volatile bool distributed   {DISTRIBUTED};
 /** Reset trigger */
 volatile bool reset         {false};
 /** Occupancy changed trigger */
 volatile bool changed       {false};
-/** Distributed control */
-volatile bool distributed   {true};
 
 /** Command line buffer for Serial input */
 char cmd_buffer[BUFFER_SIZE] {0};
@@ -88,7 +90,7 @@ void setup() {
     // Read device ID from EEPROM
     id = EEPROM.read(ID_ADDR);
 
-    if (id != MASTER){
+    if (id != MASTER || MASTER_INFO) {
         Serial.print("[I2C] Registered with id ");
         Serial.println((int) id);
     }
@@ -104,6 +106,9 @@ void setup() {
 
     // Configure controller features
     controller.configureFeatures(true, true, true);
+
+    // Setup time counter
+    start_millis = millis();
 }
 
 /**
@@ -122,27 +127,31 @@ void loop() {
     updateState();
 
     // Broadcast information to I2C bus periodically
+    sendInfo();
+}
 
-    current_millis = millis();
+void sendInfo(){
+
+    current_millis = millis() - start_millis;
     if (current_millis - last_millis >= STATUS_DELAY){
         last_millis = current_millis;
-
         // Packets have to be acknowledged in order to be sniffed:
         // Each node acks a single packet
+        /*
         Communication::sendInfo((id + 1) % N,
             lux, out / 255.0, lower_bound, ext, ref, occupancy);
-
+        */
         printState();
     }
 }
 
 /**
- * @brief      Prints the current state to Serial.
+ * @brief      Prints the current state variables to Serial.
  * 
  * Used mostly for debug purposes
  */
 void printState(){
-    if (id != MASTER){
+    if (id != MASTER || MASTER_INFO){
         Serial.print(lux);
         Serial.print("\t");
         Serial.print((floor(out)) / 255.0 );
@@ -157,6 +166,8 @@ void printState(){
         Serial.print("\t");
         Serial.print(distributed);
         Serial.print("\t");
+        //Serial.print(lux - ref);
+        //Serial.print("\t");
         Serial.println(current_millis);
     }
 }
@@ -172,7 +183,7 @@ void updateState(){
         ref = LOW_LUX;
         lower_bound = LOW_LUX;
         state = CALIBRATION;
-        distributed = true;
+        distributed = DISTRIBUTED;
     } else if (state == CONTROL) {
         if (changed){
             changed = false;
@@ -184,6 +195,7 @@ void updateState(){
         }
     } else if (state == CALIBRATION) {
         calibrate();
+        start_millis = millis();
         state = CONTROL;
     }
 }
@@ -193,7 +205,7 @@ void updateState(){
  */
 void calibrate(){
 
-    if (id != MASTER) Serial.println("[Calibrate]");
+    if (id != MASTER || MASTER_INFO) Serial.println("[Calibrate]");
     Wire.onReceive(Calibration::onReceive);
     Calibration::execute(id, k_i, &ext);
     Wire.onReceive(Communication::onReceive);
@@ -203,16 +215,16 @@ void calibrate(){
  * @brief      Executes the consensus algorithm.
  */
 void doConsensus(){
-    if (id != MASTER) Serial.println("[Consensus]");
-    if (id == MASTER) delay(1000);
+    if (id != MASTER || MASTER_INFO) Serial.println("[Consensus]");
+    if (id == MASTER) delay(50);
     
-    ref = Consensus::solve(id, lower_bound, k_i, ext);
+    ref = Consensus::solve(id, lower_bound, k_i, ext, sendInfo);
     
     // DEBUG scenario
-    //float k_tmp[N][N]   = { {2.0, 1.0}, {1.0, 2.0} };
-    //float lb_tmp[N]     = { 150.0, 80.0 };
-    //float ext_tmp[N]    = { 30.0, 0.0 };
-    //ref = Consensus::solve(id, lb_tmp[id], k_tmp[id], ext_tmp[id]);
+    //float lb_tmp[N]     = { 200.0/3.0, 100.0/3.0 };
+    //float k_tmp[N][N]   = { {0.77066, 0.27014}, {0.23569, 1.47895} };
+    //float ext_tmp[N]    = { 0.19991, 0.21562 };
+    //ref = Consensus::solve(id, lower_bound, k_tmp[id], ext_tmp[id], sendInfo);
 
     Wire.onReceive(Communication::onReceive);
     Wire.onRequest(Communication::nop);

@@ -63,7 +63,7 @@ const float HIGH_LUX = (2.0 / 3.0) * MAX_LUX;
 /** Proportional term coefficient */
 const float K_P = 2.051;
 /** Integral term coefficient */
-const float K_I = 136.7462;
+const float K_I = 50.7462;
 /** Sampling time (s) */
 const float T   = 0.030;
 
@@ -77,6 +77,9 @@ const int CONTROL       = 0;
 const int CALIBRATION   = 1;
 /** Consensus state */
 const int CONSENSUS     = 2;
+
+/** Whether to use a distributed controller by default */
+const bool DISTRIBUTED  = false;
 
 /** I2C information (minimum) broadcast period (ms) */
 const unsigned long STATUS_DELAY = 100;
@@ -95,6 +98,9 @@ const char CMD_LOWER_BOUND[10]      = "l";
 const char CMD_DISTRIBUTED_ON[10]   = "A";
 /** Deactivate distributed control */
 const char CMD_DISTRIBUTED_OFF[10]  = "D";
+
+/** Master prints data to Serial (turn off to minimise connection congestion) */
+const bool MASTER_INFO = true;
 
 /*
  * Other

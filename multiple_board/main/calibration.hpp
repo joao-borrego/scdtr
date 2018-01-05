@@ -32,11 +32,14 @@ namespace Calibration{
 
     /** Sample values of duty-cycle for which to obtain illuminance */
     #define SAMPLES {\
-        111.0, 127.0, 143.0, 159.0, 175.0,\
-        191.0, 207.0, 223.0, 239.0, 255.0 \
+        15.0,  25.0,  35.0,  45.0,  55.0 ,\
+        65.0,  75.0,  85.0,  95.0,  105.0,\
+        115.0, 125.0, 135.0, 145.0, 155.0,\
+        165.0, 175.0, 185.0, 195.0, 205.0,\
+        215.0, 225.0, 235.0, 245.0, 255.0 \
     }
     /** Number of samples */
-    #define NUM_SAMPLES 10
+    #define NUM_SAMPLES 25
 
     /** Obtain external illuminance */
     #define STATE_EXT   0
