@@ -7,8 +7,7 @@
  * Calculates external illuminance and K_i vector
  * 
  * @author  João Borrego
- * @author  António Almeida
-*/
+ */
 
 #include "calibration.hpp"
 
