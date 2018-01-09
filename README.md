@@ -3,7 +3,7 @@ Distributed Real Time Control Systems
 
 This repository contains the course project and report.
 It consists of an automated lighting control system, with a distributed approach to the global optimisation problem.
-It was tested using 2 Arduino boards for for system nodes, each with an LED and LDR as actuator and sensor respectively.
+It was tested using 2 Arduino boards for system nodes, each with an LED and LDR as actuator and sensor respectively.
 The system was enclosed in a shoe box, coated with reflective paper on the inside so as to reflect and accentuate inter-node coupling.
 
 ![System image][system]
