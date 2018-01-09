@@ -7,8 +7,7 @@
  * Calculates external illuminance and K_i vector
  * 
  * @author  João Borrego
- * @author  António Almeida
-*/
+ */
 
 #include "calibration.hpp"
 
@@ -112,7 +111,7 @@ namespace Calibration
 
         *o_i = y_ext;
 
-        if (id != MASTER){
+        if (id != MASTER || MASTER_INFO){
             Serial.print("o_i = ");
             Serial.println(y_ext, 5);
         }
@@ -174,7 +173,7 @@ namespace Calibration
             k_i[i] = num / den * (255.0 / 100.0);
         }
 
-        if (id != MASTER){
+        if (id != MASTER || MASTER_INFO){
             Serial.print("k_i = [");
             for (int j = 0; j < N; j++){
                 Serial.print(k_i[j], 5);

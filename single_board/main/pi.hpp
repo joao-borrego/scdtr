@@ -5,7 +5,6 @@
  * Proportional Integral Controller
  * 
  * @author  João Borrego
- * @author  António Almeida
 */
 
 #include "Arduino.h"

@@ -7,7 +7,6 @@
  * to a global optimisation problem.
  *
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #ifndef INO_CONSENSUS_HPP
@@ -17,10 +16,13 @@
 #include "constants.hpp"
 #include "communication.hpp"
 
+/** Debug flags for printing intermediate results to Serial */
+#define DEBUG_CONSENSUS false
+
 namespace Consensus{
 
     /** Total number of iterations */
-    const float ITERATIONS = 50;
+    const float ITERATIONS = 25;
     /** Augmented Lagrangian method penalty parameter */
     const float RHO = 0.01;
     /** Quadratic terms coefficients */
@@ -119,10 +121,11 @@ namespace Consensus{
      * @param[in]  L     Target lower bound illuminance
      * @param      K_i   The k i submatrix of K
      * @param[in]  o     External illuminance
+     * @param[in]  onComplete  On iteration complete custom function pointer
      *
      * @return     Output reference in lux units
      */
-    float solve(size_t id, float L, float* K_i, float o);
+    float solve(size_t id, float L, float* K_i, float o, void (*onComplete)(void));
 
     /**
      * @brief      Prints debug information to Serial.

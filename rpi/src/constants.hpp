@@ -4,7 +4,6 @@
  * @brief  	Relevant system constants
  * 
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #ifndef CONSTANTS_HPP

@@ -4,7 +4,6 @@
  * @brief Single board system main application
  *
  * @author João Borrego
- * @author António Almeida
  */
 
 #include "utils.hpp"

@@ -7,7 +7,6 @@
  * Implements functions to send supported packets.
  * 
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #include <Arduino.h>

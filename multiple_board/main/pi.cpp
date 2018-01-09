@@ -5,7 +5,6 @@
  * Proportional Integral Controller class implementation
  *
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #include "pi.hpp"
@@ -19,7 +18,7 @@ namespace PIController {
         const float k_p,
         const float k_i,
         const float T,
-        const float b,
+        const float k_ff,
         const float k_sat,
         const float anti_windup_sat_min,
         const float anti_windup_sat_max,
@@ -33,7 +32,9 @@ namespace PIController {
         this->k_i = k_i;
         this->T = T;
 
-        this->b = b;
+        this->k_ff = k_ff;
+        this->m_ff = M_FF;
+        this->b_ff = B_FF;
         this->k_sat = k_sat;
         this->sat_min = anti_windup_sat_min;
         this->sat_max = anti_windup_sat_max;
@@ -80,7 +81,7 @@ namespace PIController {
         p_new = k_p * err_new;
         if (use_feedforward){
             // Add feedforward term
-            p_new += b * getFeedforward(ref_sampled);
+            p_new += k_ff * getFeedforward(ref_sampled);
         }
 
         //p_new = k_1 * ref_sampled - k_p * y;
@@ -139,7 +140,7 @@ namespace PIController {
 
     inline float Controller::getFeedforward(float y){
         // y = m * x + b
-        return (y - B_FF) / M_FF;
+        return (y - b_ff) / m_ff;
     }
 
     /* Getters and setters */
@@ -178,6 +179,11 @@ namespace PIController {
         this->k_2 = k_p * k_i * T / 2.0;
 
         Controller::resetHistory();
+    }
+
+    void Controller::updateFeedForward(float k, float o){
+        this->m_ff = k;
+        this->b_ff = o;
     }
 
     inline void Controller::resetHistory(){

@@ -5,7 +5,6 @@
  * Proportional Integral Controller class headers
  *
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #ifndef INO_PI_HPP
@@ -20,10 +19,10 @@
 namespace PIController {
 
     /** Default feedforward gain */
-    const float K_FF                 =  0.5; // 1.0;
-    /** Feedforward approximated linear characteristic m parameter */
+    const float K_FF                 =  0.0; // 1.0;
+    /** Feedforward approximated linear characteristic slope */
     const float M_FF                 =  0.4330;
-    /** Feedforward approximated linear characteristic b parameter */
+    /** Feedforward approximated linear characteristic y(0) */
     const float B_FF                 =  -4.6204;
     /** Default anti-windup loop gain */
     const float K_SAT                =  0.5;
@@ -92,7 +91,12 @@ namespace PIController {
         /* Numerical constants */
 
         /** Feedforward weight gain */
-        float b;
+        float k_ff;
+        /** Feedforward linear approximation slope */
+        float m_ff;
+        /** Feedforward linear approximation y(0) */
+        float b_ff;
+
         /** Anti-windup loop gain */
         float k_sat;
         /** Anti-windup negative saturation threshold */
@@ -121,7 +125,7 @@ namespace PIController {
          * @param      k_p                  The coefficient for the proportional term
          * @param      k_i                  The coefficient for the integral term
          * @param      T                    Sapling time
-         * @param      b                    Feedforward controller gain
+         * @param      k_ff                    Feedforward controller gain
          * @param      k_sat                The anti-windup loop gain
          * @param      anti_windup_sat_min  The anti-windup sat minimum
          * @param      anti_windup_sat_max  The anti-windup sat maximum
@@ -135,7 +139,7 @@ namespace PIController {
             const float k_p,
             const float k_i,
             const float T,
-            const float b = K_FF,
+            const float k_ff = K_FF,
             const float k_sat = K_SAT,
             const float anti_windup_sat_min = ANTI_WINDUP_SAT_MIN,
             const float anti_windup_sat_max = ANTI_WINDUP_SAT_MAX,
@@ -213,6 +217,14 @@ namespace PIController {
          */
         void useAntiWindup(bool state);
         
+        /**
+         * @brief      Updates the feed-forward controller parameters
+         *
+         * @param[in]  k     
+         * @param[in]  o     { parameter_description }
+         */
+        void updateFeedForward(float k, float o);
+
         /**
          * Unused functions
          */

@@ -7,7 +7,6 @@
  * to a global optimisation problem.
  *
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #include "consensus.hpp"
@@ -34,17 +33,17 @@ uint8_t receiver;
 
 /* Functions */
 
-void debugPrint(float *d, int size, int it, char* description)
+void debugPrint(float *d, int size, int iter, char* description)
 {
-    /*
-    Serial.print("[Consensus] ");
-    Serial.print(it);
-    Serial.print(" - ");
-    Serial.print(description);
-    Serial.print(" [ ");
-    for (int j = 0; j < size; j++) { Serial.print(d[j]); Serial.print(" "); }
-    Serial.println("]");
-    */
+    #if DEBUG_CONSENSUS
+        Serial.print("[Consensus] ");
+        Serial.print(iter);
+        Serial.print(" - ");
+        Serial.print(description);
+        Serial.print(" [ ");
+        for (int j = 0; j < size; j++) { Serial.print(d[j]); Serial.print(" "); }
+        Serial.println("]");
+    #endif
 }
 
 float costFunction(
@@ -90,12 +89,10 @@ bool checkConstraints(
     float o,
     bool check_linear)
 {
-    for (int j = 0; j < N; j++){
-        if (d_i[j] > MAX_DC || d_i[j] < 0.0){
-            return false;
-        }
+    if (d_i[id] > MAX_DC || d_i[id] < 0.0){
+        return false;
     }
-
+   
     if (check_linear){
         float prod = 0.0;
         float u = L - o;
@@ -158,8 +155,6 @@ void getCopies(float *d_i_best)
             Communication::sendPacket(sender, ACK);
         }
     }
-
-    Wire.onReceive(Communication::nop);
 }
 
 void onReceive(int bytes)
@@ -169,6 +164,11 @@ void onReceive(int bytes)
 
     byte packet[MAX_SIZE];
     Communication::readPacket(&p_id, &p_type, p_size, packet);
+
+    // Ignore invalid packets
+    if (p_type == INF){
+        return;
+    }
 
     if (id == sender)
     {
@@ -190,7 +190,7 @@ void onReceive(int bytes)
     }
 }
 
-float solve(size_t id_, float L, float* K_i, float o)
+float solve(size_t id_, float L, float* K_i, float o, void (*onComplete)(void))
 {
     // Setup
     id = id_;
@@ -275,19 +275,20 @@ float solve(size_t id_, float L, float* K_i, float o)
     debugPrint(&g_i, 1, -1, "g_i");
     debugPrint(&k_r_squared_two_norm, 1, -1, "‖k_r‖_2 ^ 2");
 
-    for (int it = 0; it < ITERATIONS; it++){
+    int iter = 0;
+    for (iter = 0; iter < ITERATIONS; iter++){
 
         cost_best = INFINITY;
 
         for (int j = 0; j < N; j++){
             Z_i[j] = rho * d_i_avg[j] - y_i[j] - ((j == id)? c_i : 0);
         }
-        debugPrint(Z_i, N, it, "Z_i");
+        debugPrint(Z_i, N, iter, "Z_i");
 
         // Unconstrained
         elemMul(P_i, Z_i, d_i_0, N, 1);
 
-        debugPrint(d_i_0, N, it, "d_0");
+        debugPrint(d_i_0, N, iter, "d_0");
 
         updateBest(d_i_0, K_i, L, o, true, d_i_best, &cost_best,
             d_i_avg, q_i, c_i, y_i, rho);
@@ -303,7 +304,7 @@ float solve(size_t id_, float L, float* K_i, float o)
         mul(d_i_aux, &aux_1, d_i, N, 1, 1);
         sub(d_i_0, d_i, d_i, N, 1);
 
-        debugPrint(d_i, N, it, "d_1");
+        debugPrint(d_i, N, iter, "d_1");
 
         updateBest(d_i, K_i, L, o, false, d_i_best, &cost_best,
             d_i_avg, q_i, c_i, y_i, rho);
@@ -313,7 +314,7 @@ float solve(size_t id_, float L, float* K_i, float o)
             d_i[j] = (j == id)? 0.0 : d_i_0[j];
         }
 
-        debugPrint(d_i, N, it, "d_2");
+        debugPrint(d_i, N, iter, "d_2");
 
         updateBest(d_i, K_i, L, o, true, d_i_best, &cost_best,
             d_i_avg, q_i, c_i, y_i, rho);
@@ -323,7 +324,7 @@ float solve(size_t id_, float L, float* K_i, float o)
             d_i[j] = (j == id)? MAX_DC : d_i_0[j];
         }
 
-        debugPrint(d_i, N, it, "d_3");
+        debugPrint(d_i, N, iter, "d_3");
 
         updateBest(d_i, K_i, L, o, true, d_i_best, &cost_best,
             d_i_avg, q_i, c_i, y_i, rho);
@@ -341,10 +342,10 @@ float solve(size_t id_, float L, float* K_i, float o)
 
         aux_4 = g_i / rho;
         mul(d_i_aux, &aux_4, d_i, N, 1, 1);
-        //debugPrint(d_i, N, it, "d_4_1");
+        //debugPrint(d_i, N, iter, "d_4_1");
         sum(d_i_0, d_i, d_i, N, 1);
 
-        debugPrint(d_i, N, it, "d_4");
+        debugPrint(d_i, N, iter, "d_4");
 
         updateBest(d_i, K_i, L, o, false, d_i_best, &cost_best,
             d_i_avg, q_i, c_i, y_i, rho);
@@ -363,12 +364,12 @@ float solve(size_t id_, float L, float* K_i, float o)
         mul(d_i, &aux_4, d_i_aux, N, 1, 1);
         sum(d_i_0, d_i_aux, d_i, N, 1);
 
-        debugPrint(d_i, N, it, "d_5");
+        debugPrint(d_i, N, iter, "d_5");
 
         updateBest(d_i, K_i, L, o, false, d_i_best, &cost_best,
             d_i_avg, q_i, c_i, y_i, rho);
 
-        debugPrint(d_i_best, N, it, "d_best");
+        debugPrint(d_i_best, N, iter, "d_best");
 
         getCopies(d_i_best);
 
@@ -377,18 +378,24 @@ float solve(size_t id_, float L, float* K_i, float o)
             d_i_avg[j] += d_i_best[j];
             d_i_avg[j] = d_i_avg[j] / N;
         }
-        debugPrint(d_i_avg, N, it, "d_i_avg");
+        debugPrint(d_i_avg, N, iter, "d_i_avg");
 
-        // d_i and d_i_aux are bith used as aux vectors here
+        // d_i and d_i_aux are used as aux vectors here
         sub(d_i_best, d_i_avg, d_i_aux, N, 1);
         mul(d_i_aux, &rho, d_i, N, 1, 1);
         sum(y_i, d_i, y_i, N, 1);
 
-        debugPrint(y_i, N, it, "y_i");
-        debugPrint(&cost_best, 1, it, "cost_best");
+        debugPrint(y_i, N, iter, "y_i");
+        debugPrint(&cost_best, 1, iter, "cost_best");
+
+        // Run iteration complete external function
+        // (e.g. keep printing external data to Serial)
+        onComplete();
     }
 
     mul(K_i, d_i_best, &output, 1, N, 1);
+    
+    debugPrint(&output, 1, iter, "new r");
     return output;
 }
 

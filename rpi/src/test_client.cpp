@@ -54,12 +54,12 @@ int main(int argc, char** argv) {
     // Script
     std::vector<Instruction> script;
 
-    script.emplace_back(std::string("r"),       4000);  // Reset system
-    script.emplace_back(std::string("D"),       6000);  // Isolated controller
-    script.emplace_back(std::string("s 0 1"),   10000); // Set occupancy to 1 in node 0
-    script.emplace_back(std::string("s 1 1"),   10000); // Set occupancy to 1 in node 1
-    script.emplace_back(std::string("s 0 0"),   10000); // Set occupancy to 1 in node 0
-    script.emplace_back(std::string("s 1 0"),   10000); // Set occupancy to 1 in node 0
+    script.emplace_back(std::string("r"),       20000);  // Reset system
+    //script.emplace_back(std::string("D"),       6000);  // Isolated controller
+    script.emplace_back(std::string("s 0 1"),   20000); // Set occupancy to 1 in node 0
+    script.emplace_back(std::string("s 1 1"),   20000); // Set occupancy to 1 in node 1
+    script.emplace_back(std::string("s 0 0"),   20000); // Set occupancy to 1 in node 0
+    script.emplace_back(std::string("s 1 0"),   20000); // Set occupancy to 1 in node 0
     script.emplace_back(std::string("S"),       0);     // Save data to file
         
     // Run script

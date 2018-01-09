@@ -4,7 +4,6 @@
  * @brief   Generic utilities
  *
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #include "utils.hpp"
