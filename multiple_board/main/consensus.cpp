@@ -7,7 +7,6 @@
  * to a global optimisation problem.
  *
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #include "consensus.hpp"
@@ -36,15 +35,15 @@ uint8_t receiver;
 
 void debugPrint(float *d, int size, int iter, char* description)
 {
-    /*
-    Serial.print("[Consensus] ");
-    Serial.print(iter);
-    Serial.print(" - ");
-    Serial.print(description);
-    Serial.print(" [ ");
-    for (int j = 0; j < size; j++) { Serial.print(d[j]); Serial.print(" "); }
-    Serial.println("]");
-    */
+    #if DEBUG_CONSENSUS
+        Serial.print("[Consensus] ");
+        Serial.print(iter);
+        Serial.print(" - ");
+        Serial.print(description);
+        Serial.print(" [ ");
+        for (int j = 0; j < size; j++) { Serial.print(d[j]); Serial.print(" "); }
+        Serial.println("]");
+    #endif
 }
 
 float costFunction(
@@ -156,8 +155,6 @@ void getCopies(float *d_i_best)
             Communication::sendPacket(sender, ACK);
         }
     }
-
-    Wire.onReceive(Communication::nop);
 }
 
 void onReceive(int bytes)
@@ -167,6 +164,11 @@ void onReceive(int bytes)
 
     byte packet[MAX_SIZE];
     Communication::readPacket(&p_id, &p_type, p_size, packet);
+
+    // Ignore invalid packets
+    if (p_type == INF){
+        return;
+    }
 
     if (id == sender)
     {
@@ -378,7 +380,7 @@ float solve(size_t id_, float L, float* K_i, float o, void (*onComplete)(void))
         }
         debugPrint(d_i_avg, N, iter, "d_i_avg");
 
-        // d_i and d_i_aux are biterh used as aux vectors here
+        // d_i and d_i_aux are used as aux vectors here
         sub(d_i_best, d_i_avg, d_i_aux, N, 1);
         mul(d_i_aux, &rho, d_i, N, 1, 1);
         sum(y_i, d_i, y_i, N, 1);
@@ -387,10 +389,13 @@ float solve(size_t id_, float L, float* K_i, float o, void (*onComplete)(void))
         debugPrint(&cost_best, 1, iter, "cost_best");
 
         // Run iteration complete external function
+        // (e.g. keep printing external data to Serial)
         onComplete();
     }
 
     mul(K_i, d_i_best, &output, 1, N, 1);
+    
+    debugPrint(&output, 1, iter, "new r");
     return output;
 }
 

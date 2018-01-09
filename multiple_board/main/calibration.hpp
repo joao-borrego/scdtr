@@ -7,7 +7,6 @@
  * Calculates external illuminance and K_i vector
  * 
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #ifndef INO_CALIBRATION_HPP
@@ -23,9 +22,9 @@
 namespace Calibration{
     
     /** Minimum wait between I2C messages */
-    #define WAIT        20
+    #define WAIT        10
     /** Minimum wait between LED output value changes */
-    #define WAIT_LED    150
+    #define WAIT_LED    90
 
     /** Maximum I2C packet size (bytes) */
     #define MAX_PACKET_SIZE 32

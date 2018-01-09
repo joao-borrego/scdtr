@@ -6,7 +6,6 @@
  * Main application for multiple board system.
  * 
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #include <EEPROM.h>
@@ -137,10 +136,8 @@ void sendInfo(){
         last_millis = current_millis;
         // Packets have to be acknowledged in order to be sniffed:
         // Each node acks a single packet
-        /*
         Communication::sendInfo((id + 1) % N,
             lux, out / 255.0, lower_bound, ext, ref, occupancy);
-        */
         printState();
     }
 }
@@ -151,24 +148,22 @@ void sendInfo(){
  * Used mostly for debug purposes
  */
 void printState(){
+
     if (id != MASTER || MASTER_INFO){
         Serial.print(lux);
         Serial.print("\t");
-        Serial.print((floor(out)) / 255.0 );
+        Serial.print((floor(out)) / 255.0 * HIGH_LUX);
         Serial.print("\t");
         Serial.print(lower_bound);
         Serial.print("\t");
-        Serial.print(ext);
-        Serial.print("\t");
-        Serial.print(ref);
-        Serial.print("\t");
-        Serial.print(occupancy);
-        Serial.print("\t");
-        Serial.print(distributed);
-        Serial.print("\t");
-        //Serial.print(lux - ref);
+        //Serial.print(ext);
         //Serial.print("\t");
-        Serial.println(current_millis);
+        //Serial.print(ref);
+        //Serial.print("\t");
+        //Serial.print(occupancy);
+        //Serial.print("\t");
+        //Serial.println(current_millis);
+    	Serial.println();
     }
 }
 
@@ -208,6 +203,7 @@ void calibrate(){
     if (id != MASTER || MASTER_INFO) Serial.println("[Calibrate]");
     Wire.onReceive(Calibration::onReceive);
     Calibration::execute(id, k_i, &ext);
+    controller.updateFeedForward(k_i[id] / 255.0 * 100.0, ext);
     Wire.onReceive(Communication::onReceive);
 }
 
@@ -219,15 +215,14 @@ void doConsensus(){
     if (id == MASTER) delay(50);
     
     ref = Consensus::solve(id, lower_bound, k_i, ext, sendInfo);
-    
-    // DEBUG scenario
-    //float lb_tmp[N]     = { 200.0/3.0, 100.0/3.0 };
-    //float k_tmp[N][N]   = { {0.77066, 0.27014}, {0.23569, 1.47895} };
-    //float ext_tmp[N]    = { 0.19991, 0.21562 };
-    //ref = Consensus::solve(id, lower_bound, k_tmp[id], ext_tmp[id], sendInfo);
+
+    // [DEBUG] Consensus output
+    // float lb_tmp[N]     = { 200.0/3.0, 100.0/3.0 };
+    // float k_tmp[N][N]   = { {0.90326, 0.32617}, {0.25935, 1.41473} };
+    // float ext_tmp[N]    = { 0.28687, 0.33870 };
+    // ref = Consensus::solve(id, lower_bound, k_tmp[id], ext_tmp[id], sendInfo);
 
     Wire.onReceive(Communication::onReceive);
-    Wire.onRequest(Communication::nop);
 }
 
 

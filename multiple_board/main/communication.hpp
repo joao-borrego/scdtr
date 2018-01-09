@@ -20,7 +20,6 @@
  * Info         [ Header | lux | dc | lb | ext | ref | occ ]
  *
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #ifndef INO_COMMUNICATION_HPP

@@ -32,6 +32,8 @@ for i = 1:3
     fig_pos = fig.PaperPosition;
     fig.PaperSize = [fig_pos(3) fig_pos(4)];
     print(fig,'-dpdf','-r300',char(output_name));
+    % Metrics
+    overshoot(i) = (max(lx)-lx(end))/lx(end) * 100;
 end
 
 %% i) FF + Delayed PI comparison

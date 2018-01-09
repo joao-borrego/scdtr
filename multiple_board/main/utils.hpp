@@ -4,7 +4,6 @@
  * @brief   Generic utilities headers
  * 
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #ifndef INO_UTILS_HPP

@@ -1,19 +1,19 @@
 close all, clear all;
 
-iterations = 50;
+iterations = 10000;
 debug_output = true;
 
 % The system
-k11 = 0.70325; k12 = 0.23473;
-k21 = 0.22177; k22 = 1.29555;
-L1 = 200/3; o1 = 0.18675;
-L2 = 100/3; o2 = 0.19534;
+k11 = 1.33537; k12 = 0.39906;
+k21 = 0.28057; k22 = 1.29531;
+L1 = 200/3; o1 = 0.23447;
+L2 = 100/3; o2 = 0.27403;
 
 K = [k11, k12 ; k21 , k22];
 L = [L1;L2]; o = [o1;o2];
 
 % The cost function
-c1 = 1.0; c2 = 1.0;
+c1 = 1.0; c2 = 1/0.2166045;
 q1 = 0.0; q2 = 0.0;
 c = [c1 c2]; Q = [q1 0; 0 q2];
 
@@ -464,7 +464,7 @@ for i = 1:2
     set(gca,'FontSize',18);
     xlabel("Iterations", args{:});
     ylabel("Duty Cycle [\%]", args{:});
-    axis([0,50,0,100]);
+    axis([0,50,0,60]);
     legend({'$d_{1}$','$d_{2}$'}, 'Location','southeast','Orientation','horizontal',args{:});
     output_name = sprintf("figures/%s.pdf", files(i));
     fig.PaperPositionMode = 'auto';
@@ -484,7 +484,7 @@ hold off;
 set(gca,'FontSize',18);
 xlabel("Iterations", args{:});
 ylabel("Cost", args{:});
-axis([0,50,0,70]);
+axis([0,50,0,60]);
 legend({'cost$_{1}$','cost$_{2}$'}, 'Location','southeast','Orientation','horizontal',args{:});
 output_name = "figures/fig_min_cost.pdf";
 fig.PaperPositionMode = 'auto';
@@ -513,7 +513,7 @@ plot(d1_avg(:,1),d2_avg(:,2),'-','LineWidth',2);
 plot(d1_avg(end,1),d2_avg(end,2),'k*','MarkerSize',10,'LineWidth',1.3)
 optimum_str = sprintf("(%.2f, %.2f)", d1_avg(end,1), d2_avg(end,2));
 args = {'HorizontalAlignment','left','interpreter','latex','FontSize',20};
-text(d1_avg(end,1)+4,d2_avg(end,2)+4,char(optimum_str), args{:});
+text(d1_avg(end,1),d2_avg(end,2)+6,char(optimum_str), args{:});
 % Labels
 set(gca,'FontSize',18);
 xlabel("$d_1$ [\%]", args{:});

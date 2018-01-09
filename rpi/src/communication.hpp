@@ -7,7 +7,6 @@
  * Check protocol definition in multiple_board/main/communication.hpp.
  *
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #ifndef COMMUNICATION_HPP

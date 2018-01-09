@@ -4,7 +4,6 @@
  * @brief   Multiple board system constants
  * 
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #ifndef INO_CONSTANTS_HPP
@@ -63,7 +62,7 @@ const float HIGH_LUX = (2.0 / 3.0) * MAX_LUX;
 /** Proportional term coefficient */
 const float K_P = 2.051;
 /** Integral term coefficient */
-const float K_I = 50.7462;
+const float K_I = 150.7462;
 /** Sampling time (s) */
 const float T   = 0.030;
 
@@ -79,7 +78,7 @@ const int CALIBRATION   = 1;
 const int CONSENSUS     = 2;
 
 /** Whether to use a distributed controller by default */
-const bool DISTRIBUTED  = false;
+const bool DISTRIBUTED  = true;
 
 /** I2C information (minimum) broadcast period (ms) */
 const unsigned long STATUS_DELAY = 100;
@@ -100,7 +99,7 @@ const char CMD_DISTRIBUTED_ON[10]   = "A";
 const char CMD_DISTRIBUTED_OFF[10]  = "D";
 
 /** Master prints data to Serial (turn off to minimise connection congestion) */
-const bool MASTER_INFO = true;
+const bool MASTER_INFO = false;
 
 /*
  * Other

@@ -7,7 +7,6 @@
  * to a global optimisation problem.
  *
  * @author  João Borrego
- * @author  António Almeida
  */
 
 #ifndef INO_CONSENSUS_HPP
@@ -17,10 +16,13 @@
 #include "constants.hpp"
 #include "communication.hpp"
 
+/** Debug flags for printing intermediate results to Serial */
+#define DEBUG_CONSENSUS false
+
 namespace Consensus{
 
     /** Total number of iterations */
-    const float ITERATIONS = 50;
+    const float ITERATIONS = 25;
     /** Augmented Lagrangian method penalty parameter */
     const float RHO = 0.01;
     /** Quadratic terms coefficients */
