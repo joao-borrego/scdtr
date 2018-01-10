@@ -28,6 +28,7 @@ x = linspace(0, 12999, 13000) * 0.002;
 y_mean = mean(y);
 fig = figure('Name','d.3 avg) Sweep v_ldr[V] - T = 0.2 ms, 500 samples, avg 5 runs');
 plot(x, y_mean, 'LineWidth', 1.3);
+% Save
 set(gca,'FontSize',18);
 xlabel("Time [s]", args{:});
 xlim([0, 25.6])
@@ -42,20 +43,43 @@ print(fig,'-dpdf','-r300',output);
 
 y = csvread('data/fig_e.csv');
 x = linspace(0, 255, 256);
-figure('Name','e) Sweep in_ldr[raw] - T = 50 ms, 1 sample');
-plot(x, y);
+fig = figure('Name','e) Sweep in_ldr[raw] - T = 50 ms, 1 sample');
+plot(x, y, 'LineWidth', 1.3);
+% Save
+set(gca,'FontSize',18);
+xlabel("Duty cycle [PWM]", args{:});
+xlim([0, 255])
+ylabel("$v_{LDR}$ [V]", args{:});
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+output = 'figures/fig_e';
+print(fig,'-dpdf','-r300',output);
+
 
 %% f) Previous figures in LUX units
 
 y = csvread('data/fig_f_1.csv');
-x = linspace(0, 12999, 13000);
+x = linspace(0, 12999, 13000) * .2;
 figure('Name','f.1) Sweep in_ldr[LUX] - T = 0.2 ms, 500 samples');
 plot(x, y);
 
 y = csvread('data/fig_f_1_avg_10.csv');
 y_mean = mean(y);
-figure('Name','f.1 avg) Sweep in_ldr[LUX] - T = 0.2 ms, 500 samples, avg 10 runs');
-plot(x, y_mean);
+fig = figure('Name','f.1 avg) Sweep in_ldr[LUX] - T = 0.2 ms, 500 samples, avg 10 runs');
+x = linspace(0, 12999, 13000) * .0002;
+plot(x, y_mean,'LineWidth', 1.3);
+
+% Save
+set(gca,'FontSize',18);
+xlabel("Time [s]", args{:});
+xlim([0, 2.56])
+ylabel("Illuminance [lx]", args{:});
+fig.PaperPositionMode = 'auto';
+fig_pos = fig.PaperPosition;
+fig.PaperSize = [fig_pos(3) fig_pos(4)];
+output = 'figures/fig_f_1';
+print(fig,'-dpdf','-r300',output);
 
 y = csvread('data/fig_f_2.csv');
 x = linspace(0, 255, 256);

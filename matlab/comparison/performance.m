@@ -39,7 +39,7 @@ for j = 2:size(e_0,1)
 end;
 sum = 0;
 for j = 2:size(e_1,1)
-    sum = sum + out_1(j-1)*(time_1(j) - time_0(j-1))/1000;
+    sum = sum + out_1(j-1)*(time_1(j) - time_1(j-1))/1000;
     e_1(j) = sum;
 end;
 d_e_t = e_0 + e_1; 
@@ -144,7 +144,7 @@ for j = 2:size(e_0,1)
 end;
 sum = 0;
 for j = 2:size(e_1,1)
-    sum = sum + out_1(j-1)*(time_1(j) - time_0(j-1))/1000;
+    sum = sum + out_1(j-1)*(time_1(j) - time_1(j-1))/1000;
     e_1(j) = sum;
 end;
 nd_e_t = e_0 + e_1;
@@ -270,3 +270,25 @@ fig.PaperPositionMode = 'auto';
 fig_pos = fig.PaperPosition;
 fig.PaperSize = [fig_pos(3) fig_pos(4)];
 print(fig,'-dpdf','-r300',char(output_name));
+
+%% Disturbances
+
+% data_0 = csvread("data/c_0.csv");
+% data_1 = csvread("data/c_1.csv");
+% 
+% time_0 = data_0(:,5) / 1000.0; 
+% lux_0  = data_0(:,1);
+% out_0  = data_0(:,2) * 100.0;
+% ref_0  = data_0(:,3);
+% 
+% time_1 = data_1(:,5) / 1000.0; 
+% lux_1  = data_1(:,1);
+% out_1  = data_1(:,2) * 100.0;
+% ref_1  = data_1(:,3);
+% 
+% hold on;
+% plot(time_1, lux_1, 'LineWidth',1);
+% plot(time_1, out_1, 'LineWidth',1);
+% hold off;
+% 
+% xlim([0,50]);

@@ -19,7 +19,7 @@
 namespace PIController {
 
     /** Default feedforward gain */
-    const float K_FF                 =  0.0; // 1.0;
+    const float K_FF                 =  0.5; // 1.0;
     /** Feedforward approximated linear characteristic slope */
     const float M_FF                 =  0.4330;
     /** Feedforward approximated linear characteristic y(0) */
